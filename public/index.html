@@ -4,13 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>הרשימה של משפחת אהרוני</title>
-  <link rel="manifest" href="manifest.json">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#0f766e">
-  <!-- אייקון מובנה למסך הבית באייפון ובאנדרואיד -->
   <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='110' fill='%230d9488'/%3E%3Cpath d='M256 112L96 248h48v152h224V248h48L256 112zm-32 232l-56-56 22-22 34 34 86-86 22 22-108 108z' fill='%23ffffff'/%3E%3C/svg%3E">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='110' fill='%230d9488'/%3E%3Cpath d='M256 112L96 248h48v152h224V248h48L256 112zm-32 232l-56-56 22-22 34 34 86-86 22 22-108 108z' fill='%23ffffff'/%3E%3C/svg%3E">
+  
+  <!-- טעינה יציבה של Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
   <style>
     :root {
       --primary: #0d9488;
@@ -42,7 +46,6 @@
 
     .container { max-width: 640px; margin: 0 auto; padding: 14px; }
 
-    /* צ'יפים לבחירת רשימה / סינון */
     .chips-row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 10px; scrollbar-width: none; }
     .chips-row::-webkit-scrollbar { display: none; }
     .chip {
@@ -59,7 +62,6 @@
     }
     .chip.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-    /* כרטיס הזנה */
     .input-card {
       background: var(--card);
       padding: 14px;
@@ -95,7 +97,6 @@
     }
     button.btn-primary:active { background: var(--primary-dark); }
 
-    /* כותרות מחלקות */
     .section-header {
       display: flex;
       justify-content: space-between;
@@ -122,7 +123,6 @@
       cursor: pointer;
     }
 
-    /* פריטים ברשימה */
     .list { display: flex; flex-direction: column; gap: 8px; }
     .item {
       background: var(--card);
@@ -157,7 +157,6 @@
     .icon-btn:active { background: #f1f5f9; }
     .del-btn { color: var(--danger); }
 
-    /* כרטיסי מועדפים */
     .fav-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)); gap: 10px; }
     .fav-card {
       background: white;
@@ -186,7 +185,6 @@
     }
     .fav-add:active { background: var(--primary); color: white; }
 
-    /* ניווט תחתון */
     .bottom-nav {
       position: fixed;
       bottom: 0;
@@ -228,7 +226,7 @@
 </header>
 
 <div class="container">
-  <!-- ==================== תצוגת קניות ==================== -->
+  <!-- תצוגת קניות -->
   <div id="view-shopping">
     <div class="chips-row" id="list-selector">
       <div class="chip active" onclick="selectShopList('super', this)">🛒 סופר</div>
@@ -263,7 +261,7 @@
     <div id="shopping-container"></div>
   </div>
 
-  <!-- ==================== תצוגת מועדפים / קבועים ==================== -->
+  <!-- תצוגת מועדפים -->
   <div id="view-favorites" class="hidden">
     <div class="input-card">
       <div style="font-weight:700; font-size:0.95rem;">⭐ הוספת מוצר קבוע לרשימת המועדפים</div>
@@ -287,7 +285,7 @@
     <div class="fav-grid" id="favorites-list"></div>
   </div>
 
-  <!-- ==================== תצוגת משימות ==================== -->
+  <!-- תצוגת משימות -->
   <div id="view-tasks" class="hidden">
     <div class="chips-row" id="task-filter-row">
       <div class="chip active" onclick="filterTasks('הכל', this)">הכל</div>
@@ -295,402 +293,4 @@
       <div class="chip" onclick="filterTasks('מיה', this)">מיה</div>
       <div class="chip" onclick="filterTasks('טליה', this)">טליה</div>
       <div class="chip" onclick="filterTasks('דוד', this)">דוד</div>
-      <div class="chip" onclick="filterTasks('יאיר', this)">יאיר</div>
-    </div>
-
-    <div class="input-card">
-      <input type="text" id="task-input" placeholder="מה המשימה?" onkeypress="if(event.key==='Enter') addTask()">
-      <div class="row">
-        <select id="task-assignee" class="grow">
-          <option value="כולם">אחראי: כולם</option>
-          <option value="עודד">עודד</option>
-          <option value="מיה">מיה</option>
-          <option value="טליה">טליה</option>
-          <option value="דוד">דוד</option>
-          <option value="יאיר">יאיר</option>
-        </select>
-        <input type="date" id="task-due" title="תאריך יעד">
-      </div>
-      <div class="row" style="justify-content:space-between; align-items:center;">
-        <div class="row">
-          <label class="checkbox-label"><input type="checkbox" id="task-urgent"> 🔥 דחוף</label>
-          <label class="checkbox-label"><input type="checkbox" id="task-repeat"> 🔁 מחזורית</label>
-        </div>
-        <button class="btn-primary" onclick="addTask()">+ הוסף משימה</button>
-      </div>
-    </div>
-
-    <div class="list" id="tasks-list"></div>
-  </div>
-</div>
-
-<!-- ניווט תחתון -->
-<nav class="bottom-nav">
-  <div class="nav-item active" id="nav-shopping" onclick="switchTab('shopping')">
-    <span class="icon">🛒</span>
-    <span>רשימות קנייה</span>
-  </div>
-  <div class="nav-item" id="nav-favorites" onclick="switchTab('favorites')">
-    <span class="icon">⭐</span>
-    <span>מועדפים</span>
-  </div>
-  <div class="nav-item" id="nav-tasks" onclick="switchTab('tasks')">
-    <span class="icon">✅</span>
-    <span>משימות בית</span>
-  </div>
-</nav>
-
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-  import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyCbFZpusl3t-e7AHg-Ulq2n2K-nKusgSuw",
-    authDomain: "aharoni-s-list.firebaseapp.com",
-    projectId: "aharoni-s-list",
-    storageBucket: "aharoni-s-list.firebasestorage.app",
-    messagingSenderId: "796491469055",
-    appId: "1:796491469055:web:d30e52773e76032c933cca"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
-  const familyId = "aharoni_family_main";
-
-  let currentShopList = "super";
-  let currentTaskFilter = "הכל";
-  let allShoppingItems = [];
-  let allTasks = [];
-
-  const categoryIcons = {
-    "ירקות ופירות": "🥦",
-    "מוצרי חלב וביצים": "🧀",
-    "בשר, עוף ודגים": "🥩",
-    "מאפים ולחם": "🥖",
-    "יבשים ומזווה": "🍝",
-    "ניקיון וטואלטיקה": "🧼",
-    "כללי": "📦"
-  };
-
-  signInAnonymously(auth).catch(err => {
-    document.getElementById('status').innerText = "שגיאה 🔴";
-  });
-
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      document.getElementById('status').innerText = "מסונכרן 🟢";
-      listenToData();
-    }
-  });
-
-  function listenToData() {
-    // 1. האזנה לרשימות קניות
-    const shopQ = query(collection(db, "families", familyId, "shopping_list"), orderBy("created_at", "desc"));
-    onSnapshot(shopQ, (snapshot) => {
-      allShoppingItems = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-      renderShopping();
-    });
-
-    // 2. האזנה למועדפים
-    const favQ = query(collection(db, "families", familyId, "favorites"), orderBy("created_at", "desc"));
-    onSnapshot(favQ, (snapshot) => {
-      const favEl = document.getElementById('favorites-list');
-      favEl.innerHTML = "";
-      if (snapshot.empty) {
-        favEl.innerHTML = `<div class="empty-state" style="grid-column:1/-1;">אין עדיין מוצרים קבועים. הוסיפו למעלה מוצרים שקונים כל שבוע!</div>`;
-        return;
-      }
-      snapshot.forEach(docSnap => {
-        const d = docSnap.data();
-        const card = document.createElement('div');
-        card.className = "fav-card";
-        card.innerHTML = `
-          <div class="fav-top">
-            <div>
-              <div class="fav-name">${escapeHtml(d.name)} ${d.qty ? `(${escapeHtml(d.qty)})` : ''}</div>
-              <div class="fav-cat">${categoryIcons[d.category] || '📦'} ${escapeHtml(d.category || 'כללי')}</div>
-            </div>
-            <button class="icon-btn del-btn" onclick="deleteItem('favorites', '${docSnap.id}')">✕</button>
-          </div>
-          <button class="fav-add" onclick="quickAddFromFav('${escapeAttr(d.name)}', '${escapeAttr(d.qty || '')}', '${escapeAttr(d.category || 'כללי')}')">+ הוסף לרשימה</button>
-        `;
-        favEl.appendChild(card);
-      });
-    });
-
-    // 3. האזנה למשימות
-    const taskQ = query(collection(db, "families", familyId, "tasks"), orderBy("created_at", "desc"));
-    onSnapshot(taskQ, (snapshot) => {
-      allTasks = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-      renderTasks();
-    });
-  }
-
-  function renderShopping() {
-    const container = document.getElementById('shopping-container');
-    container.innerHTML = "";
-
-    const filtered = allShoppingItems.filter(item => (item.list_type || "super") === currentShopList);
-    const activeItems = filtered.filter(i => !i.completed);
-    const doneItems = filtered.filter(i => i.completed);
-
-    document.getElementById('shop-counter').innerText = `${activeItems.length} פריטים לקנייה`;
-    document.getElementById('clear-done-btn').classList.toggle('hidden', doneItems.length === 0);
-
-    if (filtered.length === 0) {
-      container.innerHTML = `<div class="empty-state">הרשימה ריקה כרגע 🎉</div>`;
-      return;
-    }
-
-    // קיבוץ פריטים פעילים לפי מחלקות
-    const grouped = {};
-    activeItems.forEach(item => {
-      const cat = item.category || "כללי";
-      if (!grouped[cat]) grouped[cat] = [];
-      grouped[cat].push(item);
-    });
-
-    Object.keys(grouped).forEach(cat => {
-      const header = document.createElement('div');
-      header.className = "cat-title";
-      header.innerHTML = `${categoryIcons[cat] || '📦'} ${escapeHtml(cat)} (${grouped[cat].length})`;
-      container.appendChild(header);
-
-      const listDiv = document.createElement('div');
-      listDiv.className = "list";
-      grouped[cat].forEach(item => listDiv.appendChild(createShopElement(item)));
-      container.appendChild(listDiv);
-    });
-
-    // פריטים שכבר נאספו לעגלה
-    if (doneItems.length > 0) {
-      const doneHeader = document.createElement('div');
-      doneHeader.className = "cat-title";
-      doneHeader.style.color = "#64748b";
-      doneHeader.innerHTML = `✔️ כבר בעגלה (${doneItems.length})`;
-      container.appendChild(doneHeader);
-
-      const doneList = document.createElement('div');
-      doneList.className = "list";
-      doneItems.forEach(item => doneList.appendChild(createShopElement(item)));
-      container.appendChild(doneList);
-    }
-  }
-
-  function createShopElement(data) {
-    const div = document.createElement('div');
-    div.className = `item ${data.completed ? 'done' : ''}`;
-    div.innerHTML = `
-      <div class="item-left" onclick="toggleItem('shopping_list', '${data.id}', ${!data.completed})">
-        <input type="checkbox" class="checkbox" ${data.completed ? 'checked' : ''}>
-        <div class="item-main">
-          <div class="item-title-row">
-            <span class="item-text">${escapeHtml(data.name)}</span>
-            ${data.qty ? `<span class="qty-badge">${escapeHtml(data.qty)}</span>` : ''}
-          </div>
-        </div>
-      </div>
-      <div class="actions">
-        <button class="icon-btn" title="שמור במועדפים" onclick="saveAsFavorite('${escapeAttr(data.name)}', '${escapeAttr(data.qty || '')}', '${escapeAttr(data.category || 'כללי')}')">⭐</button>
-        <button class="icon-btn del-btn" onclick="deleteItem('shopping_list', '${data.id}')">✕</button>
-      </div>
-    `;
-    return div;
-  }
-
-  function renderTasks() {
-    const listEl = document.getElementById('tasks-list');
-    listEl.innerHTML = "";
-
-    let filtered = allTasks;
-    if (currentTaskFilter !== "הכל") {
-      filtered = allTasks.filter(t => t.assigned_to === currentTaskFilter || t.assigned_to === "כולם");
-    }
-
-    // מיון: קודם לא הושלמו, בתוכם דחופים למעלה
-    filtered.sort((a, b) => {
-      if (a.completed !== b.completed) return a.completed ? 1 : -1;
-      if (a.urgent !== b.urgent) return a.urgent ? -1 : 1;
-      return 0;
-    });
-
-    if (filtered.length === 0) {
-      listEl.innerHTML = `<div class="empty-state">אין משימות פתוחות בקטגוריה זו ✨</div>`;
-      return;
-    }
-
-    filtered.forEach(data => {
-      const div = document.createElement('div');
-      div.className = `item ${data.urgent && !data.completed ? 'urgent' : ''} ${data.completed ? 'done' : ''}`;
-      div.innerHTML = `
-        <div class="item-left" onclick="handleTaskToggle('${data.id}', ${!data.completed}, ${!!data.recurring})">
-          <input type="checkbox" class="checkbox" ${data.completed ? 'checked' : ''}>
-          <div class="item-main">
-            <span class="item-text">${escapeHtml(data.title)}</span>
-            <div class="meta-row">
-              <span class="badge badge-person">${escapeHtml(data.assigned_to || 'כולם')}</span>
-              ${data.urgent ? `<span class="badge badge-urgent">🔥 דחוף</span>` : ''}
-              ${data.recurring ? `<span class="badge badge-repeat">🔁 מחזורית</span>` : ''}
-              ${data.due_date ? `<span class="badge badge-date">📅 ${formatDate(data.due_date)}</span>` : ''}
-            </div>
-          </div>
-        </div>
-        <div class="actions">
-          ${data.completed && data.recurring ? `<button class="icon-btn" title="אפס משימה מחזורית" onclick="toggleItem('tasks', '${data.id}', false)">🔄</button>` : ''}
-          <button class="icon-btn del-btn" onclick="deleteItem('tasks', '${data.id}')">✕</button>
-        </div>
-      `;
-      listEl.appendChild(div);
-    });
-  }
-
-  // פעולות קניות
-  window.selectShopList = (type, el) => {
-    currentShopList = type;
-    document.querySelectorAll('#list-selector .chip').forEach(c => c.classList.remove('active'));
-    el.classList.add('active');
-    renderShopping();
-  };
-
-  window.addShopping = async () => {
-    const input = document.getElementById('shop-input');
-    const qtyInput = document.getElementById('shop-qty');
-    const cat = document.getElementById('shop-cat').value;
-    const name = input.value.trim();
-    if (!name) return;
-
-    const qty = qtyInput.value.trim();
-    input.value = "";
-    qtyInput.value = "";
-
-    await addDoc(collection(db, "families", familyId, "shopping_list"), {
-      name,
-      qty,
-      category: cat,
-      list_type: currentShopList,
-      completed: false,
-      created_at: serverTimestamp()
-    });
-  };
-
-  window.clearCompletedShopping = async () => {
-    const toDelete = allShoppingItems.filter(i => (i.list_type || "super") === currentShopList && i.completed);
-    for (const item of toDelete) {
-      await deleteDoc(doc(db, "families", familyId, "shopping_list", item.id));
-    }
-  };
-
-  // פעולות מועדפים
-  window.addFavorite = async () => {
-    const input = document.getElementById('fav-input');
-    const qtyInput = document.getElementById('fav-qty');
-    const cat = document.getElementById('fav-cat').value;
-    const name = input.value.trim();
-    if (!name) return;
-
-    const qty = qtyInput.value.trim();
-    input.value = "";
-    qtyInput.value = "";
-
-    await addDoc(collection(db, "families", familyId, "favorites"), {
-      name,
-      qty,
-      category: cat,
-      created_at: serverTimestamp()
-    });
-  };
-
-  window.saveAsFavorite = async (name, qty, category) => {
-    await addDoc(collection(db, "families", familyId, "favorites"), {
-      name,
-      qty,
-      category,
-      created_at: serverTimestamp()
-    });
-    alert(`"${name}" נשמר במועדפים ⭐`);
-  };
-
-  window.quickAddFromFav = async (name, qty, category) => {
-    await addDoc(collection(db, "families", familyId, "shopping_list"), {
-      name,
-      qty,
-      category,
-      list_type: currentShopList,
-      completed: false,
-      created_at: serverTimestamp()
-    });
-    switchTab('shopping');
-  };
-
-  // פעולות משימות
-  window.filterTasks = (person, el) => {
-    currentTaskFilter = person;
-    document.querySelectorAll('#task-filter-row .chip').forEach(c => c.classList.remove('active'));
-    el.classList.add('active');
-    renderTasks();
-  };
-
-  window.addTask = async () => {
-    const input = document.getElementById('task-input');
-    const assignee = document.getElementById('task-assignee').value;
-    const due = document.getElementById('task-due').value;
-    const urgent = document.getElementById('task-urgent').checked;
-    const recurring = document.getElementById('task-repeat').checked;
-
-    const title = input.value.trim();
-    if (!title) return;
-
-    input.value = "";
-    document.getElementById('task-due').value = "";
-    document.getElementById('task-urgent').checked = false;
-    document.getElementById('task-repeat').checked = false;
-
-    await addDoc(collection(db, "families", familyId, "tasks"), {
-      title,
-      assigned_to: assignee,
-      due_date: due,
-      urgent,
-      recurring,
-      completed: false,
-      created_at: serverTimestamp()
-    });
-  };
-
-  window.handleTaskToggle = async (id, newState, isRecurring) => {
-    await updateDoc(doc(db, "families", familyId, "tasks", id), { completed: newState });
-  };
-
-  window.toggleItem = async (col, id, state) => {
-    await updateDoc(doc(db, "families", familyId, col, id), { completed: state });
-  };
-
-  window.deleteItem = async (col, id) => {
-    await deleteDoc(doc(db, "families", familyId, col, id));
-  };
-
-  window.switchTab = (tab) => {
-    ['shopping', 'favorites', 'tasks'].forEach(t => {
-      document.getElementById(`view-${t}`).classList.toggle('hidden', t !== tab);
-      document.getElementById(`nav-${t}`).classList.toggle('active', t === tab);
-    });
-  };
-
-  function formatDate(dateStr) {
-    if (!dateStr) return "";
-    const parts = dateStr.split("-");
-    return `${parts[2]}/${parts[1]}`;
-  }
-
-  function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text || "";
-    return div.innerHTML;
-  }
-
-  function escapeAttr(text) {
-return (text || "").split("'").join("\\'");
-</script>
-</body>
-</html>
+      <div class="chip" onclick="filterTasks('יאיר', this)">יא
