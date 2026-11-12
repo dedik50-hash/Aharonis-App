@@ -690,8 +690,7 @@
   }
 
   function escapeAttr(text) {
-    return (text || "").replace(/'/g, "\\'").replace(/"/g, """);
-  }
+return (text || "").replace(/'/g, "\\'").replace(/\x22/g, """);  }
 </script>
 </body>
 </html>
