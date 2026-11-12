@@ -10,7 +10,6 @@
   <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='110' fill='%230d9488'/%3E%3Cpath d='M256 112L96 248h48v152h224V248h48L256 112zm-32 232l-56-56 22-22 34 34 86-86 22 22-108 108z' fill='%23ffffff'/%3E%3C/svg%3E">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='110' fill='%230d9488'/%3E%3Cpath d='M256 112L96 248h48v152h224V248h48L256 112zm-32 232l-56-56 22-22 34 34 86-86 22 22-108 108z' fill='%23ffffff'/%3E%3C/svg%3E">
   
-  <!-- טעינה יציבה של Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -226,7 +225,6 @@
 </header>
 
 <div class="container">
-  <!-- תצוגת קניות -->
   <div id="view-shopping">
     <div class="chips-row" id="list-selector">
       <div class="chip active" onclick="selectShopList('super', this)">🛒 סופר</div>
@@ -261,7 +259,6 @@
     <div id="shopping-container"></div>
   </div>
 
-  <!-- תצוגת מועדפים -->
   <div id="view-favorites" class="hidden">
     <div class="input-card">
       <div style="font-weight:700; font-size:0.95rem;">⭐ הוספת מוצר קבוע לרשימת המועדפים</div>
@@ -285,7 +282,6 @@
     <div class="fav-grid" id="favorites-list"></div>
   </div>
 
-  <!-- תצוגת משימות -->
   <div id="view-tasks" class="hidden">
     <div class="chips-row" id="task-filter-row">
       <div class="chip active" onclick="filterTasks('הכל', this)">הכל</div>
@@ -293,4 +289,392 @@
       <div class="chip" onclick="filterTasks('מיה', this)">מיה</div>
       <div class="chip" onclick="filterTasks('טליה', this)">טליה</div>
       <div class="chip" onclick="filterTasks('דוד', this)">דוד</div>
-      <div class="chip" onclick="filterTasks('יאיר', this)">יא
+      <div class="chip" onclick="filterTasks('יאיר', this)">יאיר</div>
+    </div>
+
+    <div class="input-card">
+      <input type="text" id="task-input" placeholder="מה המשימה?" onkeypress="if(event.key==='Enter') addTask()">
+      <div class="row">
+        <select id="task-assignee" class="grow">
+          <option value="כולם">אחראי: כולם</option>
+          <option value="עודד">עודד</option>
+          <option value="מיה">מיה</option>
+          <option value="טליה">טליה</option>
+          <option value="דוד">דוד</option>
+          <option value="יאיר">יאיר</option>
+        </select>
+        <input type="date" id="task-due" title="תאריך יעד">
+      </div>
+      <div class="row" style="justify-content:space-between; align-items:center;">
+        <div class="row">
+          <label class="checkbox-label"><input type="checkbox" id="task-urgent"> 🔥 דחוף</label>
+          <label class="checkbox-label"><input type="checkbox" id="task-repeat"> 🔁 מחזורית</label>
+        </div>
+        <button class="btn-primary" onclick="addTask()">+ הוסף משימה</button>
+      </div>
+    </div>
+
+    <div class="list" id="tasks-list"></div>
+  </div>
+</div>
+
+<nav class="bottom-nav">
+  <div class="nav-item active" id="nav-shopping" onclick="switchTab('shopping')">
+    <span class="icon">🛒</span>
+    <span>רשימות קנייה</span>
+  </div>
+  <div class="nav-item" id="nav-favorites" onclick="switchTab('favorites')">
+    <span class="icon">⭐</span>
+    <span>מועדפים</span>
+  </div>
+  <div class="nav-item" id="nav-tasks" onclick="switchTab('tasks')">
+    <span class="icon">✅</span>
+    <span>משימות בית</span>
+  </div>
+</nav>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyCbFZpusl3t-e7AHg-Ulq2n2K-nKusgSuw",
+    authDomain: "aharoni-s-list.firebaseapp.com",
+    projectId: "aharoni-s-list",
+    storageBucket: "aharoni-s-list.firebasestorage.app",
+    messagingSenderId: "796491469055",
+    appId: "1:796491469055:web:d30e52773e76032c933cca"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+  db.settings({ experimentalForceLongPolling: true });
+  const familyId = "aharoni_family_main";
+
+  let currentShopList = "super";
+  let currentTaskFilter = "הכל";
+  let allShoppingItems = [];
+  let allTasks = [];
+
+  const categoryIcons = {
+    "ירקות ופירות": "🥦",
+    "מוצרי חלב וביצים": "🧀",
+    "בשר, עוף ודגים": "🥩",
+    "מאפים ולחם": "🥖",
+    "יבשים ומזווה": "🍝",
+    "ניקיון וטואלטיקה": "🧼",
+    "כללי": "📦"
+  };
+
+  auth.signInAnonymously().catch(err => {
+    document.getElementById('status').innerText = "שגיאת חיבור: " + err.code;
+  });
+
+  auth.onAuthStateChanged((user) => {
+    if (user) {
+      document.getElementById('status').innerText = "מסונכרן 🟢";
+      listenToData();
+    }
+  });
+
+  function listenToData() {
+    db.collection("families").doc(familyId).collection("shopping_list")
+      .onSnapshot((snapshot) => {
+        allShoppingItems = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderShopping();
+      }, err => {
+        document.getElementById('status').innerText = "שגיאת הרשאות 🔴";
+      });
+
+    db.collection("families").doc(familyId).collection("favorites")
+      .onSnapshot((snapshot) => {
+        const favEl = document.getElementById('favorites-list');
+        favEl.innerHTML = "";
+        if (snapshot.empty) {
+          favEl.innerHTML = '<div class="empty-state" style="grid-column:1/-1;">אין עדיין מוצרים קבועים. הוסיפו למעלה מוצרים שקונים כל שבוע!</div>';
+          return;
+        }
+        snapshot.forEach(docSnap => {
+          const d = docSnap.data();
+          const card = document.createElement('div');
+          card.className = "fav-card";
+          card.innerHTML = `
+            <div class="fav-top">
+              <div>
+                <div class="fav-name">${escapeHtml(d.name)} ${d.qty ? '(' + escapeHtml(d.qty) + ')' : ''}</div>
+                <div class="fav-cat">${categoryIcons[d.category] || '📦'} ${escapeHtml(d.category || 'כללי')}</div>
+              </div>
+              <button class="icon-btn del-btn" onclick="deleteItem('favorites', '${docSnap.id}')">✕</button>
+            </div>
+            <button class="fav-add" onclick="quickAddFromFav('${escapeAttr(d.name)}', '${escapeAttr(d.qty || '')}', '${escapeAttr(d.category || 'כללי')}')">+ הוסף לרשימה</button>
+          `;
+          favEl.appendChild(card);
+        });
+      });
+
+    db.collection("families").doc(familyId).collection("tasks")
+      .onSnapshot((snapshot) => {
+        allTasks = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderTasks();
+      });
+  }
+
+  function renderShopping() {
+    const container = document.getElementById('shopping-container');
+    container.innerHTML = "";
+
+    const filtered = allShoppingItems.filter(item => (item.list_type || "super") === currentShopList);
+    const activeItems = filtered.filter(i => !i.completed);
+    const doneItems = filtered.filter(i => i.completed);
+
+    document.getElementById('shop-counter').innerText = activeItems.length + " פריטים לקנייה";
+    document.getElementById('clear-done-btn').classList.toggle('hidden', doneItems.length === 0);
+
+    if (filtered.length === 0) {
+      container.innerHTML = '<div class="empty-state">הרשימה ריקה כרגע 🎉</div>';
+      return;
+    }
+
+    const grouped = {};
+    activeItems.forEach(item => {
+      const cat = item.category || "כללי";
+      if (!grouped[cat]) grouped[cat] = [];
+      grouped[cat].push(item);
+    });
+
+    Object.keys(grouped).forEach(cat => {
+      const header = document.createElement('div');
+      header.className = "cat-title";
+      header.innerHTML = (categoryIcons[cat] || '📦') + " " + escapeHtml(cat) + " (" + grouped[cat].length + ")";
+      container.appendChild(header);
+
+      const listDiv = document.createElement('div');
+      listDiv.className = "list";
+      grouped[cat].forEach(item => listDiv.appendChild(createShopElement(item)));
+      container.appendChild(listDiv);
+    });
+
+    if (doneItems.length > 0) {
+      const doneHeader = document.createElement('div');
+      doneHeader.className = "cat-title";
+      doneHeader.style.color = "#64748b";
+      doneHeader.innerHTML = "✔️ כבר בעגלה (" + doneItems.length + ")";
+      container.appendChild(doneHeader);
+
+      const doneList = document.createElement('div');
+      doneList.className = "list";
+      doneItems.forEach(item => doneList.appendChild(createShopElement(item)));
+      container.appendChild(doneList);
+    }
+  }
+
+  function createShopElement(data) {
+    const div = document.createElement('div');
+    div.className = "item " + (data.completed ? 'done' : '');
+    div.innerHTML = `
+      <div class="item-left" onclick="toggleItem('shopping_list', '${data.id}', ${!data.completed})">
+        <input type="checkbox" class="checkbox" ${data.completed ? 'checked' : ''}>
+        <div class="item-main">
+          <div class="item-title-row">
+            <span class="item-text">${escapeHtml(data.name)}</span>
+            ${data.qty ? '<span class="qty-badge">' + escapeHtml(data.qty) + '</span>' : ''}
+          </div>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="icon-btn" title="שמור במועדפים" onclick="saveAsFavorite('${escapeAttr(data.name)}', '${escapeAttr(data.qty || '')}', '${escapeAttr(data.category || 'כללי')}')">⭐</button>
+        <button class="icon-btn del-btn" onclick="deleteItem('shopping_list', '${data.id}')">✕</button>
+      </div>
+    `;
+    return div;
+  }
+
+  function renderTasks() {
+    const listEl = document.getElementById('tasks-list');
+    listEl.innerHTML = "";
+
+    let filtered = allTasks;
+    if (currentTaskFilter !== "הכל") {
+      filtered = allTasks.filter(t => t.assigned_to === currentTaskFilter || t.assigned_to === "כולם");
+    }
+
+    filtered.sort((a, b) => {
+      if (a.completed !== b.completed) return a.completed ? 1 : -1;
+      if (a.urgent !== b.urgent) return a.urgent ? -1 : 1;
+      return 0;
+    });
+
+    if (filtered.length === 0) {
+      listEl.innerHTML = '<div class="empty-state">אין משימות פתוחות בקטגוריה זו ✨</div>';
+      return;
+    }
+
+    filtered.forEach(data => {
+      const div = document.createElement('div');
+      div.className = "item " + (data.urgent && !data.completed ? 'urgent ' : '') + (data.completed ? 'done' : '');
+      div.innerHTML = `
+        <div class="item-left" onclick="handleTaskToggle('${data.id}', ${!data.completed})">
+          <input type="checkbox" class="checkbox" ${data.completed ? 'checked' : ''}>
+          <div class="item-main">
+            <span class="item-text">${escapeHtml(data.title)}</span>
+            <div class="meta-row">
+              <span class="badge badge-person">${escapeHtml(data.assigned_to || 'כולם')}</span>
+              ${data.urgent ? '<span class="badge badge-urgent">🔥 דחוף</span>' : ''}
+              ${data.recurring ? '<span class="badge badge-repeat">🔁 מחזורית</span>' : ''}
+              ${data.due_date ? '<span class="badge badge-date">📅 ' + formatDate(data.due_date) + '</span>' : ''}
+            </div>
+          </div>
+        </div>
+        <div class="actions">
+          ${data.completed && data.recurring ? `<button class="icon-btn" title="אפס משימה מחזורית" onclick="toggleItem('tasks', '${data.id}', false)">🔄</button>` : ''}
+          <button class="icon-btn del-btn" onclick="deleteItem('tasks', '${data.id}')">✕</button>
+        </div>
+      `;
+      listEl.appendChild(div);
+    });
+  }
+
+  function selectShopList(type, el) {
+    currentShopList = type;
+    document.querySelectorAll('#list-selector .chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    renderShopping();
+  }
+
+  function addShopping() {
+    const input = document.getElementById('shop-input');
+    const qtyInput = document.getElementById('shop-qty');
+    const cat = document.getElementById('shop-cat').value;
+    const name = input.value.trim();
+    if (!name) return;
+
+    const qty = qtyInput.value.trim();
+    input.value = "";
+    qtyInput.value = "";
+
+    db.collection("families").doc(familyId).collection("shopping_list").add({
+      name: name,
+      qty: qty,
+      category: cat,
+      list_type: currentShopList,
+      completed: false,
+      created_at: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  }
+
+  function clearCompletedShopping() {
+    const toDelete = allShoppingItems.filter(i => (i.list_type || "super") === currentShopList && i.completed);
+    toDelete.forEach(item => {
+      db.collection("families").doc(familyId).collection("shopping_list").doc(item.id).delete();
+    });
+  }
+
+  function addFavorite() {
+    const input = document.getElementById('fav-input');
+    const qtyInput = document.getElementById('fav-qty');
+    const cat = document.getElementById('fav-cat').value;
+    const name = input.value.trim();
+    if (!name) return;
+
+    const qty = qtyInput.value.trim();
+    input.value = "";
+    qtyInput.value = "";
+
+    db.collection("families").doc(familyId).collection("favorites").add({
+      name: name,
+      qty: qty,
+      category: cat,
+      created_at: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  }
+
+  function saveAsFavorite(name, qty, category) {
+    db.collection("families").doc(familyId).collection("favorites").add({
+      name: name,
+      qty: qty,
+      category: category,
+      created_at: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    alert('"' + name + '" נשמר במועדפים ⭐');
+  }
+
+  function quickAddFromFav(name, qty, category) {
+    db.collection("families").doc(familyId).collection("shopping_list").add({
+      name: name,
+      qty: qty,
+      category: category,
+      list_type: currentShopList,
+      completed: false,
+      created_at: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    switchTab('shopping');
+  }
+
+  function filterTasks(person, el) {
+    currentTaskFilter = person;
+    document.querySelectorAll('#task-filter-row .chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    renderTasks();
+  }
+
+  function addTask() {
+    const input = document.getElementById('task-input');
+    const assignee = document.getElementById('task-assignee').value;
+    const due = document.getElementById('task-due').value;
+    const urgent = document.getElementById('task-urgent').checked;
+    const recurring = document.getElementById('task-repeat').checked;
+
+    const title = input.value.trim();
+    if (!title) return;
+
+    input.value = "";
+    document.getElementById('task-due').value = "";
+    document.getElementById('task-urgent').checked = false;
+    document.getElementById('task-repeat').checked = false;
+
+    db.collection("families").doc(familyId).collection("tasks").add({
+      title: title,
+      assigned_to: assignee,
+      due_date: due,
+      urgent: urgent,
+      recurring: recurring,
+      completed: false,
+      created_at: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  }
+
+  function handleTaskToggle(id, newState) {
+    db.collection("families").doc(familyId).collection("tasks").doc(id).update({ completed: newState });
+  }
+
+  function toggleItem(col, id, state) {
+    db.collection("families").doc(familyId).collection(col).doc(id).update({ completed: state });
+  }
+
+  function deleteItem(col, id) {
+    db.collection("families").doc(familyId).collection(col).doc(id).delete();
+  }
+
+  function switchTab(tab) {
+    ['shopping', 'favorites', 'tasks'].forEach(t => {
+      document.getElementById('view-' + t).classList.toggle('hidden', t !== tab);
+      document.getElementById('nav-' + t).classList.toggle('active', t === tab);
+    });
+  }
+
+  function formatDate(dateStr) {
+    if (!dateStr) return "";
+    const parts = dateStr.split("-");
+    return parts[2] + "/" + parts[1];
+  }
+
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text || "";
+    return div.innerHTML;
+  }
+
+  function escapeAttr(text) {
+    return (text || "").split("'").join("\\'");
+  }
+</script>
+</body>
+</html>
