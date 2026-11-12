@@ -1,0 +1,8 @@
+{
+  "name": "הרשימה של משפחת אהרוני",
+  "short_name": "רשימת אהרוני",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f3f4f6",
+  "theme_color": "#0d9488"
+}
