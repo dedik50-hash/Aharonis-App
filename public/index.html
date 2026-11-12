@@ -2,68 +2,306 @@
 <html lang="he" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>הרשימה של משפחת אהרוני</title>
   <link rel="manifest" href="manifest.json">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#0d9488">
+  <meta name="theme-color" content="#0f766e">
+  <!-- אייקון מובנה למסך הבית באייפון ובאנדרואיד -->
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='110' fill='%230d9488'/%3E%3Cpath d='M256 112L96 248h48v152h224V248h48L256 112zm-32 232l-56-56 22-22 34 34 86-86 22 22-108 108z' fill='%23ffffff'/%3E%3C/svg%3E">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='110' fill='%230d9488'/%3E%3Cpath d='M256 112L96 248h48v152h224V248h48L256 112zm-32 232l-56-56 22-22 34 34 86-86 22 22-108 108z' fill='%23ffffff'/%3E%3C/svg%3E">
   <style>
-    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { margin: 0; background: #f3f4f6; color: #1f2937; padding-bottom: 40px; }
-    header { background: #0d9488; color: white; padding: 16px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 10; }
-    header h1 { margin: 0; font-size: 1.3rem; }
-    .tabs { display: flex; background: #0f766e; }
-    .tab { flex: 1; padding: 12px; text-align: center; color: #ccfbf1; font-weight: bold; cursor: pointer; border-bottom: 3px solid transparent; transition: 0.2s; }
-    .tab.active { color: white; border-bottom-color: white; background: rgba(255,255,255,0.1); }
-    .container { max-width: 600px; margin: 0 auto; padding: 16px; }
-    .input-card { background: white; padding: 14px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 16px; display: flex; flex-direction: column; gap: 10px; }
-    .row { display: flex; gap: 8px; }
-    input, select { flex: 1; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 1rem; outline: none; }
-    input:focus, select:focus { border-color: #0d9488; }
-    button.add-btn { background: #0d9488; color: white; border: none; border-radius: 8px; padding: 0 18px; font-size: 1.2rem; font-weight: bold; cursor: pointer; }
-    button.add-btn:active { background: #0f766e; }
+    :root {
+      --primary: #0d9488;
+      --primary-dark: #0f766e;
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --text: #1e293b;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --danger: #ef4444;
+    }
+    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { margin: 0; background: var(--bg); color: var(--text); padding-bottom: calc(84px + env(safe-area-inset-bottom)); }
+    
+    header {
+      background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+      color: white;
+      padding: calc(14px + env(safe-area-inset-top)) 16px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    }
+    header h1 { margin: 0; font-size: 1.15rem; font-weight: 700; }
+    .sync-pill { font-size: 0.75rem; background: rgba(255,255,255,0.18); padding: 4px 10px; border-radius: 20px; }
+
+    .container { max-width: 640px; margin: 0 auto; padding: 14px; }
+
+    /* צ'יפים לבחירת רשימה / סינון */
+    .chips-row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 10px; scrollbar-width: none; }
+    .chips-row::-webkit-scrollbar { display: none; }
+    .chip {
+      background: white;
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 7px 14px;
+      border-radius: 20px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+    .chip.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+    /* כרטיס הזנה */
+    .input-card {
+      background: var(--card);
+      padding: 14px;
+      border-radius: 14px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+      margin-bottom: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .row { display: flex; gap: 8px; flex-wrap: wrap; }
+    input, select {
+      padding: 11px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      outline: none;
+      background: #f8fafc;
+      color: var(--text);
+    }
+    input:focus, select:focus { border-color: var(--primary); background: white; }
+    .grow { flex: 1; min-width: 140px; }
+    .qty-input { width: 95px; }
+    button.btn-primary {
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 11px 18px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button.btn-primary:active { background: var(--primary-dark); }
+
+    /* כותרות מחלקות */
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 16px 0 8px;
+    }
+    .cat-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--primary-dark);
+      margin: 14px 4px 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .clear-btn {
+      background: #fee2e2;
+      color: #b91c1c;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* פריטים ברשימה */
     .list { display: flex; flex-direction: column; gap: 8px; }
-    .item { background: white; padding: 12px 14px; border-radius: 10px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+    .item {
+      background: var(--card);
+      padding: 12px 14px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      border-right: 4px solid transparent;
+    }
+    .item.urgent { border-right-color: var(--danger); }
+    .item.done { opacity: 0.6; }
+    .item.done .item-text { text-decoration: line-through; color: var(--muted); }
+    
     .item-left { display: flex; align-items: center; gap: 12px; flex: 1; cursor: pointer; }
-    .checkbox { width: 22px; height: 22px; accent-color: #0d9488; cursor: pointer; }
-    .item-text { font-size: 1.05rem; }
-    .item.done .item-text { text-decoration: line-through; color: #9ca3af; }
-    .badge { font-size: 0.78rem; background: #e0f2fe; color: #0369a1; padding: 3px 8px; border-radius: 12px; margin-right: 8px; font-weight: 600; }
-    .del-btn { background: none; border: none; color: #ef4444; font-size: 1.1rem; cursor: pointer; padding: 6px; }
-    .hidden { display: none; }
-    #status { text-align: center; font-size: 0.85rem; color: #6b7280; margin-top: 20px; }
+    .checkbox { width: 22px; height: 22px; accent-color: var(--primary); cursor: pointer; flex-shrink: 0; }
+    .item-main { display: flex; flex-direction: column; gap: 3px; }
+    .item-title-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .item-text { font-size: 1rem; font-weight: 500; }
+    .qty-badge { background: #f1f5f9; color: #334155; font-size: 0.78rem; padding: 2px 8px; border-radius: 6px; font-weight: 600; }
+    .meta-row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+    
+    .badge { font-size: 0.74rem; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+    .badge-person { background: #e0f2fe; color: #0369a1; }
+    .badge-urgent { background: #fee2e2; color: #b91c1c; }
+    .badge-repeat { background: #fef3c7; color: #b45309; }
+    .badge-date { background: #f1f5f9; color: #475569; }
+
+    .actions { display: flex; align-items: center; gap: 4px; }
+    .icon-btn { background: none; border: none; font-size: 1.05rem; cursor: pointer; padding: 6px; border-radius: 8px; color: var(--muted); }
+    .icon-btn:active { background: #f1f5f9; }
+    .del-btn { color: var(--danger); }
+
+    /* כרטיסי מועדפים */
+    .fav-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)); gap: 10px; }
+    .fav-card {
+      background: white;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 8px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    }
+    .fav-top { display: flex; justify-content: space-between; align-items: flex-start; }
+    .fav-name { font-weight: 600; font-size: 0.95rem; }
+    .fav-cat { font-size: 0.75rem; color: var(--muted); }
+    .fav-add {
+      background: #ccfbf1;
+      color: var(--primary-dark);
+      border: none;
+      padding: 7px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      width: 100%;
+    }
+    .fav-add:active { background: var(--primary); color: white; }
+
+    /* ניווט תחתון */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      border-top: 1px solid var(--border);
+      display: flex;
+      padding-bottom: env(safe-area-inset-bottom);
+      z-index: 30;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+    }
+    .nav-item {
+      flex: 1;
+      padding: 10px 4px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+    }
+    .nav-item span.icon { font-size: 1.3rem; }
+    .nav-item.active { color: var(--primary); }
+
+    .hidden { display: none !important; }
+    .empty-state { text-align: center; color: var(--muted); padding: 32px 16px; font-size: 0.95rem; }
+    .checkbox-label { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; color: var(--text); cursor: pointer; background: #f8fafc; padding: 8px 10px; border-radius: 8px; border: 1px solid #cbd5e1; }
   </style>
 </head>
 <body>
 
 <header>
-  <h1>🏡 הרשימה של משפחת אהרוני</h1>
+  <h1>🏡 משפחת אהרוני</h1>
+  <div class="sync-pill" id="status">מתחבר...</div>
 </header>
 
-<div class="tabs">
-  <div class="tab active" id="tab-shopping" onclick="switchTab('shopping')">🛒 רשימת קניות</div>
-  <div class="tab" id="tab-tasks" onclick="switchTab('tasks')">✅ משימות בית</div>
-</div>
-
 <div class="container">
-  <!-- אזור קניות -->
+  <!-- ==================== תצוגת קניות ==================== -->
   <div id="view-shopping">
+    <div class="chips-row" id="list-selector">
+      <div class="chip active" onclick="selectShopList('super', this)">🛒 סופר</div>
+      <div class="chip" onclick="selectShopList('pharm', this)">💊 פארם</div>
+      <div class="chip" onclick="selectShopList('home', this)">🌱 גינה ובית</div>
+    </div>
+
     <div class="input-card">
       <div class="row">
-        <input type="text" id="shop-input" placeholder="מה צריך לקנות?" onkeypress="if(event.key==='Enter') addShopping()">
-        <button class="add-btn" onclick="addShopping()">+</button>
+        <input type="text" id="shop-input" class="grow" placeholder="מה צריך לקנות?" onkeypress="if(event.key==='Enter') addShopping()">
+        <input type="text" id="shop-qty" class="qty-input" placeholder="כמות/הערה" onkeypress="if(event.key==='Enter') addShopping()">
+      </div>
+      <div class="row">
+        <select id="shop-cat" class="grow">
+          <option value="ירקות ופירות">🥦 ירקות ופירות</option>
+          <option value="מוצרי חלב וביצים">🧀 מוצרי חלב וביצים</option>
+          <option value="בשר, עוף ודגים">🥩 בשר, עוף ודגים</option>
+          <option value="מאפים ולחם">🥖 מאפים ולחם</option>
+          <option value="יבשים ומזווה">🍝 יבשים ומזווה</option>
+          <option value="ניקיון וטואלטיקה">🧼 ניקיון וטואלטיקה</option>
+          <option value="כללי">📦 כללי</option>
+        </select>
+        <button class="btn-primary" onclick="addShopping()">+ הוסף</button>
       </div>
     </div>
-    <div class="list" id="shopping-list"></div>
+
+    <div class="section-header" id="shop-actions-bar">
+      <span style="font-size:0.85rem; color:var(--muted);" id="shop-counter">0 פריטים</span>
+      <button class="clear-btn hidden" id="clear-done-btn" onclick="clearCompletedShopping()">🗑️ נקה פריטים שנקנו</button>
+    </div>
+
+    <div id="shopping-container"></div>
   </div>
 
-  <!-- אזור משימות -->
+  <!-- ==================== תצוגת מועדפים / קבועים ==================== -->
+  <div id="view-favorites" class="hidden">
+    <div class="input-card">
+      <div style="font-weight:700; font-size:0.95rem;">⭐ הוספת מוצר קבוע לרשימת המועדפים</div>
+      <div class="row">
+        <input type="text" id="fav-input" class="grow" placeholder="שם המוצר (למשל: חלב 3%)" onkeypress="if(event.key==='Enter') addFavorite()">
+        <input type="text" id="fav-qty" class="qty-input" placeholder="כמות קבועה">
+      </div>
+      <div class="row">
+        <select id="fav-cat" class="grow">
+          <option value="ירקות ופירות">🥦 ירקות ופירות</option>
+          <option value="מוצרי חלב וביצים">🧀 מוצרי חלב וביצים</option>
+          <option value="בשר, עוף ודגים">🥩 בשר, עוף ודגים</option>
+          <option value="מאפים ולחם">🥖 מאפים ולחם</option>
+          <option value="יבשים ומזווה">🍝 יבשים ומזווה</option>
+          <option value="ניקיון וטואלטיקה">🧼 ניקיון וטואלטיקה</option>
+          <option value="כללי">📦 כללי</option>
+        </select>
+        <button class="btn-primary" onclick="addFavorite()">שמור במועדפים</button>
+      </div>
+    </div>
+    <div class="fav-grid" id="favorites-list"></div>
+  </div>
+
+  <!-- ==================== תצוגת משימות ==================== -->
   <div id="view-tasks" class="hidden">
+    <div class="chips-row" id="task-filter-row">
+      <div class="chip active" onclick="filterTasks('הכל', this)">הכל</div>
+      <div class="chip" onclick="filterTasks('עודד', this)">עודד</div>
+      <div class="chip" onclick="filterTasks('מיה', this)">מיה</div>
+      <div class="chip" onclick="filterTasks('טליה', this)">טליה</div>
+      <div class="chip" onclick="filterTasks('דוד', this)">דוד</div>
+      <div class="chip" onclick="filterTasks('יאיר', this)">יאיר</div>
+    </div>
+
     <div class="input-card">
       <input type="text" id="task-input" placeholder="מה המשימה?" onkeypress="if(event.key==='Enter') addTask()">
       <div class="row">
-        <select id="task-assignee">
+        <select id="task-assignee" class="grow">
           <option value="כולם">אחראי: כולם</option>
           <option value="עודד">עודד</option>
           <option value="מיה">מיה</option>
@@ -71,14 +309,36 @@
           <option value="דוד">דוד</option>
           <option value="יאיר">יאיר</option>
         </select>
-        <button class="add-btn" onclick="addTask()">הוסף</button>
+        <input type="date" id="task-due" title="תאריך יעד">
+      </div>
+      <div class="row" style="justify-content:space-between; align-items:center;">
+        <div class="row">
+          <label class="checkbox-label"><input type="checkbox" id="task-urgent"> 🔥 דחוף</label>
+          <label class="checkbox-label"><input type="checkbox" id="task-repeat"> 🔁 מחזורית</label>
+        </div>
+        <button class="btn-primary" onclick="addTask()">+ הוסף משימה</button>
       </div>
     </div>
+
     <div class="list" id="tasks-list"></div>
   </div>
-
-  <div id="status">מתחבר לענן...</div>
 </div>
+
+<!-- ניווט תחתון -->
+<nav class="bottom-nav">
+  <div class="nav-item active" id="nav-shopping" onclick="switchTab('shopping')">
+    <span class="icon">🛒</span>
+    <span>רשימות קנייה</span>
+  </div>
+  <div class="nav-item" id="nav-favorites" onclick="switchTab('favorites')">
+    <span class="icon">⭐</span>
+    <span>מועדפים</span>
+  </div>
+  <div class="nav-item" id="nav-tasks" onclick="switchTab('tasks')">
+    <span class="icon">✅</span>
+    <span>משימות בית</span>
+  </div>
+</nav>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -99,86 +359,307 @@
   const db = getFirestore(app);
   const familyId = "aharoni_family_main";
 
+  let currentShopList = "super";
+  let currentTaskFilter = "הכל";
+  let allShoppingItems = [];
+  let allTasks = [];
+
+  const categoryIcons = {
+    "ירקות ופירות": "🥦",
+    "מוצרי חלב וביצים": "🧀",
+    "בשר, עוף ודגים": "🥩",
+    "מאפים ולחם": "🥖",
+    "יבשים ומזווה": "🍝",
+    "ניקיון וטואלטיקה": "🧼",
+    "כללי": "📦"
+  };
+
   signInAnonymously(auth).catch(err => {
-    document.getElementById('status').innerText = "שגיאת התחברות: " + err.message;
+    document.getElementById('status').innerText = "שגיאה 🔴";
   });
 
   onAuthStateChanged(auth, (user) => {
     if (user) {
-      document.getElementById('status').innerText = "מסונכרן בזמן אמת 🟢";
+      document.getElementById('status').innerText = "מסונכרן 🟢";
       listenToData();
     }
   });
 
   function listenToData() {
-    // האזנה לרשימת קניות
+    // 1. האזנה לרשימות קניות
     const shopQ = query(collection(db, "families", familyId, "shopping_list"), orderBy("created_at", "desc"));
     onSnapshot(shopQ, (snapshot) => {
-      const listEl = document.getElementById('shopping-list');
-      listEl.innerHTML = "";
-      snapshot.forEach((docSnap) => {
-        const data = docSnap.data();
-        const div = document.createElement('div');
-        div.className = `item ${data.completed ? 'done' : ''}`;
-        div.innerHTML = `
-          <div class="item-left" onclick="toggleItem('shopping_list', '${docSnap.id}', ${!data.completed})">
-            <input type="checkbox" class="checkbox" ${data.completed ? 'checked' : ''}>
-            <span class="item-text">${escapeHtml(data.name)}</span>
+      allShoppingItems = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderShopping();
+    });
+
+    // 2. האזנה למועדפים
+    const favQ = query(collection(db, "families", familyId, "favorites"), orderBy("created_at", "desc"));
+    onSnapshot(favQ, (snapshot) => {
+      const favEl = document.getElementById('favorites-list');
+      favEl.innerHTML = "";
+      if (snapshot.empty) {
+        favEl.innerHTML = `<div class="empty-state" style="grid-column:1/-1;">אין עדיין מוצרים קבועים. הוסיפו למעלה מוצרים שקונים כל שבוע!</div>`;
+        return;
+      }
+      snapshot.forEach(docSnap => {
+        const d = docSnap.data();
+        const card = document.createElement('div');
+        card.className = "fav-card";
+        card.innerHTML = `
+          <div class="fav-top">
+            <div>
+              <div class="fav-name">${escapeHtml(d.name)} ${d.qty ? `(${escapeHtml(d.qty)})` : ''}</div>
+              <div class="fav-cat">${categoryIcons[d.category] || '📦'} ${escapeHtml(d.category || 'כללי')}</div>
+            </div>
+            <button class="icon-btn del-btn" onclick="deleteItem('favorites', '${docSnap.id}')">✕</button>
           </div>
-          <button class="del-btn" onclick="deleteItem('shopping_list', '${docSnap.id}')">✕</button>
+          <button class="fav-add" onclick="quickAddFromFav('${escapeAttr(d.name)}', '${escapeAttr(d.qty || '')}', '${escapeAttr(d.category || 'כללי')}')">+ הוסף לרשימה</button>
         `;
-        listEl.appendChild(div);
+        favEl.appendChild(card);
       });
     });
 
-    // האזנה למשימות
+    // 3. האזנה למשימות
     const taskQ = query(collection(db, "families", familyId, "tasks"), orderBy("created_at", "desc"));
     onSnapshot(taskQ, (snapshot) => {
-      const listEl = document.getElementById('tasks-list');
-      listEl.innerHTML = "";
-      snapshot.forEach((docSnap) => {
-        const data = docSnap.data();
-        const div = document.createElement('div');
-        div.className = `item ${data.completed ? 'done' : ''}`;
-        div.innerHTML = `
-          <div class="item-left" onclick="toggleItem('tasks', '${docSnap.id}', ${!data.completed})">
-            <input type="checkbox" class="checkbox" ${data.completed ? 'checked' : ''}>
-            <div>
-              <span class="item-text">${escapeHtml(data.title)}</span>
-              <span class="badge">${escapeHtml(data.assigned_to || 'כולם')}</span>
-            </div>
-          </div>
-          <button class="del-btn" onclick="deleteItem('tasks', '${docSnap.id}')">✕</button>
-        `;
-        listEl.appendChild(div);
-      });
+      allTasks = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderTasks();
     });
   }
 
+  function renderShopping() {
+    const container = document.getElementById('shopping-container');
+    container.innerHTML = "";
+
+    const filtered = allShoppingItems.filter(item => (item.list_type || "super") === currentShopList);
+    const activeItems = filtered.filter(i => !i.completed);
+    const doneItems = filtered.filter(i => i.completed);
+
+    document.getElementById('shop-counter').innerText = `${activeItems.length} פריטים לקנייה`;
+    document.getElementById('clear-done-btn').classList.toggle('hidden', doneItems.length === 0);
+
+    if (filtered.length === 0) {
+      container.innerHTML = `<div class="empty-state">הרשימה ריקה כרגע 🎉</div>`;
+      return;
+    }
+
+    // קיבוץ פריטים פעילים לפי מחלקות
+    const grouped = {};
+    activeItems.forEach(item => {
+      const cat = item.category || "כללי";
+      if (!grouped[cat]) grouped[cat] = [];
+      grouped[cat].push(item);
+    });
+
+    Object.keys(grouped).forEach(cat => {
+      const header = document.createElement('div');
+      header.className = "cat-title";
+      header.innerHTML = `${categoryIcons[cat] || '📦'} ${escapeHtml(cat)} (${grouped[cat].length})`;
+      container.appendChild(header);
+
+      const listDiv = document.createElement('div');
+      listDiv.className = "list";
+      grouped[cat].forEach(item => listDiv.appendChild(createShopElement(item)));
+      container.appendChild(listDiv);
+    });
+
+    // פריטים שכבר נאספו לעגלה
+    if (doneItems.length > 0) {
+      const doneHeader = document.createElement('div');
+      doneHeader.className = "cat-title";
+      doneHeader.style.color = "#64748b";
+      doneHeader.innerHTML = `✔️ כבר בעגלה (${doneItems.length})`;
+      container.appendChild(doneHeader);
+
+      const doneList = document.createElement('div');
+      doneList.className = "list";
+      doneItems.forEach(item => doneList.appendChild(createShopElement(item)));
+      container.appendChild(doneList);
+    }
+  }
+
+  function createShopElement(data) {
+    const div = document.createElement('div');
+    div.className = `item ${data.completed ? 'done' : ''}`;
+    div.innerHTML = `
+      <div class="item-left" onclick="toggleItem('shopping_list', '${data.id}', ${!data.completed})">
+        <input type="checkbox" class="checkbox" ${data.completed ? 'checked' : ''}>
+        <div class="item-main">
+          <div class="item-title-row">
+            <span class="item-text">${escapeHtml(data.name)}</span>
+            ${data.qty ? `<span class="qty-badge">${escapeHtml(data.qty)}</span>` : ''}
+          </div>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="icon-btn" title="שמור במועדפים" onclick="saveAsFavorite('${escapeAttr(data.name)}', '${escapeAttr(data.qty || '')}', '${escapeAttr(data.category || 'כללי')}')">⭐</button>
+        <button class="icon-btn del-btn" onclick="deleteItem('shopping_list', '${data.id}')">✕</button>
+      </div>
+    `;
+    return div;
+  }
+
+  function renderTasks() {
+    const listEl = document.getElementById('tasks-list');
+    listEl.innerHTML = "";
+
+    let filtered = allTasks;
+    if (currentTaskFilter !== "הכל") {
+      filtered = allTasks.filter(t => t.assigned_to === currentTaskFilter || t.assigned_to === "כולם");
+    }
+
+    // מיון: קודם לא הושלמו, בתוכם דחופים למעלה
+    filtered.sort((a, b) => {
+      if (a.completed !== b.completed) return a.completed ? 1 : -1;
+      if (a.urgent !== b.urgent) return a.urgent ? -1 : 1;
+      return 0;
+    });
+
+    if (filtered.length === 0) {
+      listEl.innerHTML = `<div class="empty-state">אין משימות פתוחות בקטגוריה זו ✨</div>`;
+      return;
+    }
+
+    filtered.forEach(data => {
+      const div = document.createElement('div');
+      div.className = `item ${data.urgent && !data.completed ? 'urgent' : ''} ${data.completed ? 'done' : ''}`;
+      div.innerHTML = `
+        <div class="item-left" onclick="handleTaskToggle('${data.id}', ${!data.completed}, ${!!data.recurring})">
+          <input type="checkbox" class="checkbox" ${data.completed ? 'checked' : ''}>
+          <div class="item-main">
+            <span class="item-text">${escapeHtml(data.title)}</span>
+            <div class="meta-row">
+              <span class="badge badge-person">${escapeHtml(data.assigned_to || 'כולם')}</span>
+              ${data.urgent ? `<span class="badge badge-urgent">🔥 דחוף</span>` : ''}
+              ${data.recurring ? `<span class="badge badge-repeat">🔁 מחזורית</span>` : ''}
+              ${data.due_date ? `<span class="badge badge-date">📅 ${formatDate(data.due_date)}</span>` : ''}
+            </div>
+          </div>
+        </div>
+        <div class="actions">
+          ${data.completed && data.recurring ? `<button class="icon-btn" title="אפס משימה מחזורית" onclick="toggleItem('tasks', '${data.id}', false)">🔄</button>` : ''}
+          <button class="icon-btn del-btn" onclick="deleteItem('tasks', '${data.id}')">✕</button>
+        </div>
+      `;
+      listEl.appendChild(div);
+    });
+  }
+
+  // פעולות קניות
+  window.selectShopList = (type, el) => {
+    currentShopList = type;
+    document.querySelectorAll('#list-selector .chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    renderShopping();
+  };
+
   window.addShopping = async () => {
     const input = document.getElementById('shop-input');
-    const val = input.value.trim();
-    if (!val) return;
+    const qtyInput = document.getElementById('shop-qty');
+    const cat = document.getElementById('shop-cat').value;
+    const name = input.value.trim();
+    if (!name) return;
+
+    const qty = qtyInput.value.trim();
     input.value = "";
+    qtyInput.value = "";
+
     await addDoc(collection(db, "families", familyId, "shopping_list"), {
-      name: val,
+      name,
+      qty,
+      category: cat,
+      list_type: currentShopList,
       completed: false,
       created_at: serverTimestamp()
     });
   };
 
-  window.addTask = async () => {
-    const input = document.getElementById('task-input');
-    const assignee = document.getElementById('task-assignee').value;
-    const val = input.value.trim();
-    if (!val) return;
+  window.clearCompletedShopping = async () => {
+    const toDelete = allShoppingItems.filter(i => (i.list_type || "super") === currentShopList && i.completed);
+    for (const item of toDelete) {
+      await deleteDoc(doc(db, "families", familyId, "shopping_list", item.id));
+    }
+  };
+
+  // פעולות מועדפים
+  window.addFavorite = async () => {
+    const input = document.getElementById('fav-input');
+    const qtyInput = document.getElementById('fav-qty');
+    const cat = document.getElementById('fav-cat').value;
+    const name = input.value.trim();
+    if (!name) return;
+
+    const qty = qtyInput.value.trim();
     input.value = "";
-    await addDoc(collection(db, "families", familyId, "tasks"), {
-      title: val,
-      assigned_to: assignee,
+    qtyInput.value = "";
+
+    await addDoc(collection(db, "families", familyId, "favorites"), {
+      name,
+      qty,
+      category: cat,
+      created_at: serverTimestamp()
+    });
+  };
+
+  window.saveAsFavorite = async (name, qty, category) => {
+    await addDoc(collection(db, "families", familyId, "favorites"), {
+      name,
+      qty,
+      category,
+      created_at: serverTimestamp()
+    });
+    alert(`"${name}" נשמר במועדפים ⭐`);
+  };
+
+  window.quickAddFromFav = async (name, qty, category) => {
+    await addDoc(collection(db, "families", familyId, "shopping_list"), {
+      name,
+      qty,
+      category,
+      list_type: currentShopList,
       completed: false,
       created_at: serverTimestamp()
     });
+    switchTab('shopping');
+  };
+
+  // פעולות משימות
+  window.filterTasks = (person, el) => {
+    currentTaskFilter = person;
+    document.querySelectorAll('#task-filter-row .chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    renderTasks();
+  };
+
+  window.addTask = async () => {
+    const input = document.getElementById('task-input');
+    const assignee = document.getElementById('task-assignee').value;
+    const due = document.getElementById('task-due').value;
+    const urgent = document.getElementById('task-urgent').checked;
+    const recurring = document.getElementById('task-repeat').checked;
+
+    const title = input.value.trim();
+    if (!title) return;
+
+    input.value = "";
+    document.getElementById('task-due').value = "";
+    document.getElementById('task-urgent').checked = false;
+    document.getElementById('task-repeat').checked = false;
+
+    await addDoc(collection(db, "families", familyId, "tasks"), {
+      title,
+      assigned_to: assignee,
+      due_date: due,
+      urgent,
+      recurring,
+      completed: false,
+      created_at: serverTimestamp()
+    });
+  };
+
+  window.handleTaskToggle = async (id, newState, isRecurring) => {
+    await updateDoc(doc(db, "families", familyId, "tasks", id), { completed: newState });
   };
 
   window.toggleItem = async (col, id, state) => {
@@ -190,16 +671,26 @@
   };
 
   window.switchTab = (tab) => {
-    document.getElementById('tab-shopping').classList.toggle('active', tab === 'shopping');
-    document.getElementById('tab-tasks').classList.toggle('active', tab === 'tasks');
-    document.getElementById('view-shopping').classList.toggle('hidden', tab !== 'shopping');
-    document.getElementById('view-tasks').classList.toggle('hidden', tab !== 'tasks');
+    ['shopping', 'favorites', 'tasks'].forEach(t => {
+      document.getElementById(`view-${t}`).classList.toggle('hidden', t !== tab);
+      document.getElementById(`nav-${t}`).classList.toggle('active', t === tab);
+    });
   };
+
+  function formatDate(dateStr) {
+    if (!dateStr) return "";
+    const parts = dateStr.split("-");
+    return `${parts[2]}/${parts[1]}`;
+  }
 
   function escapeHtml(text) {
     const div = document.createElement('div');
-    div.textContent = text;
+    div.textContent = text || "";
     return div.innerHTML;
+  }
+
+  function escapeAttr(text) {
+    return (text || "").replace(/'/g, "\\'").replace(/"/g, """);
   }
 </script>
 </body>
