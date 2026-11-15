@@ -122,12 +122,12 @@
       border-radius: 18px;
       padding: 20px;
       width: 100%;
-      max-width: 360px;
+      max-width: 420px;
       box-shadow: 0 12px 32px rgba(0,0,0,0.2);
       text-align: center;
     }
     .modal-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; }
-    .modal-sub { font-size: 0.85rem; color: var(--muted); margin-bottom: 16px; }
+    .modal-sub { font-size: 0.85rem; color: var(--muted); margin-bottom: 14px; }
     .user-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
     .user-choice {
       padding: 12px;
@@ -189,7 +189,7 @@
       gap: 10px;
     }
     .row { display: flex; gap: 8px; flex-wrap: wrap; }
-    input, select {
+    input, select, textarea {
       padding: 11px 12px;
       border: 1px solid #cbd5e1;
       border-radius: 10px;
@@ -199,7 +199,8 @@
       color: var(--text);
       transition: border-color 0.2s, background-color 0.2s;
     }
-    input:focus, select:focus { border-color: var(--primary); background: white; }
+    textarea { resize: vertical; min-height: 76px; line-height: 1.45; }
+    input:focus, select:focus, textarea:focus { border-color: var(--primary); background: white; }
     select.auto-matched { border-color: var(--primary); background: #f0fdfa; }
     .grow { flex: 1; min-width: 140px; }
     .qty-input { width: 95px; }
@@ -214,6 +215,21 @@
       cursor: pointer;
     }
     button.btn-primary:active { background: var(--primary-dark); }
+
+    .smart-paste-btn {
+      background: #e0f2fe;
+      color: #0369a1;
+      border: 1px solid #bae6fd;
+      border-radius: 10px;
+      padding: 7px 12px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .smart-paste-btn:active { background: #0284c7; color: white; }
 
     .section-header {
       display: flex;
@@ -271,6 +287,7 @@
     .badge-repeat { background: #fef3c7; color: #b45309; }
     .badge-date { background: #f1f5f9; color: #475569; }
     .badge-reminder { background: #ede9fe; color: #5b21b6; }
+    .badge-recipe { background: #ccfbf1; color: #0f766e; }
 
     .actions { display: flex; align-items: center; gap: 2px; }
     .icon-btn { background: none; border: none; font-size: 1.05rem; cursor: pointer; padding: 6px; border-radius: 8px; color: var(--muted); }
@@ -305,6 +322,64 @@
     }
     .fav-add:active { background: var(--primary); color: white; }
 
+    .recipe-card {
+      background: white;
+      border-radius: 14px;
+      padding: 14px;
+      border: 1px solid var(--border);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .recipe-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+      cursor: pointer;
+    }
+    .recipe-title { font-size: 1.05rem; font-weight: 700; color: var(--text); }
+    .recipe-ingredients-box {
+      background: #f8fafc;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 0.88rem;
+      color: #334155;
+      line-height: 1.55;
+      white-space: pre-line;
+      border: 1px solid #e2e8f0;
+    }
+    .recipe-steps-box {
+      background: #fffbeb;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 0.88rem;
+      color: #451a03;
+      line-height: 1.55;
+      white-space: pre-line;
+      border: 1px solid #fde68a;
+    }
+    .recipe-footer {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .recipe-btn {
+      flex: 1;
+      background: #ccfbf1;
+      color: var(--primary-dark);
+      border: none;
+      padding: 8px 12px;
+      border-radius: 9px;
+      font-weight: 700;
+      font-size: 0.84rem;
+      cursor: pointer;
+      text-align: center;
+    }
+    .recipe-btn:active { background: var(--primary); color: white; }
+    .recipe-btn.secondary { background: #f1f5f9; color: #334155; flex: 0 0 auto; }
+
     .bottom-nav {
       position: fixed;
       bottom: 0;
@@ -322,7 +397,7 @@
       padding: 10px 4px;
       text-align: center;
       color: var(--muted);
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       font-weight: 600;
       cursor: pointer;
       display: flex;
@@ -330,7 +405,7 @@
       align-items: center;
       gap: 3px;
     }
-    .nav-item span.icon { font-size: 1.3rem; }
+    .nav-item span.icon { font-size: 1.25rem; }
     .nav-item.active { color: var(--primary); }
 
     .hidden { display: none !important; }
@@ -377,7 +452,22 @@
   </div>
 </div>
 
+<!-- חלונית הדבקה חכמה למתכונים -->
+<div class="modal-backdrop hidden" id="smart-paste-modal" onclick="if(event.target===this) closeSmartPasteModal()">
+  <div class="modal-card" style="text-align:right;">
+    <div class="modal-title" style="text-align:center;">📋 הדבקה חכמה של מתכון</div>
+    <div class="modal-sub" style="text-align:center;">הדבק כאן טקסט מלא של מתכון מוואטסאפ או מאתר, והמערכת תפריד לבד בין השם, המצרכים ואופן ההכנה</div>
+    <textarea id="smart-paste-raw" style="width:100%; min-height:165px; margin-bottom:10px;" placeholder="הדבק כאן את כל טקסט המתכון..."></textarea>
+    <div class="row" style="gap:8px;">
+      <button class="smart-paste-btn" style="flex:1; justify-content:center; padding:10px;" onclick="pasteFromClipboardToSmartModal()">📥 הדבק מהלוח</button>
+      <button class="btn-primary" style="flex:2;" onclick="applySmartRecipeParse()">✨ פרק ומלא שדות</button>
+    </div>
+    <button class="recipe-btn secondary" style="width:100%; margin-top:8px;" onclick="closeSmartPasteModal()">ביטול</button>
+  </div>
+</div>
+
 <div class="container">
+  <!-- טאב 1: רשימות קנייה -->
   <div id="view-shopping">
     <div class="chips-row" id="list-selector">
       <div class="chip active" onclick="selectShopList('super', this)">🛒 סופר</div>
@@ -414,6 +504,7 @@
     <div id="shopping-container"></div>
   </div>
 
+  <!-- טאב 2: מועדפים -->
   <div id="view-favorites" class="hidden">
     <div class="input-card">
       <div style="font-weight:700; font-size:0.95rem;">⭐ הוספת מוצר קבוע לרשימת המועדפים</div>
@@ -439,6 +530,41 @@
     <div class="fav-grid" id="favorites-list"></div>
   </div>
 
+  <!-- טאב 3: מתכונים -->
+  <div id="view-recipes" class="hidden">
+    <div class="chips-row" id="recipe-filter-row">
+      <div class="chip active" onclick="filterRecipes('הכל', this)">הכל</div>
+      <div class="chip" onclick="filterRecipes('ארוחות עיקריות', this)">🍲 עיקריות</div>
+      <div class="chip" onclick="filterRecipes('אפייה ולחמים', this)">🍕 אפייה ולחמים</div>
+      <div class="chip" onclick="filterRecipes('סלטים ותוספות', this)">🥗 סלטים ותוספות</div>
+      <div class="chip" onclick="filterRecipes('קינוחים', this)">🍰 קינוחים</div>
+      <div class="chip" onclick="filterRecipes('רטבים וממרחים', this)">🫙 רטבים</div>
+    </div>
+
+    <div class="input-card">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap;">
+        <div style="font-weight:700; font-size:0.95rem;">📖 הוספת מתכון משפחתי</div>
+        <button class="smart-paste-btn" onclick="openSmartPasteModal()">📋 הדבקה חכמה (מתכון שלם)</button>
+      </div>
+      <div class="row">
+        <input type="text" id="recipe-title" class="grow" placeholder="שם המתכון">
+        <select id="recipe-cat" style="min-width:145px;">
+          <option value="ארוחות עיקריות">🍲 ארוחות עיקריות</option>
+          <option value="אפייה ולחמים">🍕 אפייה ולחמים</option>
+          <option value="סלטים ותוספות">🥗 סלטים ותוספות</option>
+          <option value="קינוחים">🍰 קינוחים</option>
+          <option value="רטבים וממרחים">🫙 רטבים וממרחים</option>
+        </select>
+      </div>
+      <textarea id="recipe-ingredients" placeholder="מצרכים (שורה לכל מצרך)..."></textarea>
+      <textarea id="recipe-steps" placeholder="אופן ההכנה / הערות (אופציונלי)..." style="min-height:64px;"></textarea>
+      <button class="btn-primary" onclick="addRecipe()">+ שמור מתכון</button>
+    </div>
+
+    <div class="list" id="recipes-list"></div>
+  </div>
+
+  <!-- טאב 4: משימות בית -->
   <div id="view-tasks" class="hidden">
     <div class="chips-row" id="task-filter-row">
       <div class="chip active" onclick="filterTasks('הכל', this)">הכל</div>
@@ -489,60 +615,21 @@
 <nav class="bottom-nav">
   <div class="nav-item active" id="nav-shopping" onclick="switchTab('shopping')">
     <span class="icon">🛒</span>
-    <span>רשימות קנייה</span>
+    <span>רשימות</span>
   </div>
   <div class="nav-item" id="nav-favorites" onclick="switchTab('favorites')">
     <span class="icon">⭐</span>
     <span>מועדפים</span>
   </div>
+  <div class="nav-item" id="nav-recipes" onclick="switchTab('recipes')">
+    <span class="icon">📖</span>
+    <span>מתכונים</span>
+  </div>
   <div class="nav-item" id="nav-tasks" onclick="switchTab('tasks')">
     <span class="icon">✅</span>
-    <span>משימות בית</span>
+    <span>משימות</span>
   </div>
 </nav>
 
 <script>
   const firebaseConfig = {
-    apiKey: "AIzaSyCbFZpusl3t-e7AHg-Ulq2n2K-nKusgSuw",
-    authDomain: "aharoni-s-list.firebaseapp.com",
-    projectId: "aharoni-s-list",
-    storageBucket: "aharoni-s-list.firebasestorage.app",
-    messagingSenderId: "796491469055",
-    appId: "1:796491469055:web:d30e52773e76032c933cca"
-  };
-
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-  const db = firebase.firestore();
-  db.settings({ experimentalForceLongPolling: true });
-  const familyId = "aharoni_family_main";
-
-  let currentShopList = "super";
-  let currentTaskFilter = "הכל";
-  let selectedAssignees = ["כולם"];
-  let allShoppingItems = [];
-  let allFavorites = [];
-  let allTasks = [];
-  let toastTimeout = null;
-  let activeReminderTaskId = null;
-  let currentUser = (localStorage.getItem("aharoni_current_user") || "").trim();
-  let localSentReminders = {};
-  let manualCategoryChosen = { shop: false, fav: false };
-
-  updateProfileUI();
-
-  const categoryIcons = {
-    "ירקות ופירות": "🥦",
-    "מוצרי חלב וביצים": "🧀",
-    "בשר, עוף ודגים": "🥩",
-    "מאפים ולחם": "🥖",
-    "יבשים ומזווה": "🍝",
-    "ניקיון וטואלטיקה": "🧼",
-    "ביגוד והנעלה": "👕",
-    "ריהוט": "🛋️",
-    "כללי": "📦"
-  };
-
-  const categoryKeywords = {
-    "ירקות ופירות": [
-      "עגבני", "מלפפון", "
