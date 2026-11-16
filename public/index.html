@@ -113,6 +113,7 @@
     input:focus, select:focus, textarea:focus { border-color: var(--primary); background: white; }
     .grow { flex: 1; min-width: 140px; }
     .qty-input { width: 95px; }
+    
     button.btn-primary {
       background: var(--primary);
       color: white;
@@ -122,6 +123,11 @@
       font-size: 0.95rem;
       font-weight: 700;
       cursor: pointer;
+      transition: transform 0.1s ease, background-color 0.1s ease;
+    }
+    button.btn-primary:active {
+      transform: scale(0.96);
+      background: var(--primary-dark);
     }
 
     .section-header { display: flex; justify-content: space-between; align-items: center; margin: 16px 0 8px; }
@@ -194,7 +200,6 @@
       width: 100%;
     }
 
-    /* עיצוב אקורדיון למתכונים לפי קטגוריות */
     .recipe-accordion-cat {
       background: white;
       border-radius: 14px;
@@ -237,7 +242,6 @@
     .recipe-card:hover { background: #f1f5f9; border-color: var(--primary); }
     .recipe-card-title { font-size: 1.02rem; font-weight: 700; color: var(--text); }
     
-    /* כפתור מעוצב עם חץ בתוכו */
     .recipe-open-btn {
       background: #ccfbf1;
       color: var(--primary-dark);
@@ -253,9 +257,8 @@
       cursor: pointer;
       transition: 0.1s;
     }
-    .recipe-open-btn:active { transform: scale(0.95); background: #99f6e4; }
+    .recipe-open-btn:active { transform: scale(0.92); background: #99f6e4; }
 
-    /* מסך קריאה מלא (Fullscreen Reader) */
     #recipe-fullscreen-modal {
       position: fixed;
       inset: 0;
@@ -334,7 +337,6 @@
   </div>
 </header>
 
-<!-- מודל מסך מלא לקריאת מתכון -->
 <div id="recipe-fullscreen-modal" class="hidden">
   <div class="fullscreen-header">
     <button class="back-btn" onclick="closeFullscreenRecipe()">← חזרה לרשימה</button>
@@ -345,7 +347,7 @@
   </div>
   <div class="fullscreen-title" id="fs-recipe-title">שם המתכון</div>
   <div class="fullscreen-content" id="fs-recipe-content">תוכן המתכון...</div>
-  <button class="btn-primary" style="padding:14px; font-size:1.05rem;" id="fs-add-shopping-btn" onclick="">🛒 הוסף מצרכים לרשימת הקניות</button>
+  <button class="btn-primary" style="padding:14px; font-size:1.05rem;" id="fs-add-shopping-btn">🛒 הוסף מצרכים לרשימת הקניות</button>
 </div>
 
 <div class="modal-backdrop hidden" id="profile-modal" onclick="if(event.target===this) closeProfileModal()">
@@ -365,7 +367,6 @@
 </div>
 
 <div class="container">
-  <!-- טאב 1: רשימות קנייה -->
   <div id="view-shopping">
     <div class="chips-row" id="list-selector">
       <div class="chip active" onclick="selectShopList('super', this)">🛒 סופר</div>
@@ -402,7 +403,6 @@
     <div id="shopping-container"></div>
   </div>
 
-  <!-- טאב 2: מועדפים -->
   <div id="view-favorites" class="hidden">
     <div class="input-card">
       <div style="font-weight:700; font-size:0.95rem;">⭐ הוספת מוצר קבוע לרשימת המועדפים</div>
@@ -426,12 +426,10 @@
     <div class="fav-grid" id="favorites-list"></div>
   </div>
 
-  <!-- טאב 3: מתכונים -->
   <div id="view-recipes" class="hidden">
     <div class="input-card">
       <div style="font-weight:700; font-size:0.95rem;">🍲 הוספת מתכון חדש או צילום מסך</div>
       
-      <!-- בחירת צילום מסך מהגלריה או Google Photos במכשיר -->
       <label style="background:#e0f2fe; color:#0369a1; padding:10px 14px; border-radius:10px; font-size:0.9rem; font-weight:600; cursor:pointer; text-align:center; display:block;">
         📸 בחר צילום מסך של מתכון (מגלריה / Google Photos)
         <input type="file" accept="image/*" style="display:none;" onchange="handleImageUpload(event)">
@@ -455,7 +453,6 @@
     <div id="recipes-accordion-container"></div>
   </div>
 
-  <!-- טאב 4: משימות בית -->
   <div id="view-tasks" class="hidden">
     <div class="chips-row" id="task-filter-row">
       <div class="chip active" onclick="filterTasks('הכל', this)">הכל</div>
@@ -544,6 +541,7 @@
   let manualCategoryChosen = { shop: false, fav: false };
   let openRecipeCategories = {};
   let currentFontSizeLevel = 1;
+  let activeRecipeContent = "";
 
   updateProfileUI();
 
@@ -734,13 +732,15 @@
     const recipe = allRecipes.find(r => r.id === id);
     if (!recipe) return;
 
+    activeRecipeContent = recipe.content || "";
+
     document.getElementById('fs-recipe-title').innerText = recipe.title;
     document.getElementById('fs-recipe-content').innerHTML = formatRecipeContentForDisplay(recipe.content);
     document.getElementById('fs-delete-btn').setAttribute('onclick', `deleteItem('recipes', '${recipe.id}'); closeFullscreenRecipe();`);
     
-    // תיקון קריטי: העברת מחרוזת בטוחה ללחיצה על כפתור הוספת מצרכים
-    const safeContent = escapeAttr(recipe.content);
-    document.getElementById('fs-add-shopping-btn').setAttribute('onclick', `addRecipeToShopping('${safeContent}')`);
+    document.getElementById('fs-add-shopping-btn').onclick = function() {
+      addRecipeToShopping(activeRecipeContent);
+    };
     
     currentFontSizeLevel = 1;
     applyFontSize();
@@ -1015,15 +1015,16 @@
     switchTab('shopping');
   }
 
-  // פונקציית ייצוא מצרכים לרשימת קניות מתוקנת ומחוסנת
   function addRecipeToShopping(content) {
-    if (!content) return;
+    if (!content) {
+      alert("תוכן המתכון ריק.");
+      return;
+    }
     const lines = content.split('\n');
     let addedCount = 0;
     
     lines.forEach(line => {
       const cleanLine = line.trim();
-      // סינון שורות ריקות, כותרות, שלבים ממוספרים או מילות הפרדה
       if (!cleanLine || cleanLine.endsWith(':') || cleanLine.includes('מצרכים') || cleanLine.includes('הוראות') || cleanLine.includes('רכיבים') || cleanLine.includes('אופן הכנה') || /^\d+[\.\)]/.test(cleanLine)) return;
       
       const cat = detectCategoryFromText(cleanLine);
