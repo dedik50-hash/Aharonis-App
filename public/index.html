@@ -228,11 +228,56 @@
       border-radius: 10px;
       border: 1px solid var(--border);
       display: flex;
-      flex-direction: column;
-      gap: 8px;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      transition: 0.15s;
     }
-    .recipe-title { font-size: 1.02rem; font-weight: 700; color: var(--text); }
-    .recipe-content { font-size: 0.88rem; color: var(--muted); white-space: pre-line; background: white; padding: 10px; border-radius: 8px; border: 1px solid var(--border); max-height: 200px; overflow-y: auto; }
+    .recipe-card:hover { background: #f1f5f9; border-color: var(--primary); }
+    .recipe-card-title { font-size: 1.02rem; font-weight: 700; color: var(--text); }
+
+    /* מסך קריאה מלא (Fullscreen Reader) */
+    #recipe-fullscreen-modal {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      z-index: 70;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      padding: calc(16px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom));
+    }
+    .fullscreen-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 12px;
+    }
+    .back-btn {
+      background: white;
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    .fullscreen-title { font-size: 1.4rem; font-weight: 800; color: var(--primary-dark); margin-bottom: 16px; }
+    .fullscreen-content {
+      background: white;
+      padding: 20px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      font-size: 1.05rem;
+      line-height: 1.6;
+      white-space: pre-line;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      margin-bottom: 20px;
+    }
 
     .bottom-nav {
       position: fixed; bottom: 0; left: 0; right: 0; background: white;
@@ -257,6 +302,17 @@
     <div class="sync-pill" id="status">מתחבר...</div>
   </div>
 </header>
+
+<!-- מודל מסך מלא לקריאת מתכון -->
+<div id="recipe-fullscreen-modal" class="hidden">
+  <div class="fullscreen-header">
+    <button class="back-btn" onclick="closeFullscreenRecipe()">← חזרה לרשימה</button>
+    <button class="icon-btn del-btn" id="fs-delete-btn" onclick="" style="font-size:1.2rem;" title="מחק מתכון">🗑️</button>
+  </div>
+  <div class="fullscreen-title" id="fs-recipe-title">שם המתכון</div>
+  <div class="fullscreen-content" id="fs-recipe-content">תוכן המתכון...</div>
+  <button class="btn-primary" style="padding:14px; font-size:1rem;" id="fs-add-shopping-btn" onclick="">🛒 הוסף מצרכים לרשימת הקניות</button>
+</div>
 
 <div class="modal-backdrop hidden" id="profile-modal" onclick="if(event.target===this) closeProfileModal()">
   <div class="modal-card" style="background:white; border-radius:18px; padding:20px; width:100%; max-width:360px; margin:auto;">
@@ -336,21 +392,12 @@
     <div class="fav-grid" id="favorites-list"></div>
   </div>
 
-  <!-- טאב 3: מתכונים (מחולק לקטגוריות עם אקורדיון) -->
+  <!-- טאב 3: מתכונים (חילוץ אוטומטי ואקורדיון) -->
   <div id="view-recipes" class="hidden">
     <div class="input-card">
-      <div style="font-weight:700; font-size:0.95rem;">🍲 הוספת וייבוא מתכון</div>
-      <input type="text" id="recipe-title" placeholder="שם המתכון (למשל: עוגת שמרים)">
-      <select id="recipe-category">
-        <option value="בשר ודגים">🥩 בשר ודגים</option>
-        <option value="מאפים ולחמים">🥖 מאפים ולחמים</option>
-        <option value="עוגות וקינוחים">🍰 עוגות וקינוחים</option>
-        <option value="תבשילים ומרקים">🍲 תבשילים ומרקים</option>
-        <option value="סלטים ותוספות">🥗 סלטים ותוספות</option>
-        <option value="כללי">📦 כללי</option>
-      </select>
-      <textarea id="raw-recipe-text" rows="5" placeholder="הדבק כאן את תוכן המתכון המלא..."></textarea>
-      <button class="btn-primary" onclick="addRecipe()">שמור מתכון</button>
+      <div style="font-weight:700; font-size:0.95rem;">🍲 הוספת מתכון חדש</div>
+      <textarea id="raw-recipe-text" rows="5" placeholder="הדבק כאן את תוכן המתכון המלא (האפליקציה תזהה את השם והקטגוריה לבד)..."></textarea>
+      <button class="btn-primary" onclick="autoDetectAndAddRecipe()">✨ שמור וסדר אוטומטית</button>
     </div>
     <div id="recipes-accordion-container"></div>
   </div>
@@ -442,7 +489,7 @@
   let allTasks = [];
   let currentUser = (localStorage.getItem("aharoni_current_user") || "").trim();
   let manualCategoryChosen = { shop: false, fav: false };
-  let openRecipeCategories = {}; // שמירת מצב פתוח/סגור של קטגוריות מתכונים
+  let openRecipeCategories = {};
 
   updateProfileUI();
 
@@ -484,6 +531,17 @@
         if (clean.includes(kw)) return category;
       }
     }
+    return "כללי";
+  }
+
+  // מנוע זיהוי חכם לקטגוריית מתכון מתוך הטקסט
+  function detectRecipeCategory(text) {
+    const t = (text || "").toLowerCase();
+    if (t.includes("בשר") || t.includes("עוף") || t.includes("דג") || t.includes("שניצל") || t.includes("אנטריקוט")) return "בשר ודגים";
+    if (t.includes("לחם") || t.includes("פית") || t.includes("בייגל") || t.includes("פוקאצ") || t.includes("חלה") || t.includes("בצק")) return "מאפים ולחמים";
+    if (t.includes("עוג") || t.includes("שוקולד") || t.includes("קינוח") || t.includes("סוכר") || t.includes("קמח")) return "עוגות וקינוחים";
+    if (t.includes("מרק") || t.includes("תבשיל") || t.includes("סיר") || t.includes("רסק")) return "תבשילים ומרקים";
+    if (t.includes("סלט") || t.includes("רוטב") || t.includes("ירק")) return "סלטים ותוספות";
     return "כללי";
   }
 
@@ -557,11 +615,54 @@
       });
   }
 
+  // שמירה והשלמה אוטומטית של שם וקטגוריה למתכון
+  function autoDetectAndAddRecipe() {
+    const textInput = document.getElementById('raw-recipe-text');
+    const content = textInput.value.trim();
+    if (!content) return;
+
+    const lines = content.split('\n').map(l => l.trim()).filter(Boolean);
+    let title = "מתכון ללאชื่อ";
+    if (lines.length > 0) {
+      // לוקח את השורה הראשונה (או שורה שקרובה לה) בתור כותרת
+      title = lines[0].length > 45 ? lines[0].substring(0, 45) + "..." : lines[0];
+    }
+
+    const category = detectRecipeCategory(content);
+
+    db.collection("families").doc(familyId).collection("recipes").add({
+      title: title,
+      category: category,
+      content: content,
+      created_at: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    textInput.value = "";
+    openRecipeCategories[category] = true;
+  }
+
+  // פתיחת מתכון במסך מלא
+  function openFullscreenRecipe(id) {
+    const recipe = allRecipes.find(r => r.id === id);
+    if (!recipe) return;
+
+    document.getElementById('fs-recipe-title').innerText = recipe.title;
+    document.getElementById('fs-recipe-content').innerText = recipe.content;
+    document.getElementById('fs-delete-btn').setAttribute('onclick', `deleteItem('recipes', '${recipe.id}'); closeFullscreenRecipe();`);
+    document.getElementById('fs-add-shopping-btn').setAttribute('onclick', `addRecipeToShopping('${escapeAttr(recipe.content)}')`);
+    
+    document.getElementById('recipe-fullscreen-modal').classList.remove('hidden');
+  }
+
+  function closeFullscreenRecipe() {
+    document.getElementById('recipe-fullscreen-modal').classList.add('hidden');
+  }
+
   function renderRecipesAccordion() {
     const container = document.getElementById('recipes-accordion-container');
     container.innerHTML = "";
     if (allRecipes.length === 0) {
-      container.innerHTML = '<div class="empty-state">אין עדיין מתכונים שמורים. הוסיפו למעלה מתכון חדש!</div>';
+      container.innerHTML = '<div class="empty-state">אין עדיין מתכונים שמורים. הדבק למעלה מתכון חדש!</div>';
       return;
     }
 
@@ -592,13 +693,10 @@
         grouped[cat].forEach(d => {
           const card = document.createElement('div');
           card.className = "recipe-card";
+          card.onclick = () => openFullscreenRecipe(d.id);
           card.innerHTML = `
-            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-              <div class="recipe-title">${escapeHtml(d.title)}</div>
-              <button class="icon-btn del-btn" onclick="deleteItem('recipes', '${d.id}')">✕</button>
-            </div>
-            <div class="recipe-content">${escapeHtml(d.content)}</div>
-            <button class="btn-primary" style="margin-top:4px; font-size:0.85rem; padding:8px;" onclick="addRecipeToShopping('${escapeAttr(d.content || '')}')">🛒 הוסף מצרכים לרשימת הקניות</button>
+            <div class="recipe-card-title">📖 ${escapeHtml(d.title)}</div>
+            <span style="color:var(--muted); font-size:0.85rem;">לחץ לפתיחה מלאה ↗</span>
           `;
           body.appendChild(card);
         });
@@ -808,25 +906,6 @@
     switchTab('shopping');
   }
 
-  function addRecipe() {
-    const titleInput = document.getElementById('recipe-title');
-    const catSelect = document.getElementById('recipe-category');
-    const textInput = document.getElementById('raw-recipe-text');
-    const title = titleInput.value.trim();
-    const content = textInput.value.trim();
-    if (!title || !content) return;
-
-    db.collection("families").doc(familyId).collection("recipes").add({
-      title: title,
-      category: catSelect.value,
-      content: content,
-      created_at: firebase.firestore.FieldValue.serverTimestamp()
-    });
-    titleInput.value = "";
-    textInput.value = "";
-    openRecipeCategories[catSelect.value] = true; // פתיחה אוטומטית של הקטגוריה המעודכנת
-  }
-
   function addRecipeToShopping(content) {
     if (!content) return;
     const lines = content.split('\n');
@@ -843,6 +922,7 @@
         created_at: firebase.firestore.FieldValue.serverTimestamp()
       });
     });
+    closeFullscreenRecipe();
     switchTab('shopping');
   }
 
