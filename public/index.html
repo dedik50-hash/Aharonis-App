@@ -718,7 +718,6 @@
     openRecipeCategories[category] = true;
   }
 
-  // הדגשת מצרכים וכותרות בבולד
   function formatRecipeContentForDisplay(rawText) {
     const lines = (rawText || "").split('\n');
     return lines.map(line => {
@@ -738,7 +737,10 @@
     document.getElementById('fs-recipe-title').innerText = recipe.title;
     document.getElementById('fs-recipe-content').innerHTML = formatRecipeContentForDisplay(recipe.content);
     document.getElementById('fs-delete-btn').setAttribute('onclick', `deleteItem('recipes', '${recipe.id}'); closeFullscreenRecipe();`);
-    document.getElementById('fs-add-shopping-btn').setAttribute('onclick', `addRecipeToShopping('${escapeAttr(recipe.content)}')`);
+    
+    // תיקון קריטי: העברת מחרוזת בטוחה ללחיצה על כפתור הוספת מצרכים
+    const safeContent = escapeAttr(recipe.content);
+    document.getElementById('fs-add-shopping-btn').setAttribute('onclick', `addRecipeToShopping('${safeContent}')`);
     
     currentFontSizeLevel = 1;
     applyFontSize();
@@ -1013,6 +1015,7 @@
     switchTab('shopping');
   }
 
+  // פונקציית ייצוא מצרכים לרשימת קניות מתוקנת ומחוסנת
   function addRecipeToShopping(content) {
     if (!content) return;
     const lines = content.split('\n');
@@ -1020,7 +1023,8 @@
     
     lines.forEach(line => {
       const cleanLine = line.trim();
-      if (!cleanLine || cleanLine.endsWith(':') || cleanLine.includes('מצרכים') || cleanLine.includes('הוראות') || cleanLine.includes('רכיבים') || cleanLine.includes('אופן הכנה')) return;
+      // סינון שורות ריקות, כותרות, שלבים ממוספרים או מילות הפרדה
+      if (!cleanLine || cleanLine.endsWith(':') || cleanLine.includes('מצרכים') || cleanLine.includes('הוראות') || cleanLine.includes('רכיבים') || cleanLine.includes('אופן הכנה') || /^\d+[\.\)]/.test(cleanLine)) return;
       
       const cat = detectCategoryFromText(cleanLine);
       db.collection("families").doc(familyId).collection("shopping_list").add({
@@ -1119,7 +1123,7 @@
     return div.innerHTML;
   }
   function escapeAttr(text) {
-    return (text || "").split("'").join("\\'");
+    return (text || "").replace(/'/g, "\\'").replace(/"/g, '&quot;');
   }
 </script>
 </body>
