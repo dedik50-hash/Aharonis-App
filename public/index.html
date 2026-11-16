@@ -107,9 +107,9 @@
       outline: none;
       background: #f8fafc;
       color: var(--text);
+      width: 100%;
     }
     input:focus, select:focus, textarea:focus { border-color: var(--primary); background: white; }
-    select.auto-matched { border-color: var(--primary); background: #f0fdfa; }
     .grow { flex: 1; min-width: 140px; }
     .qty-input { width: 95px; }
     button.btn-primary {
@@ -266,14 +266,25 @@
       cursor: pointer;
       box-shadow: 0 1px 2px rgba(0,0,0,0.05);
     }
-    .fullscreen-title { font-size: 1.4rem; font-weight: 800; color: var(--primary-dark); margin-bottom: 16px; }
+    .fullscreen-actions { display: flex; gap: 8px; align-items: center; }
+    .font-size-btn {
+      background: white;
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 12px;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+    .fullscreen-title { font-size: 1.5rem; font-weight: 800; color: var(--primary-dark); margin-bottom: 16px; }
     .fullscreen-content {
       background: white;
-      padding: 20px;
+      padding: 22px;
       border-radius: 16px;
       border: 1px solid var(--border);
-      font-size: 1.05rem;
-      line-height: 1.6;
+      font-size: 1.12rem;
+      line-height: 1.7;
       white-space: pre-line;
       box-shadow: 0 2px 8px rgba(0,0,0,0.04);
       margin-bottom: 20px;
@@ -307,11 +318,14 @@
 <div id="recipe-fullscreen-modal" class="hidden">
   <div class="fullscreen-header">
     <button class="back-btn" onclick="closeFullscreenRecipe()">← חזרה לרשימה</button>
-    <button class="icon-btn del-btn" id="fs-delete-btn" onclick="" style="font-size:1.2rem;" title="מחק מתכון">🗑️</button>
+    <div class="fullscreen-actions">
+      <button class="font-size-btn" onclick="cycleFontSize()">🔤 גודל טקסט</button>
+      <button class="icon-btn del-btn" id="fs-delete-btn" onclick="" style="font-size:1.2rem;" title="מחק מתכון">🗑️</button>
+    </div>
   </div>
   <div class="fullscreen-title" id="fs-recipe-title">שם המתכון</div>
   <div class="fullscreen-content" id="fs-recipe-content">תוכן המתכון...</div>
-  <button class="btn-primary" style="padding:14px; font-size:1rem;" id="fs-add-shopping-btn" onclick="">🛒 הוסף מצרכים לרשימת הקניות</button>
+  <button class="btn-primary" style="padding:14px; font-size:1.05rem;" id="fs-add-shopping-btn" onclick="">🛒 הוסף מצרכים לרשימת הקניות</button>
 </div>
 
 <div class="modal-backdrop hidden" id="profile-modal" onclick="if(event.target===this) closeProfileModal()">
@@ -392,12 +406,23 @@
     <div class="fav-grid" id="favorites-list"></div>
   </div>
 
-  <!-- טאב 3: מתכונים (חילוץ אוטומטי ואקורדיון) -->
+  <!-- טאב 3: מתכונים -->
   <div id="view-recipes" class="hidden">
     <div class="input-card">
       <div style="font-weight:700; font-size:0.95rem;">🍲 הוספת מתכון חדש</div>
-      <textarea id="raw-recipe-text" rows="5" placeholder="הדבק כאן את תוכן המתכון המלא (האפליקציה תזהה את השם והקטגוריה לבד)..."></textarea>
-      <button class="btn-primary" onclick="autoDetectAndAddRecipe()">✨ שמור וסדר אוטומטית</button>
+      <textarea id="raw-recipe-text" rows="5" placeholder="הדבק כאן את תוכן המתכון המלא..."></textarea>
+      
+      <div class="row">
+        <select id="recipe-category-select" class="grow">
+          <option value="בשר ודגים">🥩 בשר ודגים</option>
+          <option value="מאפים ולחמים">🥖 מאפים ולחמים</option>
+          <option value="עוגות וקינוחים">🍰 עוגות וקינוחים</option>
+          <option value="תבשילים ומרקים">🍲 תבשילים ומרקים</option>
+          <option value="סלטים ותוספות">🥗 סלטים ותוספות</option>
+          <option value="כללי">📦 כללי</option>
+        </select>
+        <button class="btn-primary" onclick="addRecipeWithCategory()">✨ שמור מתכון</button>
+      </div>
     </div>
     <div id="recipes-accordion-container"></div>
   </div>
@@ -490,6 +515,7 @@
   let currentUser = (localStorage.getItem("aharoni_current_user") || "").trim();
   let manualCategoryChosen = { shop: false, fav: false };
   let openRecipeCategories = {};
+  let currentFontSizeLevel = 1; // 1: רגיל, 2: גדול, 3: ענק
 
   updateProfileUI();
 
@@ -534,7 +560,6 @@
     return "כללי";
   }
 
-  // מנוע זיהוי חכם לקטגוריית מתכון מתוך הטקסט
   function detectRecipeCategory(text) {
     const t = (text || "").toLowerCase();
     if (t.includes("בשר") || t.includes("עוף") || t.includes("דג") || t.includes("שניצל") || t.includes("אנטריקוט")) return "בשר ודגים";
@@ -615,20 +640,21 @@
       });
   }
 
-  // שמירה והשלמה אוטומטית של שם וקטגוריה למתכון
-  function autoDetectAndAddRecipe() {
+  // הוספת מתכון עם קטגוריה שנבחרה או זוהתה אוטומטית
+  function addRecipeWithCategory() {
     const textInput = document.getElementById('raw-recipe-text');
+    const catSelect = document.getElementById('recipe-category-select');
     const content = textInput.value.trim();
     if (!content) return;
 
     const lines = content.split('\n').map(l => l.trim()).filter(Boolean);
-    let title = "מתכון ללאชื่อ";
+    let title = "מתכון חדש";
     if (lines.length > 0) {
-      // לוקח את השורה הראשונה (או שורה שקרובה לה) בתור כותרת
       title = lines[0].length > 45 ? lines[0].substring(0, 45) + "..." : lines[0];
     }
 
-    const category = detectRecipeCategory(content);
+    // אם המשתמש לא שינה ידנית, ננסה לזהות אוטומטית, ואם לא - ניקח מהתפריט
+    const category = detectRecipeCategory(content) || catSelect.value;
 
     db.collection("families").doc(familyId).collection("recipes").add({
       title: title,
@@ -641,21 +667,52 @@
     openRecipeCategories[category] = true;
   }
 
-  // פתיחת מתכון במסך מלא
+  // פורמט טקסט מתכון: הדגשת מצרכים ושלבים ממוספרים ב-בולד
+  function formatRecipeContentForDisplay(rawText) {
+    const lines = (rawText || "").split('\n');
+    return lines.map(line => {
+      const l = line.trim();
+      if (!l) return "";
+      // זיהוי שלב ממוספר (למשל "1.", "2." או "שלב 1") או כותרת מצרכים
+      if (/^(\d+[\.\)]|שלב\s*\d+|מצרכים:|הוראות:|אופן ההכנה:)/.test(l)) {
+        return `<strong>${escapeHtml(l)}</strong>`;
+      }
+      return escapeHtml(l);
+    }).join('<br>');
+  }
+
   function openFullscreenRecipe(id) {
     const recipe = allRecipes.find(r => r.id === id);
     if (!recipe) return;
 
     document.getElementById('fs-recipe-title').innerText = recipe.title;
-    document.getElementById('fs-recipe-content').innerText = recipe.content;
+    document.getElementById('fs-recipe-content').innerHTML = formatRecipeContentForDisplay(recipe.content);
     document.getElementById('fs-delete-btn').setAttribute('onclick', `deleteItem('recipes', '${recipe.id}'); closeFullscreenRecipe();`);
     document.getElementById('fs-add-shopping-btn').setAttribute('onclick', `addRecipeToShopping('${escapeAttr(recipe.content)}')`);
     
+    currentFontSizeLevel = 1;
+    applyFontSize();
     document.getElementById('recipe-fullscreen-modal').classList.remove('hidden');
   }
 
   function closeFullscreenRecipe() {
     document.getElementById('recipe-fullscreen-modal').classList.add('hidden');
+  }
+
+  function cycleFontSize() {
+    currentFontSizeLevel = (currentFontSizeLevel % 3) + 1;
+    applyFontSize();
+  }
+
+  function applyFontSize() {
+    const contentEl = document.getElementById('fs-recipe-content');
+    if (currentFontSizeLevel === 1) {
+      contentEl.style.fontSize = "1.12rem";
+    } else if (currentFontSizeLevel === 2) {
+      contentEl.style.fontSize = "1.3rem";
+    } else {
+      contentEl.style.fontSize = "1.5rem";
+    }
   }
 
   function renderRecipesAccordion() {
