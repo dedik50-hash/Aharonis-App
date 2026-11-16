@@ -7,8 +7,6 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#0f766e">
-  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='110' fill='%230d9488'/%3E%3Cpath d='M256 112L96 248h48v152h224V248h48L256 112zm-32 232l-56-56 22-22 34 34 86-86 22 22-108 108z' fill='%23ffffff'/%3E%3C/svg%3E">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='110' fill='%230d9488'/%3E%3Cpath d='M256 112L96 248h48v152h224V248h48L256 112zm-32 232l-56-56 22-22 34 34 86-86 22 22-108 108z' fill='%23ffffff'/%3E%3C/svg%3E">
   
   <script src="/__/firebase/10.12.2/firebase-app-compat.js"></script>
   <script src="/__/firebase/10.12.2/firebase-auth-compat.js"></script>
@@ -28,15 +26,6 @@
     * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
     body { margin: 0; background: var(--bg); color: var(--text); padding-bottom: calc(84px + env(safe-area-inset-bottom)); }
     
-    #celebration-canvas {
-      position: fixed;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: 100;
-    }
-
     header {
       background: linear-gradient(135deg, var(--primary-dark), var(--primary));
       color: white;
@@ -65,85 +54,8 @@
     }
     .sync-pill { font-size: 0.72rem; background: rgba(255,255,255,0.18); padding: 4px 8px; border-radius: 20px; white-space: nowrap; }
 
-    .toast-banner {
-      position: fixed;
-      top: calc(64px + env(safe-area-inset-top));
-      left: 50%;
-      transform: translateX(-50%) translateY(-20px);
-      background: #1e293b;
-      color: white;
-      padding: 12px 16px;
-      border-radius: 14px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.25);
-      z-index: 50;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      font-size: 0.92rem;
-      font-weight: 600;
-      width: 92%;
-      max-width: 420px;
-      opacity: 0;
-      pointer-events: none;
-      transition: all 0.25s ease;
-      border-right: 4px solid #f59e0b;
-    }
-    .toast-banner.show {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-      pointer-events: auto;
-    }
-    .toast-main { display: flex; align-items: center; gap: 10px; }
-    .toast-actions { display: flex; gap: 8px; justify-content: flex-end; }
-    .toast-btn {
-      background: rgba(255,255,255,0.18);
-      color: white;
-      border: none;
-      padding: 5px 10px;
-      border-radius: 8px;
-      font-size: 0.78rem;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    .toast-btn.primary { background: var(--primary); }
-
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(15, 23, 42, 0.55);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 60;
-      padding: 16px;
-    }
-    .modal-card {
-      background: white;
-      border-radius: 18px;
-      padding: 20px;
-      width: 100%;
-      max-width: 360px;
-      box-shadow: 0 12px 32px rgba(0,0,0,0.2);
-      text-align: center;
-    }
-    .modal-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; }
-    .modal-sub { font-size: 0.85rem; color: var(--muted); margin-bottom: 16px; }
-    .user-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
-    .user-choice {
-      padding: 12px;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      background: #f8fafc;
-      font-size: 0.95rem;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    .user-choice.selected { background: var(--primary); color: white; border-color: var(--primary); }
-
     .container { max-width: 640px; margin: 0 auto; padding: 14px; }
-
     .chips-row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 10px; scrollbar-width: none; }
-    .chips-row::-webkit-scrollbar { display: none; }
     .chip {
       background: white;
       border: 1px solid var(--border);
@@ -154,29 +66,8 @@
       font-weight: 600;
       white-space: nowrap;
       cursor: pointer;
-      transition: 0.15s;
     }
     .chip.active { background: var(--primary); color: white; border-color: var(--primary); }
-
-    .assignee-picker { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-    .assignee-label { font-size: 0.82rem; color: var(--muted); font-weight: 600; margin-left: 4px; }
-    .pick-chip {
-      background: #f8fafc;
-      border: 1px solid #cbd5e1;
-      color: var(--text);
-      padding: 6px 12px;
-      border-radius: 16px;
-      font-size: 0.84rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: 0.15s;
-      user-select: none;
-    }
-    .pick-chip.selected {
-      background: #0ea5e9;
-      color: white;
-      border-color: #0284c7;
-    }
 
     .input-card {
       background: var(--card);
@@ -197,10 +88,7 @@
       outline: none;
       background: #f8fafc;
       color: var(--text);
-      transition: border-color 0.2s, background-color 0.2s;
     }
-    input:focus, select:focus { border-color: var(--primary); background: white; }
-    select.auto-matched { border-color: var(--primary); background: #f0fdfa; }
     .grow { flex: 1; min-width: 140px; }
     .qty-input { width: 95px; }
     button.btn-primary {
@@ -213,34 +101,6 @@
       font-weight: 700;
       cursor: pointer;
     }
-    button.btn-primary:active { background: var(--primary-dark); }
-
-    .section-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin: 16px 0 8px;
-    }
-    .cat-title {
-      font-size: 0.85rem;
-      font-weight: 700;
-      color: var(--primary-dark);
-      margin: 14px 4px 6px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .clear-btn {
-      background: #fee2e2;
-      color: #b91c1c;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 8px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      cursor: pointer;
-    }
-
     .list { display: flex; flex-direction: column; gap: 8px; }
     .item {
       background: var(--card);
@@ -250,135 +110,37 @@
       align-items: center;
       justify-content: space-between;
       box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-      border-right: 4px solid transparent;
-      transition: transform 0.15s ease;
     }
-    .item.urgent { border-right-color: var(--danger); }
     .item.done { opacity: 0.6; }
     .item.done .item-text { text-decoration: line-through; color: var(--muted); }
-    
     .item-left { display: flex; align-items: center; gap: 12px; flex: 1; cursor: pointer; }
     .checkbox { width: 22px; height: 22px; accent-color: var(--primary); cursor: pointer; flex-shrink: 0; }
-    .item-main { display: flex; flex-direction: column; gap: 4px; }
-    .item-title-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
     .item-text { font-size: 1rem; font-weight: 500; }
     .qty-badge { background: #f1f5f9; color: #334155; font-size: 0.78rem; padding: 2px 8px; border-radius: 6px; font-weight: 600; }
-    .meta-row { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; }
     
-    .badge { font-size: 0.74rem; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
-    .badge-person { background: #e0f2fe; color: #0369a1; }
-    .badge-urgent { background: #fee2e2; color: #b91c1c; }
-    .badge-repeat { background: #fef3c7; color: #b45309; }
-    .badge-date { background: #f1f5f9; color: #475569; }
-    .badge-reminder { background: #ede9fe; color: #5b21b6; }
-
-    .actions { display: flex; align-items: center; gap: 2px; }
-    .icon-btn { background: none; border: none; font-size: 1.05rem; cursor: pointer; padding: 6px; border-radius: 8px; color: var(--muted); }
-    .icon-btn:active { background: #f1f5f9; }
-    .del-btn { color: var(--danger); }
-
-    .fav-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)); gap: 10px; }
-    .fav-card {
-      background: white;
-      padding: 12px;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      gap: 8px;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
-    }
-    .fav-top { display: flex; justify-content: space-between; align-items: flex-start; }
-    .fav-name { font-weight: 600; font-size: 0.95rem; }
-    .fav-cat { font-size: 0.75rem; color: var(--muted); }
-    .fav-add {
-      background: #ccfbf1;
-      color: var(--primary-dark);
-      border: none;
-      padding: 7px;
-      border-radius: 8px;
-      font-weight: 700;
-      font-size: 0.85rem;
-      cursor: pointer;
-      width: 100%;
-    }
-    .fav-add:active { background: var(--primary); color: white; }
-
     .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: white;
-      border-top: 1px solid var(--border);
-      display: flex;
-      padding-bottom: env(safe-area-inset-bottom);
-      z-index: 30;
-      box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+      position: fixed; bottom: 0; left: 0; right: 0; background: white;
+      border-top: 1px solid var(--border); display: flex; padding-bottom: env(safe-area-inset-bottom); z-index: 30;
     }
     .nav-item {
-      flex: 1;
-      padding: 10px 4px;
-      text-align: center;
-      color: var(--muted);
-      font-size: 0.78rem;
-      font-weight: 600;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 3px;
+      flex: 1; padding: 10px 4px; text-align: center; color: var(--muted); font-size: 0.78rem; font-weight: 600; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px;
     }
     .nav-item span.icon { font-size: 1.25rem; }
     .nav-item.active { color: var(--primary); }
-
     .hidden { display: none !important; }
     .empty-state { text-align: center; color: var(--muted); padding: 32px 16px; font-size: 0.95rem; }
-    .checkbox-label { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; color: var(--text); cursor: pointer; background: #f8fafc; padding: 8px 10px; border-radius: 8px; border: 1px solid #cbd5e1; user-select: none; }
   </style>
 </head>
 <body>
 
-<canvas id="celebration-canvas"></canvas>
-
 <header>
   <h1>🏡 משפחת אהרוני-מרלנג'ון</h1>
   <div class="header-actions">
-    <button class="profile-btn" id="profile-btn" onclick="openProfileModal()">👤 מי אני?</button>
     <div class="sync-pill" id="status">מתחבר...</div>
   </div>
 </header>
 
-<div class="toast-banner" id="toast-banner">
-  <div class="toast-main" onclick="switchTab('tasks'); hideToast();" style="cursor:pointer;">
-    <span style="font-size:1.3rem;">⏰</span>
-    <span id="toast-text">תזכורת למשימה!</span>
-  </div>
-  <div class="toast-actions hidden" id="toast-reminder-actions">
-    <button class="toast-btn" onclick="snoozeActiveReminder(15)">💤 נודניק 15 דק'</button>
-    <button class="toast-btn primary" onclick="switchTab('tasks'); hideToast();">למשימות</button>
-  </div>
-</div>
-
-<div class="modal-backdrop hidden" id="profile-modal" onclick="if(event.target===this) closeProfileModal()">
-  <div class="modal-card">
-    <div class="modal-title">מי משתמש במכשיר הזה?</div>
-    <div class="modal-sub">התזכורות יקפצו אך ורק עבור משימות שהוקצו למשתמש שנבחר כאן</div>
-    <div class="user-grid" id="user-grid">
-      <button class="user-choice" onclick="selectUserProfile('עודד')">עודד</button>
-      <button class="user-choice" onclick="selectUserProfile('מיה')">מיה</button>
-      <button class="user-choice" onclick="selectUserProfile('טליה')">טליה</button>
-      <button class="user-choice" onclick="selectUserProfile('דוד')">דוד</button>
-      <button class="user-choice" onclick="selectUserProfile('יאיר')">יאיר</button>
-      <button class="user-choice" onclick="selectUserProfile('')">ללא התראות</button>
-    </div>
-    <button class="btn-primary" style="width:100%;" onclick="closeProfileModal()">סגור</button>
-  </div>
-</div>
-
 <div class="container">
-  <!-- טאב 1: רשימות קנייה -->
   <div id="view-shopping">
     <div class="chips-row" id="list-selector">
       <div class="chip active" onclick="selectShopList('super', this)">🛒 סופר</div>
@@ -388,103 +150,31 @@
 
     <div class="input-card">
       <div class="row">
-        <input type="text" id="shop-input" class="grow" placeholder="מה צריך לקנות?" oninput="autoDetectCategory('shop-input', 'shop-cat', 'shop')" onkeypress="if(event.key==='Enter') addShopping()">
-        <input type="text" id="shop-qty" class="qty-input" placeholder="כמות/הערה" onkeypress="if(event.key==='Enter') addShopping()">
+        <input type="text" id="shop-input" class="grow" placeholder="מה צריך לקנות?" onkeypress="if(event.key==='Enter') addShopping()">
+        <input type="text" id="shop-qty" class="qty-input" placeholder="כמות" onkeypress="if(event.key==='Enter') addShopping()">
       </div>
       <div class="row">
-        <select id="shop-cat" class="grow" onchange="manualCategoryChosen['shop'] = true; this.classList.remove('auto-matched')">
+        <select id="shop-cat" class="grow">
           <option value="ירקות ופירות">🥦 ירקות ופירות</option>
           <option value="מוצרי חלב וביצים">🧀 מוצרי חלב וביצים</option>
           <option value="בשר, עוף ודגים">🥩 בשר, עוף ודגים</option>
           <option value="מאפים ולחם">🥖 מאפים ולחם</option>
           <option value="יבשים ומזווה">🍝 יבשים ומזווה</option>
           <option value="ניקיון וטואלטיקה">🧼 ניקיון וטואלטיקה</option>
-          <option value="ביגוד והנעלה">👕 ביגוד והנעלה</option>
-          <option value="ריהוט">🛋️ ריהוט</option>
           <option value="כללי">📦 כללי</option>
         </select>
         <button class="btn-primary" onclick="addShopping()">+ הוסף</button>
       </div>
     </div>
 
-    <div class="section-header" id="shop-actions-bar">
-      <span style="font-size:0.85rem; color:var(--muted);" id="shop-counter">0 פריטים</span>
-      <button class="clear-btn hidden" id="clear-done-btn" onclick="clearCompletedShopping()">🗑️ נקה פריטים שנקנו</button>
-    </div>
-
     <div id="shopping-container"></div>
   </div>
 
-  <!-- טאב 2: מועדפים -->
-  <div id="view-favorites" class="hidden">
-    <div class="input-card">
-      <div style="font-weight:700; font-size:0.95rem;">⭐ הוספת מוצר קבוע לרשימת המועדפים</div>
-      <div class="row">
-        <input type="text" id="fav-input" class="grow" placeholder="שם המוצר (למשל: חלב 3%)" oninput="autoDetectCategory('fav-input', 'fav-cat', 'fav')" onkeypress="if(event.key==='Enter') addFavorite()">
-        <input type="text" id="fav-qty" class="qty-input" placeholder="כמות קבועה">
-      </div>
-      <div class="row">
-        <select id="fav-cat" class="grow" onchange="manualCategoryChosen['fav'] = true; this.classList.remove('auto-matched')">
-          <option value="ירקות ופירות">🥦 ירקות ופירות</option>
-          <option value="מוצרי חלב וביצים">🧀 מוצרי חלב וביצים</option>
-          <option value="בשר, עוף ודגים">🥩 בשר, עוף ודגים</option>
-          <option value="מאפים ולחם">🥖 מאפים ולחם</option>
-          <option value="יבשים ומזווה">🍝 יבשים ומזווה</option>
-          <option value="ניקיון וטואלטיקה">🧼 ניקיון וטואלטיקה</option>
-          <option value="ביגוד והנעלה">👕 ביגוד והנעלה</option>
-          <option value="ריהוט">🛋️ ריהוט</option>
-          <option value="כללי">📦 כללי</option>
-        </select>
-        <button class="btn-primary" onclick="addFavorite()">שמור במועדפים</button>
-      </div>
-    </div>
-    <div class="fav-grid" id="favorites-list"></div>
-  </div>
-
-  <!-- טאב 3: משימות בית -->
   <div id="view-tasks" class="hidden">
-    <div class="chips-row" id="task-filter-row">
-      <div class="chip active" onclick="filterTasks('הכל', this)">הכל</div>
-      <div class="chip" onclick="filterTasks('עודד', this)">עודד</div>
-      <div class="chip" onclick="filterTasks('מיה', this)">מיה</div>
-      <div class="chip" onclick="filterTasks('טליה', this)">טליה</div>
-      <div class="chip" onclick="filterTasks('דוד', this)">דוד</div>
-      <div class="chip" onclick="filterTasks('יאיר', this)">יאיר</div>
-    </div>
-
     <div class="input-card">
       <input type="text" id="task-input" placeholder="מה המשימה?" onkeypress="if(event.key==='Enter') addTask()">
-      
-      <div class="assignee-picker" id="task-assignee-picker">
-        <span class="assignee-label">אחראים:</span>
-        <span class="pick-chip selected" data-name="כולם" onclick="toggleAssignee('כולם')">כולם</span>
-        <span class="pick-chip" data-name="עודד" onclick="toggleAssignee('עודד')">עודד</span>
-        <span class="pick-chip" data-name="מיה" onclick="toggleAssignee('מיה')">מיה</span>
-        <span class="pick-chip" data-name="טליה" onclick="toggleAssignee('טליה')">טליה</span>
-        <span class="pick-chip" data-name="דוד" onclick="toggleAssignee('דוד')">דוד</span>
-        <span class="pick-chip" data-name="יאיר" onclick="toggleAssignee('יאיר')">יאיר</span>
-      </div>
-
-      <div class="row" style="align-items:center;">
-        <div style="display:flex; align-items:center; gap:6px; flex:1; min-width:140px;">
-          <span style="font-size:0.82rem; color:var(--muted); font-weight:600;">📅 יעד:</span>
-          <input type="date" id="task-due" title="תאריך יעד" style="padding:8px 10px; font-size:0.85rem; flex:1;">
-        </div>
-        <label class="checkbox-label">
-          <input type="checkbox" id="task-enable-reminder" onchange="toggleReminderInput()"> ⏰ תזכורת
-        </label>
-        <input type="time" id="task-time" class="hidden" title="שעת תזכורת" style="padding:8px 10px; font-size:0.85rem;">
-      </div>
-
-      <div class="row" style="justify-content:space-between; align-items:center;">
-        <div class="row">
-          <label class="checkbox-label"><input type="checkbox" id="task-urgent"> 🔥 דחוף</label>
-          <label class="checkbox-label"><input type="checkbox" id="task-repeat"> 🔁 מחזורית</label>
-        </div>
-        <button class="btn-primary" onclick="addTask()">+ הוסף משימה</button>
-      </div>
+      <button class="btn-primary" onclick="addTask()">+ הוסף משימה</button>
     </div>
-
     <div class="list" id="tasks-list"></div>
   </div>
 </div>
@@ -493,10 +183,6 @@
   <div class="nav-item active" id="nav-shopping" onclick="switchTab('shopping')">
     <span class="icon">🛒</span>
     <span>רשימות</span>
-  </div>
-  <div class="nav-item" id="nav-favorites" onclick="switchTab('favorites')">
-    <span class="icon">⭐</span>
-    <span>מועדפים</span>
   </div>
   <div class="nav-item" id="nav-tasks" onclick="switchTab('tasks')">
     <span class="icon">✅</span>
@@ -514,6 +200,7 @@
     appId: "1:796491469055:web:d30e52773e76032c933cca"
   };
 
+  // אתחול בטוח שמונע שגיאות כפילות
   if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
   }
@@ -523,135 +210,11 @@
   const familyId = "aharoni_family_main";
 
   let currentShopList = "super";
-  let currentTaskFilter = "הכל";
-  let selectedAssignees = ["כולם"];
   let allShoppingItems = [];
-  let allFavorites = [];
   let allTasks = [];
-  let toastTimeout = null;
-  let activeReminderTaskId = null;
-  let currentUser = (localStorage.getItem("aharoni_current_user") || "").trim();
-  let localSentReminders = {};
-  let manualCategoryChosen = { shop: false, fav: false };
-
-  updateProfileUI();
-
-  const categoryIcons = {
-    "ירקות ופירות": "🥦",
-    "מוצרי חלב וביצים": "🧀",
-    "בשר, עוף ודגים": "🥩",
-    "מאפים ולחם": "🥖",
-    "יבשים ומזווה": "🍝",
-    "ניקיון וטואלטיקה": "🧼",
-    "ביגוד והנעלה": "👕",
-    "ריהוט": "🛋️",
-    "כללי": "📦"
-  };
-
-  const categoryKeywords = {
-    "ירקות ופירות": [
-      "עגבני", "מלפפון", "פלפל", "גמבה", "בצל", "שום", "תפוח אדמה", "תפו\"א", "גזר", "קישוא", "חציל",
-      "חסה", "כרוב", "כרובית", "ברוקולי", "פטריות", "אבוקדו", "לימון", "תפוז", "קלמנטינ", "בננה", "בננות",
-      "תפוח", "אגס", "אפרסק", "נקטרינ", "שזיף", "ענבים", "אבטיח", "מלון", "תות", "מנגו", "אפרסמון", "רימון",
-      "פטרוזילי", "כוסבר", "שמיר", "נענע", "בזיליקום", "רוקט", "תרד", "בטטה", "סלק", "צנונית", "קולורבי",
-      "שעועית ירוקה", "אפונה", "תירס", "ג'ינג'ר", "זנגביל", "ירק", "פרי", "פירות", "אננס", "קיווי", "פומלה", "אשכולית"
-    ],
-    "מוצרי חלב וביצים": [
-      "חלב", "גבינ", "קוטג", "שמנת", "יוגורט", "אשל", "גיל", "לבן", "מעדן", "מילקי", "דני", "חמאה",
-      "ביצים", "ביצה", "צהובה", "מוצרלה", "בולגרית", "פטה", "צפתית", "ריקוטה", "לאבנה", "שוקו", "טופו", "סויה", "שיבולת שועל"
-    ],
-    "בשר, עוף ודגים": [
-      "עוף", "חזה עוף", "שניצל", "כרעיים", "שוקיים", "כנפיים", "פרגית", "פרגיות", "הודו", "בשר", "טחון",
-      "אנטריקוט", "סינטה", "פילה", "אסאדו", "שפונדרה", "בריסקט", "צוואר", "קציצות", "המבורגר", "נקניק",
-      "פסטרמה", "סלמי", "דג", "סלמון", "אמנון", "מושט", "דניס", "לברק", "בורי", "טונה טרי", "קבאב", "קבב", "סטייק"
-    ],
-    "מאפים ולחם": [
-      "לחם", "פיתה", "פיתות", "לחמני", "חלה", "באגט", "טורטיה", "טורטיות", "בורקס", "קרואסון", "עוגה",
-      "עוגיות", "רוגלך", "מאפה", "קרקר", "פריכיות", "ג'בטה", "ג׳בטה", "פוקאצ", "בייגל"
-    ],
-    "יבשים ומזווה": [
-      "פסטה", "ספגטי", "פנה", "פתיתים", "אורז", "קוסקוס", "בורגול", "קינואה", "עדשים", "חומוס", "שעועית",
-      "קמח", "סוכר", "מלח", "שמן", "זיתים", "טחינה", "רסק", "עגבניות מרוסקות", "שימורים", "טונה", "תבלין",
-      "פפריקה", "כמון", "כורכום", "פלפל שחור", "קפה", "נס קפה", "תה", "קקאו", "שוקולד", "ממרח", "נוטלה",
-      "חמאת בוטנים", "ריבה", "דבש", "סילאן", "מייפל", "דגני בוקר", "קורנפלקס", "גרנולה", "שיבולת", "אגוזים",
-      "שקדים", "צימוקים", "חטיף", "במבה", "ביסלי", "צ'יפס", "ביסקוויט", "פתי בר", "רוטב", "סויה", "קטשופ", "מיונז", "חרדל", "חומץ", "יין", "בירה", "שמרים"
-    ],
-    "ניקיון וטואלטיקה": [
-      "סבון", "שמפו", "מרכך", "קונדישנר", "משחת שיניים", "מברשת שיניים", "דאודורנט", "בושם", "קרם",
-      "נייר טואלט", "מגבונים", "טישו", "מגבות נייר", "נייר סופג", "אקונומיקה", "נוזל כלים", "טבליות למדיח",
-      "אבקת כביסה", "ג'ל כביסה", "מרכך כביסה", "ספוג", "סקוץ", "שקיות אשפה", "שקיות זבל", "ניילון נצמד",
-      "נייר אפייה", "נייר כסף", "חומר ניקוי", "מנקה חלונות", "מטליות", "אסלה", "תחבושות", "טמפונים", "סכין גילוח", "קצף גילוח"
-    ],
-    "ביגוד והנעלה": [
-      "חולצ", "מכנס", "ג'ינס", "ג׳ינס", "שמלה", "חצאית", "סוודר", "קפוצ'ון", "קפוצ׳ון", "מעיל", "ז'קט",
-      "גרביים", "גרב", "תחתונים", "חזייה", "פיג'מה", "פיג׳מה", "בגד ים", "נעלי", "נעל", "סנדל", "כפכפ",
-      "מגפיים", "מגף", "כובע", "צעיף", "כפפות", "חגורה", "בגד", "ביגוד", "טייץ", "טרנינג"
-    ],
-    "ריהוט": [
-      "כיסא", "כסא", "שולחן", "ספה", "כורסה", "מיטה", "מזרן", "ארון", "שידה", "מדף", "מדפים", "ספרייה",
-      "מנורה", "גוף תאורה", "שטיח", "וילון", "מראה", "הדום", "ספסל", "ערסל", "רהיט", "ריהוט", "כוורת"
-    ]
-  };
-
-  function detectCategoryFromText(text) {
-    const clean = (text || "").trim().toLowerCase();
-    if (!clean || clean.length < 2) return null;
-
-    const existingMatch = [...allFavorites, ...allShoppingItems].find(
-      item => item.name && item.name.trim().toLowerCase() === clean && item.category
-    );
-    if (existingMatch) return existingMatch.category;
-
-    for (const [category, words] of Object.entries(categoryKeywords)) {
-      for (const kw of words) {
-        if (clean.includes(kw)) {
-          return category;
-        }
-      }
-    }
-    return null;
-  }
-
-  function autoDetectCategory(inputId, selectId, formKey) {
-    const inputEl = document.getElementById(inputId);
-    const selectEl = document.getElementById(selectId);
-    const val = inputEl.value.trim();
-
-    if (!val) {
-      manualCategoryChosen[formKey] = false;
-      selectEl.classList.remove('auto-matched');
-      return;
-    }
-
-    if (manualCategoryChosen[formKey]) return;
-
-    const detected = detectCategoryFromText(val);
-    if (detected && selectEl.value !== detected) {
-      selectEl.value = detected;
-      selectEl.classList.add('auto-matched');
-    } else if (!detected) {
-      selectEl.classList.remove('auto-matched');
-    }
-  }
-
-  function getTaskAssignees(task) {
-    if (Array.isArray(task.assignees) && task.assignees.length > 0) {
-      return task.assignees.map(s => String(s).trim());
-    }
-    if (task.assigned_to) {
-      return String(task.assigned_to).split(",").map(s => s.trim()).filter(Boolean);
-    }
-    return ["כולם"];
-  }
-
-  function isTaskAssignedToCurrentUser(task) {
-    if (!currentUser) return false;
-    const people = getTaskAssignees(task);
-    return people.includes(currentUser) || people.includes("כולם");
-  }
 
   auth.signInAnonymously().catch(err => {
-    document.getElementById('status').innerText = "שגיאת חיבור: " + err.code;
+    document.getElementById('status').innerText = "שגיאת חיבור";
   });
 
   auth.onAuthStateChanged((user) => {
@@ -667,206 +230,123 @@
         allShoppingItems = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
         renderShopping();
       }, err => {
-        document.getElementById('status').innerText = "שגיאת הרשאות 🔴";
-      });
-
-    db.collection("families").doc(familyId).collection("favorites")
-      .onSnapshot((snapshot) => {
-        allFavorites = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-        const favEl = document.getElementById('favorites-list');
-        favEl.innerHTML = "";
-        if (snapshot.empty) {
-          favEl.innerHTML = '<div class="empty-state" style="grid-column:1/-1;">אין עדיין מוצרים קבועים. הוסיפו למעלה מוצרים שקונים כל שבוע!</div>';
-          return;
-        }
-        snapshot.forEach(docSnap => {
-          const d = docSnap.data();
-          const card = document.createElement('div');
-          card.className = "fav-card";
-          card.innerHTML = `
-            <div class="fav-top">
-              <div>
-                <div class="fav-name">${escapeHtml(d.name)} ${d.qty ? '(' + escapeHtml(d.qty) + ')' : ''}</div>
-                <div class="fav-cat">${categoryIcons[d.category] || '📦'} ${escapeHtml(d.category || 'כללי')}</div>
-              </div>
-              <button class="icon-btn del-btn" onclick="deleteItem('favorites', '${docSnap.id}')">✕</button>
-            </div>
-            <button class="fav-add" onclick="quickAddFromFav('${escapeAttr(d.name)}', '${escapeAttr(d.qty || '')}', '${escapeAttr(d.category || 'כללי')}')">+ הוסף לרשימה</button>
-          `;
-          favEl.appendChild(card);
-        });
+        document.getElementById('status').innerText = "שגיאת נתונים 🔴";
       });
 
     db.collection("families").doc(familyId).collection("tasks")
       .onSnapshot((snapshot) => {
         allTasks = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
         renderTasks();
-        checkSingleReminder();
       });
   }
 
-  setInterval(checkSingleReminder, 20000);
+  function renderShopping() {
+    const container = document.getElementById('shopping-container');
+    container.innerHTML = "";
+    const filtered = allShoppingItems.filter(item => (item.list_type || "super") === currentShopList);
 
-  function checkSingleReminder() {
-    if (!currentUser || allTasks.length === 0) return;
-    const now = new Date();
-
-    for (const task of allTasks) {
-      if (task.completed || !task.reminder_enabled) continue;
-      if (!isTaskAssignedToCurrentUser(task)) continue;
-
-      const sentToList = Array.isArray(task.reminder_sent_to) ? task.reminder_sent_to : [];
-      if (sentToList.includes(currentUser) || localSentReminders[task.id + "_" + currentUser]) continue;
-
-      let isDue = false;
-      if (task.due_date && task.due_time) {
-        const target = new Date(task.due_date + "T" + task.due_time + ":00");
-        if (!isNaN(target.getTime()) && now.getTime() >= target.getTime()) {
-          isDue = true;
-        }
-      } else {
-        isDue = true;
-      }
-
-      if (isDue) {
-        localSentReminders[task.id + "_" + currentUser] = true;
-        const updatedSentTo = Array.from(new Set([...sentToList, currentUser]));
-
-        db.collection("families").doc(familyId).collection("tasks").doc(task.id).update({
-          reminder_sent_to: updatedSentTo
-        });
-
-        triggerSingleAlert(task);
-        break;
-      }
-    }
-  }
-
-  function triggerSingleAlert(task) {
-    const prefix = task.urgent ? "🔥 תזכורת דחופה: " : "⏰ תזכורת עבור " + currentUser + ": ";
-    const msg = prefix + task.title;
-
-    activeReminderTaskId = task.id;
-    showToast(msg, true);
-
-    if (navigator.vibrate) {
-      navigator.vibrate([300, 120, 300]);
+    if (filtered.length === 0) {
+      container.innerHTML = '<div class="empty-state">הרשימה ריקה כרגע 🎉</div>';
+      return;
     }
 
-    if ("Notification" in window && Notification.permission === "granted") {
-      try {
-        new Notification("⏰ תזכורת - משפחת אהרוני-מרלנג'ון", {
-          body: msg,
-          tag: "aharoni-reminder-" + task.id + "-" + currentUser
-        });
-      } catch (e) {}
-    }
-  }
-
-  function snoozeActiveReminder(minutes) {
-    if (!activeReminderTaskId || !currentUser) return;
-    const task = allTasks.find(t => t.id === activeReminderTaskId);
-    const nextTime = new Date(Date.now() + minutes * 60000);
-    const yyyy = nextTime.getFullYear();
-    const mm = String(nextTime.getMonth() + 1).padStart(2, '0');
-    const dd = String(nextTime.getDate()).padStart(2, '0');
-    const hh = String(nextTime.getHours()).padStart(2, '0');
-    const min = String(nextTime.getMinutes()).padStart(2, '0');
-
-    delete localSentReminders[activeReminderTaskId + "_" + currentUser];
-    const currentSentTo = (task && Array.isArray(task.reminder_sent_to)) ? task.reminder_sent_to : [];
-    const filteredSentTo = currentSentTo.filter(name => name !== currentUser);
-
-    db.collection("families").doc(familyId).collection("tasks").doc(activeReminderTaskId).update({
-      due_date: yyyy + "-" + mm + "-" + dd,
-      due_time: hh + ":" + min,
-      reminder_enabled: true,
-      reminder_sent_to: filteredSentTo
+    const listDiv = document.createElement('div');
+    listDiv.className = "list";
+    filtered.forEach(item => {
+      const div = document.createElement('div');
+      div.className = "item " + (item.completed ? 'done' : '');
+      div.innerHTML = `
+        <div class="item-left" onclick="toggleItem('shopping_list', '${item.id}', ${!item.completed})">
+          <input type="checkbox" class="checkbox" ${item.completed ? 'checked' : ''}>
+          <div class="item-text">${escapeHtml(item.name)} ${item.qty ? '<span class="qty-badge">' + escapeHtml(item.qty) + '</span>' : ''}</div>
+        </div>
+        <button style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:1rem;" onclick="deleteItem('shopping_list', '${item.id}')">✕</button>
+      `;
+      listDiv.appendChild(div);
     });
-    hideToast();
-    showToast("התזכורת נדחתה ב-" + minutes + " דקות 💤", false);
+    container.appendChild(listDiv);
   }
 
-  function shareTaskWhatsApp(title, peopleStr, dueDate, dueTime) {
-    let text = "היי " + peopleStr + ", תזכורת למשימה בבית: *" + title + "*";
-    if (dueDate) {
-      text += " (יעד: " + formatDate(dueDate) + (dueTime ? " בשעה " + dueTime : "") + ")";
+  function renderTasks() {
+    const listEl = document.getElementById('tasks-list');
+    listEl.innerHTML = "";
+    if (allTasks.length === 0) {
+      listEl.innerHTML = '<div class="empty-state">אין משימות ✨</div>';
+      return;
     }
-    window.open("https://wa.me/?text=" + encodeURIComponent(text), "_blank");
-  }
-
-  function toggleReminderInput() {
-    const enabled = document.getElementById('task-enable-reminder').checked;
-    const timeEl = document.getElementById('task-time');
-    timeEl.classList.toggle('hidden', !enabled);
-    if (!enabled) timeEl.value = "";
-  }
-
-  function showToast(text, showSnooze) {
-    const banner = document.getElementById('toast-banner');
-    const actionsEl = document.getElementById('toast-reminder-actions');
-    document.getElementById('toast-text').innerText = text;
-    actionsEl.classList.toggle('hidden', !showSnooze);
-    banner.classList.add('show');
-    if (toastTimeout) clearTimeout(toastTimeout);
-    toastTimeout = setTimeout(hideToast, showSnooze ? 12000 : 5000);
-  }
-
-  function hideToast() {
-    document.getElementById('toast-banner').classList.remove('show');
-  }
-
-  function openProfileModal() {
-    document.getElementById('profile-modal').classList.remove('hidden');
-  }
-
-  function closeProfileModal() {
-    document.getElementById('profile-modal').classList.add('hidden');
-  }
-
-  function selectUserProfile(name) {
-    currentUser = name.trim();
-    localStorage.setItem("aharoni_current_user", currentUser);
-    updateProfileUI();
-    closeProfileModal();
-
-    if (currentUser && "Notification" in window && Notification.permission === "default") {
-      Notification.requestPermission();
-    }
-    if (currentUser) {
-      showToast("תזכורות פעילות אך ורק עבור " + currentUser + " 🔔", false);
-      checkSingleReminder();
-    } else {
-      showToast("התזכורות במכשיר זה כובו 🔕", false);
-    }
-  }
-
-  function updateProfileUI() {
-    const btn = document.getElementById('profile-btn');
-    btn.innerText = currentUser ? "👤 " + currentUser : "👤 מי אני?";
-    document.querySelectorAll('.user-choice').forEach(el => {
-      const val = el.innerText === "ללא התראות" ? "" : el.innerText;
-      el.classList.toggle('selected', val === currentUser);
+    allTasks.forEach(data => {
+      const div = document.createElement('div');
+      div.className = "item " + (data.completed ? 'done' : '');
+      div.innerHTML = `
+        <div class="item-left" onclick="toggleItem('tasks', '${data.id}', ${!data.completed})">
+          <input type="checkbox" class="checkbox" ${data.completed ? 'checked' : ''}>
+          <div class="item-text">${escapeHtml(data.title)}</div>
+        </div>
+        <button style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:1rem;" onclick="deleteItem('tasks', '${data.id}')">✕</button>
+      `;
+      listEl.appendChild(div);
     });
   }
 
-  function toggleAssignee(name) {
-    if (name === "כולם") {
-      selectedAssignees = ["כולם"];
-    } else {
-      selectedAssignees = selectedAssignees.filter(p => p !== "כולם");
-      if (selectedAssignees.includes(name)) {
-        selectedAssignees = selectedAssignees.filter(p => p !== name);
-      } else {
-        selectedAssignees.push(name);
-      }
-      if (selectedAssignees.length === 0) {
-        selectedAssignees = ["כולם"];
-      }
-    }
-    renderAssigneePicker();
+  function selectShopList(type, el) {
+    currentShopList = type;
+    document.querySelectorAll('#list-selector .chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    renderShopping();
   }
 
-  function renderAssigneePicker() {
-    document.querySelectorAll('#task-assignee-picker .pick-chip').forEach(chip => {
-      const name = chip
+  function addShopping() {
+    const input = document.getElementById('shop-input');
+    const qtyInput = document.getElementById('shop-qty');
+    const catSelect = document.getElementById('shop-cat');
+    const name = input.value.trim();
+    if (!name) return;
+
+    db.collection("families").doc(familyId).collection("shopping_list").add({
+      name: name,
+      qty: qtyInput.value.trim(),
+      category: catSelect.value,
+      list_type: currentShopList,
+      completed: false,
+      created_at: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    input.value = "";
+    qtyInput.value = "";
+  }
+
+  function addTask() {
+    const input = document.getElementById('task-input');
+    const title = input.value.trim();
+    if (!title) return;
+
+    db.collection("families").doc(familyId).collection("tasks").add({
+      title: title,
+      completed: false,
+      created_at: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    input.value = "";
+  }
+
+  function toggleItem(col, id, state) {
+    db.collection("families").doc(familyId).collection(col).doc(id).update({ completed: state });
+  }
+
+  function deleteItem(col, id) {
+    db.collection("families").doc(familyId).collection(col).doc(id).delete();
+  }
+
+  function switchTab(tab) {
+    document.getElementById('view-shopping').classList.toggle('hidden', tab !== 'shopping');
+    document.getElementById('view-tasks').classList.toggle('hidden', tab !== 'tasks');
+    document.getElementById('nav-shopping').classList.toggle('active', tab === 'shopping');
+    document.getElementById('nav-tasks').classList.toggle('active', tab === 'tasks');
+  }
+
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text || "";
+    return div.innerHTML;
+  }
+</script>
+</body>
+</html>
