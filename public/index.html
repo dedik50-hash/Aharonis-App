@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>הרשימה של משפחת אהרוני-מרלנג'ון</title>
+  <title>הרשימה והמתכונים של משפחת אהרוני-מרלנג'ון</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#0f766e">
@@ -13,6 +13,7 @@
   <script src="/__/firebase/10.12.2/firebase-app-compat.js"></script>
   <script src="/__/firebase/10.12.2/firebase-auth-compat.js"></script>
   <script src="/__/firebase/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
   <style>
     :root {
@@ -28,15 +29,6 @@
     * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
     body { margin: 0; background: var(--bg); color: var(--text); padding-bottom: calc(84px + env(safe-area-inset-bottom)); }
     
-    #celebration-canvas {
-      position: fixed;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: 100;
-    }
-
     header {
       background: linear-gradient(135deg, var(--primary-dark), var(--primary));
       color: white;
@@ -65,69 +57,6 @@
     }
     .sync-pill { font-size: 0.72rem; background: rgba(255,255,255,0.18); padding: 4px 8px; border-radius: 20px; white-space: nowrap; }
 
-    .toast-banner {
-      position: fixed;
-      top: calc(64px + env(safe-area-inset-top));
-      left: 50%;
-      transform: translateX(-50%) translateY(-20px);
-      background: #1e293b;
-      color: white;
-      padding: 12px 16px;
-      border-radius: 14px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.25);
-      z-index: 50;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      font-size: 0.92rem;
-      font-weight: 600;
-      width: 92%;
-      max-width: 420px;
-      opacity: 0;
-      pointer-events: none;
-      transition: all 0.25s ease;
-      border-right: 4px solid #f59e0b;
-    }
-    .toast-banner.show {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-      pointer-events: auto;
-    }
-    .toast-main { display: flex; align-items: center; gap: 10px; }
-
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(15, 23, 42, 0.55);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 60;
-      padding: 16px;
-    }
-    .modal-card {
-      background: white;
-      border-radius: 18px;
-      padding: 20px;
-      width: 100%;
-      max-width: 360px;
-      box-shadow: 0 12px 32px rgba(0,0,0,0.2);
-      text-align: center;
-    }
-    .modal-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; }
-    .modal-sub { font-size: 0.85rem; color: var(--muted); margin-bottom: 16px; }
-    .user-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
-    .user-choice {
-      padding: 12px;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      background: #f8fafc;
-      font-size: 0.95rem;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    .user-choice.selected { background: var(--primary); color: white; border-color: var(--primary); }
-
     .container { max-width: 640px; margin: 0 auto; padding: 14px; }
 
     .chips-row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 10px; scrollbar-width: none; }
@@ -142,7 +71,6 @@
       font-weight: 600;
       white-space: nowrap;
       cursor: pointer;
-      transition: 0.15s;
     }
     .chip.active { background: var(--primary); color: white; border-color: var(--primary); }
 
@@ -159,11 +87,7 @@
       cursor: pointer;
       user-select: none;
     }
-    .pick-chip.selected {
-      background: #0ea5e9;
-      color: white;
-      border-color: #0284c7;
-    }
+    .pick-chip.selected { background: #0ea5e9; color: white; border-color: #0284c7; }
 
     .input-card {
       background: var(--card);
@@ -176,7 +100,7 @@
       gap: 10px;
     }
     .row { display: flex; gap: 8px; flex-wrap: wrap; }
-    input, select {
+    input, select, textarea {
       padding: 11px 12px;
       border: 1px solid #cbd5e1;
       border-radius: 10px;
@@ -184,11 +108,12 @@
       outline: none;
       background: #f8fafc;
       color: var(--text);
+      width: 100%;
     }
-    input:focus, select:focus { border-color: var(--primary); background: white; }
-    select.auto-matched { border-color: var(--primary); background: #f0fdfa; }
+    input:focus, select:focus, textarea:focus { border-color: var(--primary); background: white; }
     .grow { flex: 1; min-width: 140px; }
     .qty-input { width: 95px; }
+    
     button.btn-primary {
       background: var(--primary);
       color: white;
@@ -198,14 +123,14 @@
       font-size: 0.95rem;
       font-weight: 700;
       cursor: pointer;
+      transition: transform 0.1s ease, background-color 0.1s ease;
+    }
+    button.btn-primary:active {
+      transform: scale(0.96);
+      background: var(--primary-dark);
     }
 
-    .section-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin: 16px 0 8px;
-    }
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin: 16px 0 8px; }
     .cat-title {
       font-size: 0.85rem;
       font-weight: 700;
@@ -215,16 +140,7 @@
       align-items: center;
       gap: 6px;
     }
-    .clear-btn {
-      background: #fee2e2;
-      color: #b91c1c;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 8px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      cursor: pointer;
-    }
+    .clear-btn { background: #fee2e2; color: #b91c1c; border: none; padding: 6px 12px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
 
     .list { display: flex; flex-direction: column; gap: 8px; }
     .item {
@@ -240,7 +156,6 @@
     .item.urgent { border-right-color: var(--danger); }
     .item.done { opacity: 0.6; }
     .item.done .item-text { text-decoration: line-through; color: var(--muted); }
-    
     .item-left { display: flex; align-items: center; gap: 12px; flex: 1; cursor: pointer; }
     .checkbox { width: 22px; height: 22px; accent-color: var(--primary); cursor: pointer; flex-shrink: 0; }
     .item-main { display: flex; flex-direction: column; gap: 4px; }
@@ -285,6 +200,119 @@
       width: 100%;
     }
 
+    .recipe-accordion-cat {
+      background: white;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      margin-bottom: 10px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .recipe-accordion-header {
+      padding: 14px 16px;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--primary-dark);
+      background: #f8fafc;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .recipe-accordion-header:hover { background: #f1f5f9; }
+    .recipe-accordion-body {
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      border-top: 1px solid var(--border);
+    }
+    .recipe-card {
+      background: #f8fafc;
+      padding: 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+    .recipe-card:hover { background: #f1f5f9; border-color: var(--primary); }
+    .recipe-card-title { font-size: 1.02rem; font-weight: 700; color: var(--text); }
+    
+    .recipe-open-btn {
+      background: #ccfbf1;
+      color: var(--primary-dark);
+      border: 1px solid #5eead4;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.15rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.1s;
+    }
+    .recipe-open-btn:active { transform: scale(0.92); background: #99f6e4; }
+
+    #recipe-fullscreen-modal {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      z-index: 70;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      padding: calc(16px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom));
+    }
+    .fullscreen-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 12px;
+    }
+    .back-btn {
+      background: white;
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    .fullscreen-actions { display: flex; gap: 8px; align-items: center; }
+    .font-size-btn {
+      background: white;
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 12px;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+    .fullscreen-title { font-size: 1.5rem; font-weight: 800; color: var(--primary-dark); margin-bottom: 16px; }
+    .fullscreen-content {
+      background: white;
+      padding: 22px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      font-size: 1.15rem;
+      line-height: 1.8;
+      white-space: pre-line;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      margin-bottom: 20px;
+    }
+    .fullscreen-content strong { color: var(--primary-dark); font-weight: 700; display: block; margin-top: 10px; }
+
     .bottom-nav {
       position: fixed; bottom: 0; left: 0; right: 0; background: white;
       border-top: 1px solid var(--border); display: flex; padding-bottom: env(safe-area-inset-bottom); z-index: 30;
@@ -309,24 +337,36 @@
   </div>
 </header>
 
+<div id="recipe-fullscreen-modal" class="hidden">
+  <div class="fullscreen-header">
+    <button class="back-btn" onclick="closeFullscreenRecipe()">← חזרה לרשימה</button>
+    <div class="fullscreen-actions">
+      <button class="font-size-btn" onclick="cycleFontSize()">🔤 גודל טקסט</button>
+      <button class="icon-btn del-btn" id="fs-delete-btn" onclick="" style="font-size:1.2rem;" title="מחק מתכון">🗑️</button>
+    </div>
+  </div>
+  <div class="fullscreen-title" id="fs-recipe-title">שם המתכון</div>
+  <div class="fullscreen-content" id="fs-recipe-content">תוכן המתכון...</div>
+  <button class="btn-primary" style="padding:14px; font-size:1.05rem;" id="fs-add-shopping-btn">🛒 הוסף מצרכים לרשימת הקניות</button>
+</div>
+
 <div class="modal-backdrop hidden" id="profile-modal" onclick="if(event.target===this) closeProfileModal()">
-  <div class="modal-card">
-    <div class="modal-title">מי משתמש במכשיר הזה?</div>
-    <div class="modal-sub">הגדרת משתמש לתצוגת משימות</div>
-    <div class="user-grid" id="user-grid">
-      <button class="user-choice" onclick="selectUserProfile('עודד')">עודד</button>
-      <button class="user-choice" onclick="selectUserProfile('מיה')">מיה</button>
-      <button class="user-choice" onclick="selectUserProfile('טליה')">טליה</button>
-      <button class="user-choice" onclick="selectUserProfile('דוד')">דוד</button>
-      <button class="user-choice" onclick="selectUserProfile('יאיר')">יאיר</button>
-      <button class="user-choice" onclick="selectUserProfile('')">ללא סינון</button>
+  <div class="modal-card" style="background:white; border-radius:18px; padding:20px; width:100%; max-width:360px; margin:auto;">
+    <div style="font-size:1.1rem; font-weight:700; margin-bottom:6px;">מי משתמש במכשיר הזה?</div>
+    <div style="font-size:0.85rem; color:var(--muted); margin-bottom:16px;">הגדרת משתמש לתצוגת משימות</div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px;">
+      <button class="user-choice" style="padding:12px; border-radius:12px; border:1px solid var(--border); background:#f8fafc; font-weight:600; cursor:pointer;" onclick="selectUserProfile('עודד')">עודד</button>
+      <button class="user-choice" style="padding:12px; border-radius:12px; border:1px solid var(--border); background:#f8fafc; font-weight:600; cursor:pointer;" onclick="selectUserProfile('מיה')">מיה</button>
+      <button class="user-choice" style="padding:12px; border-radius:12px; border:1px solid var(--border); background:#f8fafc; font-weight:600; cursor:pointer;" onclick="selectUserProfile('טליה')">טליה</button>
+      <button class="user-choice" style="padding:12px; border-radius:12px; border:1px solid var(--border); background:#f8fafc; font-weight:600; cursor:pointer;" onclick="selectUserProfile('דוד')">דוד</button>
+      <button class="user-choice" style="padding:12px; border-radius:12px; border:1px solid var(--border); background:#f8fafc; font-weight:600; cursor:pointer;" onclick="selectUserProfile('יאיר')">יאיר</button>
+      <button class="user-choice" style="padding:12px; border-radius:12px; border:1px solid var(--border); background:#f8fafc; font-weight:600; cursor:pointer;" onclick="selectUserProfile('')">ללא סינון</button>
     </div>
     <button class="btn-primary" style="width:100%;" onclick="closeProfileModal()">סגור</button>
   </div>
 </div>
 
 <div class="container">
-  <!-- טאב 1: רשימות קנייה -->
   <div id="view-shopping">
     <div class="chips-row" id="list-selector">
       <div class="chip active" onclick="selectShopList('super', this)">🛒 סופר</div>
@@ -363,7 +403,6 @@
     <div id="shopping-container"></div>
   </div>
 
-  <!-- טאב 2: מועדפים -->
   <div id="view-favorites" class="hidden">
     <div class="input-card">
       <div style="font-weight:700; font-size:0.95rem;">⭐ הוספת מוצר קבוע לרשימת המועדפים</div>
@@ -387,7 +426,33 @@
     <div class="fav-grid" id="favorites-list"></div>
   </div>
 
-  <!-- טאב 3: משימות בית -->
+  <div id="view-recipes" class="hidden">
+    <div class="input-card">
+      <div style="font-weight:700; font-size:0.95rem;">🍲 הוספת מתכון חדש או צילום מסך</div>
+      
+      <label style="background:#e0f2fe; color:#0369a1; padding:10px 14px; border-radius:10px; font-size:0.9rem; font-weight:600; cursor:pointer; text-align:center; display:block;">
+        📸 בחר צילום מסך של מתכון (מגלריה / Google Photos)
+        <input type="file" accept="image/*" style="display:none;" onchange="handleImageUpload(event)">
+      </label>
+      <div id="ocr-status" style="font-size:0.8rem; color:var(--muted); text-align:center;" class="hidden">מעבד תמונה ומחלץ טקסט... ⏳</div>
+
+      <textarea id="raw-recipe-text" rows="5" placeholder="או הדבק כאן את תוכן המתכון המלא..."></textarea>
+      
+      <div class="row">
+        <select id="recipe-category-select" class="grow">
+          <option value="בשר ודגים">🥩 בשר ודגים</option>
+          <option value="מאפים ולחמים">🥖 מאפים ולחמים</option>
+          <option value="עוגות וקינוחים">🍰 עוגות וקינוחים</option>
+          <option value="תבשילים ומרקים">🍲 תבשילים ומרקים</option>
+          <option value="סלטים ותוספות">🥗 סלטים ותוספות</option>
+          <option value="כללי">📦 כללי</option>
+        </select>
+        <button class="btn-primary" onclick="addRecipeWithCategory()">✨ שמור מתכון</button>
+      </div>
+    </div>
+    <div id="recipes-accordion-container"></div>
+  </div>
+
   <div id="view-tasks" class="hidden">
     <div class="chips-row" id="task-filter-row">
       <div class="chip active" onclick="filterTasks('הכל', this)">הכל</div>
@@ -437,6 +502,10 @@
     <span class="icon">⭐</span>
     <span>מועדפים</span>
   </div>
+  <div class="nav-item" id="nav-recipes" onclick="switchTab('recipes')">
+    <span class="icon">🍲</span>
+    <span>מתכונים</span>
+  </div>
   <div class="nav-item" id="nav-tasks" onclick="switchTab('tasks')">
     <span class="icon">✅</span>
     <span>משימות</span>
@@ -466,9 +535,13 @@
   let selectedAssignees = ["כולם"];
   let allShoppingItems = [];
   let allFavorites = [];
+  let allRecipes = [];
   let allTasks = [];
   let currentUser = (localStorage.getItem("aharoni_current_user") || "").trim();
   let manualCategoryChosen = { shop: false, fav: false };
+  let openRecipeCategories = {};
+  let currentFontSizeLevel = 1;
+  let activeRecipeContent = "";
 
   updateProfileUI();
 
@@ -484,24 +557,33 @@
     "כללי": "📦"
   };
 
+  const recipeCategoryIcons = {
+    "בשר ודגים": "🥩",
+    "מאפים ולחמים": "🥖",
+    "עוגות וקינוחים": "🍰",
+    "תבשילים ומרקים": "🍲",
+    "סלטים ותוספות": "🥗",
+    "כללי": "📦"
+  };
+
   const categoryKeywords = {
     "ירקות ופירות": ["עגבני", "מלפפון", "פלפל", "גמבה", "בצל", "שום", "תפוח אדמה", "גזר", "קישוא", "חציל", "חסה", "כרוב", "אבוקדו", "לימון", "תפוז", "בננה", "תפוח", "פטרוזיליה", "כוסברה", "נענע", "בטטה", "סלק"],
     "מוצרי חלב וביצים": ["חלב", "גבינ", "קוטג", "שמנת", "יוגורט", "חמאה", "ביצים", "ביצה", "צהובה", "מוצרלה", "בולגרית"],
     "בשר, עוף ודגים": ["עוף", "חזה עוף", "שניצל", "פרגית", "בשר", "טחון", "אנטריקוט", "דג", "סלמון", "אמנון", "דניס"],
     "מאפים ולחם": ["לחם", "פיתה", "לחמני", "חלה", "באגט", "בורקס", "עוגה", "עוגיות", "פוקאצ"],
-    "יבשים ומזווה": ["פסטה", "ספגטי", "פתיתים", "אורז", "קוסקוס", "קמח", "סוכר", "מלח", "שמן", "טחינה", "רסק", "שימורים", "טונה", "תבלין", "קפה", "תה", "שוקולד", "דבש", "סילאן", "קורנפלקס"],
+    "יבשים ומזווה": ["פסטה", "ספגטי", "פתיתים", "אורז", "קוסקוס", "קמח", "סוכר", "מלח", "שמן", "טחינה", "רסק", "שימורים", "טונה", "תבלין", "קפה", "תה", "שוקולד", "דבש", "סילאן", "קורנפלקס", "קינמון", "שמרים"],
     "ניקיון וטואלטיקה": ["סבון", "שמפו", "מרכך", "משחת שיניים", "דאודורנט", "נייר טואלט", "מגבונים", "נוזל כלים", "טבליות למדיח", "אבקת כביסה", "שקיות אשפה"]
   };
 
   function detectCategoryFromText(text) {
     const clean = (text || "").trim().toLowerCase();
-    if (!clean || clean.length < 2) return null;
+    if (!clean || clean.length < 2) return "כללי";
     for (const [category, words] of Object.entries(categoryKeywords)) {
       for (const kw of words) {
         if (clean.includes(kw)) return category;
       }
     }
-    return null;
+    return "כללי";
   }
 
   function autoDetectCategory(inputId, selectId, formKey) {
@@ -510,7 +592,7 @@
     const val = inputEl.value.trim();
     if (!val || manualCategoryChosen[formKey]) return;
     const detected = detectCategoryFromText(val);
-    if (detected) {
+    if (detected && detected !== "כללי") {
       selectEl.value = detected;
       selectEl.classList.add('auto-matched');
     }
@@ -561,11 +643,177 @@
         });
       });
 
+    db.collection("families").doc(familyId).collection("recipes")
+      .onSnapshot((snapshot) => {
+        allRecipes = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderRecipesAccordion();
+      });
+
     db.collection("families").doc(familyId).collection("tasks")
       .onSnapshot((snapshot) => {
         allTasks = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
         renderTasks();
       });
+  }
+
+  function handleImageUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const statusEl = document.getElementById('ocr-status');
+    statusEl.classList.remove('hidden');
+    statusEl.innerText = "קורא טקסט מהתמונה... ⏳";
+
+    Tesseract.recognize(
+      file,
+      'heb+eng',
+      { logger: m => console.log(m) }
+    ).then(({ data: { text } }) => {
+      statusEl.classList.add('hidden');
+      if (text && text.trim().length > 0) {
+        document.getElementById('raw-recipe-text').value = text.trim();
+      } else {
+        alert("לא זוהה טקסט ברור בתמונה. נסה צילום מסך ממוקד יותר.");
+      }
+    }).catch(err => {
+      statusEl.classList.add('hidden');
+      alert("שגיאה בטעינת ספריית הפענוח. נסה שוב או הדבק את הטקסט ידנית.");
+      console.error(err);
+    });
+  }
+
+  function cleanRecipeText(text) {
+    if (!text) return "";
+    return text
+      .split('\n')
+      .map(line => line.trim())
+      .filter(line => line.length > 0 && !line.includes('פרסומת') && !line.includes('תגובות'))
+      .join('\n');
+  }
+
+  function addRecipeWithCategory() {
+    const textInput = document.getElementById('raw-recipe-text');
+    const catSelect = document.getElementById('recipe-category-select');
+    const cleanedContent = cleanRecipeText(textInput.value);
+    if (!cleanedContent) return;
+
+    const lines = cleanedContent.split('\n');
+    let title = "מתכון חדש";
+    if (lines.length > 0) {
+      title = lines[0].length > 45 ? lines[0].substring(0, 45) + "..." : lines[0];
+    }
+
+    const category = catSelect.value;
+
+    db.collection("families").doc(familyId).collection("recipes").add({
+      title: title,
+      category: category,
+      content: cleanedContent,
+      created_at: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    textInput.value = "";
+    openRecipeCategories[category] = true;
+  }
+
+  function formatRecipeContentForDisplay(rawText) {
+    const lines = (rawText || "").split('\n');
+    return lines.map(line => {
+      const l = line.trim();
+      if (!l) return "";
+      if (/^(\d+[\.\)]|שלב\s*\d+|מצרכים:|הוראות:|אופן ההכנה:|רכיבים)/.test(l) || l.endsWith(':')) {
+        return `<strong>${escapeHtml(l)}</strong>`;
+      }
+      return escapeHtml(l);
+    }).join('<br>');
+  }
+
+  function openFullscreenRecipe(id) {
+    const recipe = allRecipes.find(r => r.id === id);
+    if (!recipe) return;
+
+    activeRecipeContent = recipe.content || "";
+
+    document.getElementById('fs-recipe-title').innerText = recipe.title;
+    document.getElementById('fs-recipe-content').innerHTML = formatRecipeContentForDisplay(recipe.content);
+    document.getElementById('fs-delete-btn').setAttribute('onclick', `deleteItem('recipes', '${recipe.id}'); closeFullscreenRecipe();`);
+    
+    document.getElementById('fs-add-shopping-btn').onclick = function() {
+      addRecipeToShopping(activeRecipeContent);
+    };
+    
+    currentFontSizeLevel = 1;
+    applyFontSize();
+    document.getElementById('recipe-fullscreen-modal').classList.remove('hidden');
+  }
+
+  function closeFullscreenRecipe() {
+    document.getElementById('recipe-fullscreen-modal').classList.add('hidden');
+  }
+
+  function cycleFontSize() {
+    currentFontSizeLevel = (currentFontSizeLevel % 3) + 1;
+    applyFontSize();
+  }
+
+  function applyFontSize() {
+    const contentEl = document.getElementById('fs-recipe-content');
+    if (currentFontSizeLevel === 1) {
+      contentEl.style.fontSize = "1.15rem";
+    } else if (currentFontSizeLevel === 2) {
+      contentEl.style.fontSize = "1.35rem";
+    } else {
+      contentEl.style.fontSize = "1.55rem";
+    }
+  }
+
+  function renderRecipesAccordion() {
+    const container = document.getElementById('recipes-accordion-container');
+    container.innerHTML = "";
+    if (allRecipes.length === 0) {
+      container.innerHTML = '<div class="empty-state">אין עדיין מתכונים שמורים. הדבק או העלה צילום מסך למעלה!</div>';
+      return;
+    }
+
+    const grouped = {};
+    allRecipes.forEach(rec => {
+      const cat = rec.category || "כללי";
+      if (!grouped[cat]) grouped[cat] = [];
+      grouped[cat].push(rec);
+    });
+
+    Object.keys(grouped).forEach(cat => {
+      const isOpen = openRecipeCategories[cat] || false;
+      const catDiv = document.createElement('div');
+      catDiv.className = "recipe-accordion-cat";
+
+      const header = document.createElement('div');
+      header.className = "recipe-accordion-header";
+      header.innerHTML = `<span>${recipeCategoryIcons[cat] || '📦'} ${escapeHtml(cat)} (${grouped[cat].length})</span><span>${isOpen ? '▲' : '▼'}</span>`;
+      header.onclick = () => {
+        openRecipeCategories[cat] = !isOpen;
+        renderRecipesAccordion();
+      };
+      catDiv.appendChild(header);
+
+      if (isOpen) {
+        const body = document.createElement('div');
+        body.className = "recipe-accordion-body";
+        grouped[cat].forEach(d => {
+          const card = document.createElement('div');
+          card.className = "recipe-card";
+          card.onclick = () => openFullscreenRecipe(d.id);
+          card.innerHTML = `
+            <div class="recipe-card-title">📖 ${escapeHtml(d.title)}</div>
+            <div class="recipe-open-btn">↗</div>
+          `;
+          body.appendChild(card);
+        });
+        catDiv.appendChild(body);
+      }
+
+      container.appendChild(catDiv);
+    });
   }
 
   function renderShopping() {
@@ -598,7 +846,26 @@
 
       const listDiv = document.createElement('div');
       listDiv.className = "list";
-      grouped[cat].forEach(item => listDiv.appendChild(createShopElement(item)));
+      grouped[cat].forEach(item => {
+        const div = document.createElement('div');
+        div.className = "item";
+        div.innerHTML = `
+          <div class="item-left" onclick="toggleItem('shopping_list', '${item.id}', true)">
+            <input type="checkbox" class="checkbox">
+            <div class="item-main">
+              <div class="item-title-row">
+                <span class="item-text">${escapeHtml(item.name)}</span>
+                ${item.qty ? '<span class="qty-badge">' + escapeHtml(item.qty) + '</span>' : ''}
+              </div>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="icon-btn" title="שמור במועדפים" onclick="saveAsFavorite('${escapeAttr(item.name)}', '${escapeAttr(item.qty || '')}', '${escapeAttr(cat)}')">⭐</button>
+            <button class="icon-btn del-btn" onclick="deleteItem('shopping_list', '${item.id}')">✕</button>
+          </div>
+        `;
+        listDiv.appendChild(div);
+      });
       container.appendChild(listDiv);
     });
 
@@ -611,30 +878,25 @@
 
       const doneList = document.createElement('div');
       doneList.className = "list";
-      doneItems.forEach(item => doneList.appendChild(createShopElement(item)));
+      doneItems.forEach(item => {
+        const div = document.createElement('div');
+        div.className = "item done";
+        div.innerHTML = `
+          <div class="item-left" onclick="toggleItem('shopping_list', '${item.id}', false)">
+            <input type="checkbox" class="checkbox" checked>
+            <div class="item-main">
+              <div class="item-title-row">
+                <span class="item-text" style="text-decoration:line-through;">${escapeHtml(item.name)}</span>
+                ${item.qty ? '<span class="qty-badge">' + escapeHtml(item.qty) + '</span>' : ''}
+              </div>
+            </div>
+          </div>
+          <button class="icon-btn del-btn" onclick="deleteItem('shopping_list', '${item.id}')">✕</button>
+        `;
+        doneList.appendChild(div);
+      });
       container.appendChild(doneList);
     }
-  }
-
-  function createShopElement(data) {
-    const div = document.createElement('div');
-    div.className = "item " + (data.completed ? 'done' : '');
-    div.innerHTML = `
-      <div class="item-left" onclick="toggleItem('shopping_list', '${data.id}', ${!data.completed})">
-        <input type="checkbox" class="checkbox" ${data.completed ? 'checked' : ''}>
-        <div class="item-main">
-          <div class="item-title-row">
-            <span class="item-text">${escapeHtml(data.name)}</span>
-            ${data.qty ? '<span class="qty-badge">' + escapeHtml(data.qty) + '</span>' : ''}
-          </div>
-        </div>
-      </div>
-      <div class="actions">
-        <button class="icon-btn" title="שמור במועדפים" onclick="saveAsFavorite('${escapeAttr(data.name)}', '${escapeAttr(data.qty || '')}', '${escapeAttr(data.category || 'כללי')}')">⭐</button>
-        <button class="icon-btn del-btn" onclick="deleteItem('shopping_list', '${data.id}')">✕</button>
-      </div>
-    `;
-    return div;
   }
 
   function renderTasks() {
@@ -703,6 +965,7 @@
     input.value = "";
     qtyInput.value = "";
     manualCategoryChosen['shop'] = false;
+    catSelect.classList.remove('auto-matched');
   }
 
   function clearCompletedShopping() {
@@ -728,6 +991,7 @@
     input.value = "";
     qtyInput.value = "";
     manualCategoryChosen['fav'] = false;
+    catSelect.classList.remove('auto-matched');
   }
 
   function saveAsFavorite(name, qty, category) {
@@ -749,6 +1013,38 @@
       created_at: firebase.firestore.FieldValue.serverTimestamp()
     });
     switchTab('shopping');
+  }
+
+  function addRecipeToShopping(content) {
+    if (!content) {
+      alert("תוכן המתכון ריק.");
+      return;
+    }
+    const lines = content.split('\n');
+    let addedCount = 0;
+    
+    lines.forEach(line => {
+      const cleanLine = line.trim();
+      if (!cleanLine || cleanLine.endsWith(':') || cleanLine.includes('מצרכים') || cleanLine.includes('הוראות') || cleanLine.includes('רכיבים') || cleanLine.includes('אופן הכנה') || /^\d+[\.\)]/.test(cleanLine)) return;
+      
+      const cat = detectCategoryFromText(cleanLine);
+      db.collection("families").doc(familyId).collection("shopping_list").add({
+        name: cleanLine,
+        qty: "",
+        category: cat,
+        list_type: "super",
+        completed: false,
+        created_at: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      addedCount++;
+    });
+
+    if (addedCount > 0) {
+      closeFullscreenRecipe();
+      switchTab('shopping');
+    } else {
+      alert("לא נמצאו מצרכים תקינים לייצוא במסמך זה.");
+    }
   }
 
   function filterTasks(person, el) {
@@ -804,7 +1100,7 @@
   }
 
   function switchTab(tab) {
-    ['shopping', 'favorites', 'tasks'].forEach(t => {
+    ['shopping', 'favorites', 'recipes', 'tasks'].forEach(t => {
       document.getElementById('view-' + t).classList.toggle('hidden', t !== tab);
       document.getElementById('nav-' + t).classList.toggle('active', t === tab);
     });
@@ -828,7 +1124,7 @@
     return div.innerHTML;
   }
   function escapeAttr(text) {
-    return (text || "").split("'").join("\\'");
+    return (text || "").replace(/'/g, "\\'").replace(/"/g, '&quot;');
   }
 </script>
 </body>
