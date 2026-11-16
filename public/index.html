@@ -283,12 +283,13 @@
       padding: 22px;
       border-radius: 16px;
       border: 1px solid var(--border);
-      font-size: 1.12rem;
-      line-height: 1.7;
+      font-size: 1.15rem;
+      line-height: 1.8;
       white-space: pre-line;
       box-shadow: 0 2px 8px rgba(0,0,0,0.04);
       margin-bottom: 20px;
     }
+    .fullscreen-content strong { color: var(--primary-dark); font-weight: 700; display: block; margin-top: 10px; }
 
     .bottom-nav {
       position: fixed; bottom: 0; left: 0; right: 0; background: white;
@@ -515,7 +516,7 @@
   let currentUser = (localStorage.getItem("aharoni_current_user") || "").trim();
   let manualCategoryChosen = { shop: false, fav: false };
   let openRecipeCategories = {};
-  let currentFontSizeLevel = 1; // 1: רגיל, 2: גדול, 3: ענק
+  let currentFontSizeLevel = 1;
 
   updateProfileUI();
 
@@ -557,16 +558,6 @@
         if (clean.includes(kw)) return category;
       }
     }
-    return "כללי";
-  }
-
-  function detectRecipeCategory(text) {
-    const t = (text || "").toLowerCase();
-    if (t.includes("בשר") || t.includes("עוף") || t.includes("דג") || t.includes("שניצל") || t.includes("אנטריקוט")) return "בשר ודגים";
-    if (t.includes("לחם") || t.includes("פית") || t.includes("בייגל") || t.includes("פוקאצ") || t.includes("חלה") || t.includes("בצק")) return "מאפים ולחמים";
-    if (t.includes("עוג") || t.includes("שוקולד") || t.includes("קינוח") || t.includes("סוכר") || t.includes("קמח")) return "עוגות וקינוחים";
-    if (t.includes("מרק") || t.includes("תבשיל") || t.includes("סיר") || t.includes("רסק")) return "תבשילים ומרקים";
-    if (t.includes("סלט") || t.includes("רוטב") || t.includes("ירק")) return "סלטים ותוספות";
     return "כללי";
   }
 
@@ -640,26 +631,34 @@
       });
   }
 
-  // הוספת מתכון עם קטגוריה שנבחרה או זוהתה אוטומטית
+  // ניקוי וסידור אוטומטי של טקסט המתכון (הסרת רווחים כפולים וסימונים מיותרים)
+  function cleanRecipeText(text) {
+    if (!text) return "";
+    return text
+      .split('\n')
+      .map(line => line.trim())
+      .filter(line => line.length > 0 && !line.includes('פרסומת') && !line.includes('תגובות'))
+      .join('\n');
+  }
+
   function addRecipeWithCategory() {
     const textInput = document.getElementById('raw-recipe-text');
     const catSelect = document.getElementById('recipe-category-select');
-    const content = textInput.value.trim();
-    if (!content) return;
+    const cleanedContent = cleanRecipeText(textInput.value);
+    if (!cleanedContent) return;
 
-    const lines = content.split('\n').map(l => l.trim()).filter(Boolean);
+    const lines = cleanedContent.split('\n');
     let title = "מתכון חדש";
     if (lines.length > 0) {
       title = lines[0].length > 45 ? lines[0].substring(0, 45) + "..." : lines[0];
     }
 
-    // אם המשתמש לא שינה ידנית, ננסה לזהות אוטומטית, ואם לא - ניקח מהתפריט
-    const category = detectRecipeCategory(content) || catSelect.value;
+    const category = catSelect.value;
 
     db.collection("families").doc(familyId).collection("recipes").add({
       title: title,
       category: category,
-      content: content,
+      content: cleanedContent,
       created_at: firebase.firestore.FieldValue.serverTimestamp()
     });
 
@@ -667,13 +666,12 @@
     openRecipeCategories[category] = true;
   }
 
-  // פורמט טקסט מתכון: הדגשת מצרכים ושלבים ממוספרים ב-בולד
+  // פורמט תצוגת מתכון: הדגשת מצרכים ושלבים ממוספרים
   function formatRecipeContentForDisplay(rawText) {
     const lines = (rawText || "").split('\n');
     return lines.map(line => {
       const l = line.trim();
       if (!l) return "";
-      // זיהוי שלב ממוספר (למשל "1.", "2." או "שלב 1") או כותרת מצרכים
       if (/^(\d+[\.\)]|שלב\s*\d+|מצרכים:|הוראות:|אופן ההכנה:)/.test(l)) {
         return `<strong>${escapeHtml(l)}</strong>`;
       }
@@ -707,11 +705,11 @@
   function applyFontSize() {
     const contentEl = document.getElementById('fs-recipe-content');
     if (currentFontSizeLevel === 1) {
-      contentEl.style.fontSize = "1.12rem";
+      contentEl.style.fontSize = "1.15rem";
     } else if (currentFontSizeLevel === 2) {
-      contentEl.style.fontSize = "1.3rem";
+      contentEl.style.fontSize = "1.35rem";
     } else {
-      contentEl.style.fontSize = "1.5rem";
+      contentEl.style.fontSize = "1.55rem";
     }
   }
 
