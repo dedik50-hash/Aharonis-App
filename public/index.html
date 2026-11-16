@@ -7,6 +7,8 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#0f766e">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='110' fill='%230d9488'/%3E%3Cpath d='M256 112L96 248h48v152h224V248h48L256 112zm-32 232l-56-56 22-22 34 34 86-86 22 22-108 108z' fill='%23ffffff'/%3E%3C/svg%3E">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='110' fill='%230d9488'/%3E%3Cpath d='M256 112L96 248h48v152h224V248h48L256 112zm-32 232l-56-56 22-22 34 34 86-86 22 22-108 108z' fill='%23ffffff'/%3E%3C/svg%3E">
   
   <script src="/__/firebase/10.12.2/firebase-app-compat.js"></script>
   <script src="/__/firebase/10.12.2/firebase-auth-compat.js"></script>
@@ -26,6 +28,15 @@
     * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
     body { margin: 0; background: var(--bg); color: var(--text); padding-bottom: calc(84px + env(safe-area-inset-bottom)); }
     
+    #celebration-canvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 100;
+    }
+
     header {
       background: linear-gradient(135deg, var(--primary-dark), var(--primary));
       color: white;
@@ -54,8 +65,73 @@
     }
     .sync-pill { font-size: 0.72rem; background: rgba(255,255,255,0.18); padding: 4px 8px; border-radius: 20px; white-space: nowrap; }
 
+    .toast-banner {
+      position: fixed;
+      top: calc(64px + env(safe-area-inset-top));
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      background: #1e293b;
+      color: white;
+      padding: 12px 16px;
+      border-radius: 14px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+      z-index: 50;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      width: 92%;
+      max-width: 420px;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.25s ease;
+      border-right: 4px solid #f59e0b;
+    }
+    .toast-banner.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+      pointer-events: auto;
+    }
+    .toast-main { display: flex; align-items: center; gap: 10px; }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 60;
+      padding: 16px;
+    }
+    .modal-card {
+      background: white;
+      border-radius: 18px;
+      padding: 20px;
+      width: 100%;
+      max-width: 360px;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.2);
+      text-align: center;
+    }
+    .modal-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; }
+    .modal-sub { font-size: 0.85rem; color: var(--muted); margin-bottom: 16px; }
+    .user-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+    .user-choice {
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: #f8fafc;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .user-choice.selected { background: var(--primary); color: white; border-color: var(--primary); }
+
     .container { max-width: 640px; margin: 0 auto; padding: 14px; }
+
     .chips-row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 10px; scrollbar-width: none; }
+    .chips-row::-webkit-scrollbar { display: none; }
     .chip {
       background: white;
       border: 1px solid var(--border);
@@ -66,8 +142,28 @@
       font-weight: 600;
       white-space: nowrap;
       cursor: pointer;
+      transition: 0.15s;
     }
     .chip.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+    .assignee-picker { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .assignee-label { font-size: 0.82rem; color: var(--muted); font-weight: 600; margin-left: 4px; }
+    .pick-chip {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      color: var(--text);
+      padding: 6px 12px;
+      border-radius: 16px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      cursor: pointer;
+      user-select: none;
+    }
+    .pick-chip.selected {
+      background: #0ea5e9;
+      color: white;
+      border-color: #0284c7;
+    }
 
     .input-card {
       background: var(--card);
@@ -89,6 +185,8 @@
       background: #f8fafc;
       color: var(--text);
     }
+    input:focus, select:focus { border-color: var(--primary); background: white; }
+    select.auto-matched { border-color: var(--primary); background: #f0fdfa; }
     .grow { flex: 1; min-width: 140px; }
     .qty-input { width: 95px; }
     button.btn-primary {
@@ -101,6 +199,33 @@
       font-weight: 700;
       cursor: pointer;
     }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 16px 0 8px;
+    }
+    .cat-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--primary-dark);
+      margin: 14px 4px 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .clear-btn {
+      background: #fee2e2;
+      color: #b91c1c;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
     .list { display: flex; flex-direction: column; gap: 8px; }
     .item {
       background: var(--card);
@@ -110,14 +235,56 @@
       align-items: center;
       justify-content: space-between;
       box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      border-right: 4px solid transparent;
     }
+    .item.urgent { border-right-color: var(--danger); }
     .item.done { opacity: 0.6; }
     .item.done .item-text { text-decoration: line-through; color: var(--muted); }
+    
     .item-left { display: flex; align-items: center; gap: 12px; flex: 1; cursor: pointer; }
     .checkbox { width: 22px; height: 22px; accent-color: var(--primary); cursor: pointer; flex-shrink: 0; }
+    .item-main { display: flex; flex-direction: column; gap: 4px; }
+    .item-title-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
     .item-text { font-size: 1rem; font-weight: 500; }
     .qty-badge { background: #f1f5f9; color: #334155; font-size: 0.78rem; padding: 2px 8px; border-radius: 6px; font-weight: 600; }
+    .meta-row { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; }
     
+    .badge { font-size: 0.74rem; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+    .badge-person { background: #e0f2fe; color: #0369a1; }
+    .badge-urgent { background: #fee2e2; color: #b91c1c; }
+    .badge-date { background: #f1f5f9; color: #475569; }
+
+    .actions { display: flex; align-items: center; gap: 2px; }
+    .icon-btn { background: none; border: none; font-size: 1.05rem; cursor: pointer; padding: 6px; border-radius: 8px; color: var(--muted); }
+    .del-btn { color: var(--danger); }
+
+    .fav-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)); gap: 10px; }
+    .fav-card {
+      background: white;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 8px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    }
+    .fav-top { display: flex; justify-content: space-between; align-items: flex-start; }
+    .fav-name { font-weight: 600; font-size: 0.95rem; }
+    .fav-cat { font-size: 0.75rem; color: var(--muted); }
+    .fav-add {
+      background: #ccfbf1;
+      color: var(--primary-dark);
+      border: none;
+      padding: 7px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      width: 100%;
+    }
+
     .bottom-nav {
       position: fixed; bottom: 0; left: 0; right: 0; background: white;
       border-top: 1px solid var(--border); display: flex; padding-bottom: env(safe-area-inset-bottom); z-index: 30;
@@ -129,6 +296,7 @@
     .nav-item.active { color: var(--primary); }
     .hidden { display: none !important; }
     .empty-state { text-align: center; color: var(--muted); padding: 32px 16px; font-size: 0.95rem; }
+    .checkbox-label { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; color: var(--text); cursor: pointer; background: #f8fafc; padding: 8px 10px; border-radius: 8px; border: 1px solid #cbd5e1; user-select: none; }
   </style>
 </head>
 <body>
@@ -136,11 +304,29 @@
 <header>
   <h1>🏡 משפחת אהרוני-מרלנג'ון</h1>
   <div class="header-actions">
+    <button class="profile-btn" id="profile-btn" onclick="openProfileModal()">👤 מי אני?</button>
     <div class="sync-pill" id="status">מתחבר...</div>
   </div>
 </header>
 
+<div class="modal-backdrop hidden" id="profile-modal" onclick="if(event.target===this) closeProfileModal()">
+  <div class="modal-card">
+    <div class="modal-title">מי משתמש במכשיר הזה?</div>
+    <div class="modal-sub">הגדרת משתמש לתצוגת משימות</div>
+    <div class="user-grid" id="user-grid">
+      <button class="user-choice" onclick="selectUserProfile('עודד')">עודד</button>
+      <button class="user-choice" onclick="selectUserProfile('מיה')">מיה</button>
+      <button class="user-choice" onclick="selectUserProfile('טליה')">טליה</button>
+      <button class="user-choice" onclick="selectUserProfile('דוד')">דוד</button>
+      <button class="user-choice" onclick="selectUserProfile('יאיר')">יאיר</button>
+      <button class="user-choice" onclick="selectUserProfile('')">ללא סינון</button>
+    </div>
+    <button class="btn-primary" style="width:100%;" onclick="closeProfileModal()">סגור</button>
+  </div>
+</div>
+
 <div class="container">
+  <!-- טאב 1: רשימות קנייה -->
   <div id="view-shopping">
     <div class="chips-row" id="list-selector">
       <div class="chip active" onclick="selectShopList('super', this)">🛒 סופר</div>
@@ -150,11 +336,43 @@
 
     <div class="input-card">
       <div class="row">
-        <input type="text" id="shop-input" class="grow" placeholder="מה צריך לקנות?" onkeypress="if(event.key==='Enter') addShopping()">
+        <input type="text" id="shop-input" class="grow" placeholder="מה צריך לקנות?" oninput="autoDetectCategory('shop-input', 'shop-cat', 'shop')" onkeypress="if(event.key==='Enter') addShopping()">
         <input type="text" id="shop-qty" class="qty-input" placeholder="כמות" onkeypress="if(event.key==='Enter') addShopping()">
       </div>
       <div class="row">
-        <select id="shop-cat" class="grow">
+        <select id="shop-cat" class="grow" onchange="manualCategoryChosen['shop'] = true; this.classList.remove('auto-matched')">
+          <option value="ירקות ופירות">🥦 ירקות ופירות</option>
+          <option value="מוצרי חלב וביצים">🧀 מוצרי חלב וביצים</option>
+          <option value="בשר, עוף ודגים">🥩 בשר, עוף ודגים</option>
+          <option value="מאפים ולחם">🥖 מאפים ולחם</option>
+          <option value="יבשים ומזווה">🍝 יבשים ומזווה</option>
+          <option value="ניקיון וטואלטיקה">🧼 ניקיון וטואלטיקה</option>
+          <option value="ביגוד והנעלה">👕 ביגוד והנעלה</option>
+          <option value="ריהוט">🛋️ ריהוט</option>
+          <option value="כללי">📦 כללי</option>
+        </select>
+        <button class="btn-primary" onclick="addShopping()">+ הוסף</button>
+      </div>
+    </div>
+
+    <div class="section-header" id="shop-actions-bar">
+      <span style="font-size:0.85rem; color:var(--muted);" id="shop-counter">0 פריטים</span>
+      <button class="clear-btn hidden" id="clear-done-btn" onclick="clearCompletedShopping()">🗑️ נקה פריטים שנקנו</button>
+    </div>
+
+    <div id="shopping-container"></div>
+  </div>
+
+  <!-- טאב 2: מועדפים -->
+  <div id="view-favorites" class="hidden">
+    <div class="input-card">
+      <div style="font-weight:700; font-size:0.95rem;">⭐ הוספת מוצר קבוע לרשימת המועדפים</div>
+      <div class="row">
+        <input type="text" id="fav-input" class="grow" placeholder="שם המוצר" oninput="autoDetectCategory('fav-input', 'fav-cat', 'fav')" onkeypress="if(event.key==='Enter') addFavorite()">
+        <input type="text" id="fav-qty" class="qty-input" placeholder="כמות">
+      </div>
+      <div class="row">
+        <select id="fav-cat" class="grow" onchange="manualCategoryChosen['fav'] = true; this.classList.remove('auto-matched')">
           <option value="ירקות ופירות">🥦 ירקות ופירות</option>
           <option value="מוצרי חלב וביצים">🧀 מוצרי חלב וביצים</option>
           <option value="בשר, עוף ודגים">🥩 בשר, עוף ודגים</option>
@@ -163,18 +381,49 @@
           <option value="ניקיון וטואלטיקה">🧼 ניקיון וטואלטיקה</option>
           <option value="כללי">📦 כללי</option>
         </select>
-        <button class="btn-primary" onclick="addShopping()">+ הוסף</button>
+        <button class="btn-primary" onclick="addFavorite()">שמור במועדפים</button>
+      </div>
+    </div>
+    <div class="fav-grid" id="favorites-list"></div>
+  </div>
+
+  <!-- טאב 3: משימות בית -->
+  <div id="view-tasks" class="hidden">
+    <div class="chips-row" id="task-filter-row">
+      <div class="chip active" onclick="filterTasks('הכל', this)">הכל</div>
+      <div class="chip" onclick="filterTasks('עודד', this)">עודד</div>
+      <div class="chip" onclick="filterTasks('מיה', this)">מיה</div>
+      <div class="chip" onclick="filterTasks('טליה', this)">טליה</div>
+      <div class="chip" onclick="filterTasks('דוד', this)">דוד</div>
+      <div class="chip" onclick="filterTasks('יאיר', this)">יאיר</div>
+    </div>
+
+    <div class="input-card">
+      <input type="text" id="task-input" placeholder="מה המשימה?" onkeypress="if(event.key==='Enter') addTask()">
+      
+      <div class="assignee-picker" id="task-assignee-picker">
+        <span class="assignee-label">אחראים:</span>
+        <span class="pick-chip selected" data-name="כולם" onclick="toggleAssignee('כולם')">כולם</span>
+        <span class="pick-chip" data-name="עודד" onclick="toggleAssignee('עודד')">עודד</span>
+        <span class="pick-chip" data-name="מיה" onclick="toggleAssignee('מיה')">מיה</span>
+        <span class="pick-chip" data-name="טליה" onclick="toggleAssignee('טליה')">טליה</span>
+        <span class="pick-chip" data-name="דוד" onclick="toggleAssignee('דוד')">דוד</span>
+        <span class="pick-chip" data-name="יאיר" onclick="toggleAssignee('יאיר')">יאיר</span>
+      </div>
+
+      <div class="row" style="align-items:center;">
+        <div style="display:flex; align-items:center; gap:6px; flex:1; min-width:140px;">
+          <span style="font-size:0.82rem; color:var(--muted); font-weight:600;">📅 יעד:</span>
+          <input type="date" id="task-due" style="padding:8px 10px; font-size:0.85rem; flex:1;">
+        </div>
+        <label class="checkbox-label"><input type="checkbox" id="task-urgent"> 🔥 דחוף</label>
+      </div>
+
+      <div class="row" style="justify-content:flex-end;">
+        <button class="btn-primary" onclick="addTask()">+ הוסף משימה</button>
       </div>
     </div>
 
-    <div id="shopping-container"></div>
-  </div>
-
-  <div id="view-tasks" class="hidden">
-    <div class="input-card">
-      <input type="text" id="task-input" placeholder="מה המשימה?" onkeypress="if(event.key==='Enter') addTask()">
-      <button class="btn-primary" onclick="addTask()">+ הוסף משימה</button>
-    </div>
     <div class="list" id="tasks-list"></div>
   </div>
 </div>
@@ -183,6 +432,10 @@
   <div class="nav-item active" id="nav-shopping" onclick="switchTab('shopping')">
     <span class="icon">🛒</span>
     <span>רשימות</span>
+  </div>
+  <div class="nav-item" id="nav-favorites" onclick="switchTab('favorites')">
+    <span class="icon">⭐</span>
+    <span>מועדפים</span>
   </div>
   <div class="nav-item" id="nav-tasks" onclick="switchTab('tasks')">
     <span class="icon">✅</span>
@@ -200,7 +453,6 @@
     appId: "1:796491469055:web:d30e52773e76032c933cca"
   };
 
-  // אתחול בטוח שמונע שגיאות כפילות
   if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
   }
@@ -210,10 +462,61 @@
   const familyId = "aharoni_family_main";
 
   let currentShopList = "super";
+  let currentTaskFilter = "הכל";
+  let selectedAssignees = ["כולם"];
   let allShoppingItems = [];
+  let allFavorites = [];
   let allTasks = [];
+  let currentUser = (localStorage.getItem("aharoni_current_user") || "").trim();
+  let manualCategoryChosen = { shop: false, fav: false };
 
-  auth.signInAnonymously().catch(err => {
+  updateProfileUI();
+
+  const categoryIcons = {
+    "ירקות ופירות": "🥦",
+    "מוצרי חלב וביצים": "🧀",
+    "בשר, עוף ודגים": "🥩",
+    "מאפים ולחם": "🥖",
+    "יבשים ומזווה": "🍝",
+    "ניקיון וטואלטיקה": "🧼",
+    "ביגוד והנעלה": "👕",
+    "ריהוט": "🛋️",
+    "כללי": "📦"
+  };
+
+  const categoryKeywords = {
+    "ירקות ופירות": ["עגבני", "מלפפון", "פלפל", "גמבה", "בצל", "שום", "תפוח אדמה", "גזר", "קישוא", "חציל", "חסה", "כרוב", "אבוקדו", "לימון", "תפוז", "בננה", "תפוח", "פטרוזיליה", "כוסברה", "נענע", "בטטה", "סלק"],
+    "מוצרי חלב וביצים": ["חלב", "גבינ", "קוטג", "שמנת", "יוגורט", "חמאה", "ביצים", "ביצה", "צהובה", "מוצרלה", "בולגרית"],
+    "בשר, עוף ודגים": ["עוף", "חזה עוף", "שניצל", "פרגית", "בשר", "טחון", "אנטריקוט", "דג", "סלמון", "אמנון", "דניס"],
+    "מאפים ולחם": ["לחם", "פיתה", "לחמני", "חלה", "באגט", "בורקס", "עוגה", "עוגיות", "פוקאצ"],
+    "יבשים ומזווה": ["פסטה", "ספגטי", "פתיתים", "אורז", "קוסקוס", "קמח", "סוכר", "מלח", "שמן", "טחינה", "רסק", "שימורים", "טונה", "תבלין", "קפה", "תה", "שוקולד", "דבש", "סילאן", "קורנפלקס"],
+    "ניקיון וטואלטיקה": ["סבון", "שמפו", "מרכך", "משחת שיניים", "דאודורנט", "נייר טואלט", "מגבונים", "נוזל כלים", "טבליות למדיח", "אבקת כביסה", "שקיות אשפה"]
+  };
+
+  function detectCategoryFromText(text) {
+    const clean = (text || "").trim().toLowerCase();
+    if (!clean || clean.length < 2) return null;
+    for (const [category, words] of Object.entries(categoryKeywords)) {
+      for (const kw of words) {
+        if (clean.includes(kw)) return category;
+      }
+    }
+    return null;
+  }
+
+  function autoDetectCategory(inputId, selectId, formKey) {
+    const inputEl = document.getElementById(inputId);
+    const selectEl = document.getElementById(selectId);
+    const val = inputEl.value.trim();
+    if (!val || manualCategoryChosen[formKey]) return;
+    const detected = detectCategoryFromText(val);
+    if (detected) {
+      selectEl.value = detected;
+      selectEl.classList.add('auto-matched');
+    }
+  }
+
+  auth.signInAnonymously().catch(() => {
     document.getElementById('status').innerText = "שגיאת חיבור";
   });
 
@@ -229,8 +532,33 @@
       .onSnapshot((snapshot) => {
         allShoppingItems = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
         renderShopping();
-      }, err => {
-        document.getElementById('status').innerText = "שגיאת נתונים 🔴";
+      });
+
+    db.collection("families").doc(familyId).collection("favorites")
+      .onSnapshot((snapshot) => {
+        allFavorites = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        const favEl = document.getElementById('favorites-list');
+        favEl.innerHTML = "";
+        if (snapshot.empty) {
+          favEl.innerHTML = '<div class="empty-state" style="grid-column:1/-1;">אין עדיין מוצרים קבועים. הוסיפו למעלה מוצרים שקונים כל שבוע!</div>';
+          return;
+        }
+        snapshot.forEach(docSnap => {
+          const d = docSnap.data();
+          const card = document.createElement('div');
+          card.className = "fav-card";
+          card.innerHTML = `
+            <div class="fav-top">
+              <div>
+                <div class="fav-name">${escapeHtml(d.name)} ${d.qty ? '(' + escapeHtml(d.qty) + ')' : ''}</div>
+                <div class="fav-cat">${categoryIcons[d.category] || '📦'} ${escapeHtml(d.category || 'כללי')}</div>
+              </div>
+              <button class="icon-btn del-btn" onclick="deleteItem('favorites', '${docSnap.id}')">✕</button>
+            </div>
+            <button class="fav-add" onclick="quickAddFromFav('${escapeAttr(d.name)}', '${escapeAttr(d.qty || '')}', '${escapeAttr(d.category || 'כללי')}')">+ הוסף לרשימה</button>
+          `;
+          favEl.appendChild(card);
+        });
       });
 
     db.collection("families").doc(familyId).collection("tasks")
@@ -244,45 +572,106 @@
     const container = document.getElementById('shopping-container');
     container.innerHTML = "";
     const filtered = allShoppingItems.filter(item => (item.list_type || "super") === currentShopList);
+    const activeItems = filtered.filter(i => !i.completed);
+    const doneItems = filtered.filter(i => i.completed);
+
+    document.getElementById('shop-counter').innerText = activeItems.length + " פריטים לקנייה";
+    document.getElementById('clear-done-btn').classList.toggle('hidden', doneItems.length === 0);
 
     if (filtered.length === 0) {
       container.innerHTML = '<div class="empty-state">הרשימה ריקה כרגע 🎉</div>';
       return;
     }
 
-    const listDiv = document.createElement('div');
-    listDiv.className = "list";
-    filtered.forEach(item => {
-      const div = document.createElement('div');
-      div.className = "item " + (item.completed ? 'done' : '');
-      div.innerHTML = `
-        <div class="item-left" onclick="toggleItem('shopping_list', '${item.id}', ${!item.completed})">
-          <input type="checkbox" class="checkbox" ${item.completed ? 'checked' : ''}>
-          <div class="item-text">${escapeHtml(item.name)} ${item.qty ? '<span class="qty-badge">' + escapeHtml(item.qty) + '</span>' : ''}</div>
-        </div>
-        <button style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:1rem;" onclick="deleteItem('shopping_list', '${item.id}')">✕</button>
-      `;
-      listDiv.appendChild(div);
+    const grouped = {};
+    activeItems.forEach(item => {
+      const cat = item.category || "כללי";
+      if (!grouped[cat]) grouped[cat] = [];
+      grouped[cat].push(item);
     });
-    container.appendChild(listDiv);
+
+    Object.keys(grouped).forEach(cat => {
+      const header = document.createElement('div');
+      header.className = "cat-title";
+      header.innerHTML = (categoryIcons[cat] || '📦') + " " + escapeHtml(cat) + " (" + grouped[cat].length + ")";
+      container.appendChild(header);
+
+      const listDiv = document.createElement('div');
+      listDiv.className = "list";
+      grouped[cat].forEach(item => listDiv.appendChild(createShopElement(item)));
+      container.appendChild(listDiv);
+    });
+
+    if (doneItems.length > 0) {
+      const doneHeader = document.createElement('div');
+      doneHeader.className = "cat-title";
+      doneHeader.style.color = "#64748b";
+      doneHeader.innerHTML = "✔️ כבר בעגלה (" + doneItems.length + ")";
+      container.appendChild(doneHeader);
+
+      const doneList = document.createElement('div');
+      doneList.className = "list";
+      doneItems.forEach(item => doneList.appendChild(createShopElement(item)));
+      container.appendChild(doneList);
+    }
+  }
+
+  function createShopElement(data) {
+    const div = document.createElement('div');
+    div.className = "item " + (data.completed ? 'done' : '');
+    div.innerHTML = `
+      <div class="item-left" onclick="toggleItem('shopping_list', '${data.id}', ${!data.completed})">
+        <input type="checkbox" class="checkbox" ${data.completed ? 'checked' : ''}>
+        <div class="item-main">
+          <div class="item-title-row">
+            <span class="item-text">${escapeHtml(data.name)}</span>
+            ${data.qty ? '<span class="qty-badge">' + escapeHtml(data.qty) + '</span>' : ''}
+          </div>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="icon-btn" title="שמור במועדפים" onclick="saveAsFavorite('${escapeAttr(data.name)}', '${escapeAttr(data.qty || '')}', '${escapeAttr(data.category || 'כללי')}')">⭐</button>
+        <button class="icon-btn del-btn" onclick="deleteItem('shopping_list', '${data.id}')">✕</button>
+      </div>
+    `;
+    return div;
   }
 
   function renderTasks() {
     const listEl = document.getElementById('tasks-list');
     listEl.innerHTML = "";
-    if (allTasks.length === 0) {
-      listEl.innerHTML = '<div class="empty-state">אין משימות ✨</div>';
+    let filtered = allTasks;
+    if (currentTaskFilter !== "הכל") {
+      filtered = allTasks.filter(t => {
+        const people = Array.isArray(t.assignees) ? t.assignees : (t.assigned_to ? t.assigned_to.split(',').map(s=>s.trim()) : ["כולם"]);
+        return people.includes(currentTaskFilter) || people.includes("כולם");
+      });
+    }
+
+    if (filtered.length === 0) {
+      listEl.innerHTML = '<div class="empty-state">אין משימות פתוחות ✨</div>';
       return;
     }
-    allTasks.forEach(data => {
+
+    filtered.forEach(data => {
+      const people = Array.isArray(data.assignees) ? data.assignees : ["כולם"];
+      const peopleBadges = people.map(p => '<span class="badge badge-person">' + escapeHtml(p) + '</span>').join('');
+
       const div = document.createElement('div');
-      div.className = "item " + (data.completed ? 'done' : '');
+      div.className = "item " + (data.urgent && !data.completed ? 'urgent ' : '') + (data.completed ? 'done' : '');
       div.innerHTML = `
         <div class="item-left" onclick="toggleItem('tasks', '${data.id}', ${!data.completed})">
           <input type="checkbox" class="checkbox" ${data.completed ? 'checked' : ''}>
-          <div class="item-text">${escapeHtml(data.title)}</div>
+          <div class="item-main">
+            <span class="item-text">${escapeHtml(data.title)}</span>
+            <div class="meta-row">
+              ${peopleBadges}
+              ${data.urgent ? '<span class="badge badge-urgent">🔥 דחוף</span>' : ''}
+              ${data.due_date ? '<span class="badge badge-date">📅 ' + data.due_date + '</span>' : ''}
+            </div>
+          </div>
         </div>
-        <button style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:1rem;" onclick="deleteItem('tasks', '${data.id}')">✕</button>
+        <button class="icon-btn del-btn" onclick="deleteItem('tasks', '${data.id}')">✕</button>
       `;
       listEl.appendChild(div);
     });
@@ -302,29 +691,108 @@
     const name = input.value.trim();
     if (!name) return;
 
+    const cat = (!manualCategoryChosen['shop'] && detectCategoryFromText(name)) || catSelect.value;
     db.collection("families").doc(familyId).collection("shopping_list").add({
       name: name,
       qty: qtyInput.value.trim(),
-      category: catSelect.value,
+      category: cat,
       list_type: currentShopList,
       completed: false,
       created_at: firebase.firestore.FieldValue.serverTimestamp()
     });
     input.value = "";
     qtyInput.value = "";
+    manualCategoryChosen['shop'] = false;
+  }
+
+  function clearCompletedShopping() {
+    allShoppingItems.filter(i => (i.list_type || "super") === currentShopList && i.completed).forEach(item => {
+      db.collection("families").doc(familyId).collection("shopping_list").doc(item.id).delete();
+    });
+  }
+
+  function addFavorite() {
+    const input = document.getElementById('fav-input');
+    const qtyInput = document.getElementById('fav-qty');
+    const catSelect = document.getElementById('fav-cat');
+    const name = input.value.trim();
+    if (!name) return;
+
+    const cat = (!manualCategoryChosen['fav'] && detectCategoryFromText(name)) || catSelect.value;
+    db.collection("families").doc(familyId).collection("favorites").add({
+      name: name,
+      qty: qtyInput.value.trim(),
+      category: cat,
+      created_at: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    input.value = "";
+    qtyInput.value = "";
+    manualCategoryChosen['fav'] = false;
+  }
+
+  function saveAsFavorite(name, qty, category) {
+    db.collection("families").doc(familyId).collection("favorites").add({
+      name: name,
+      qty: qty,
+      category: category,
+      created_at: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  }
+
+  function quickAddFromFav(name, qty, category) {
+    db.collection("families").doc(familyId).collection("shopping_list").add({
+      name: name,
+      qty: qty,
+      category: category,
+      list_type: currentShopList,
+      completed: false,
+      created_at: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    switchTab('shopping');
+  }
+
+  function filterTasks(person, el) {
+    currentTaskFilter = person;
+    document.querySelectorAll('#task-filter-row .chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    renderTasks();
+  }
+
+  function toggleAssignee(name) {
+    if (name === "כולם") {
+      selectedAssignees = ["כולם"];
+    } else {
+      selectedAssignees = selectedAssignees.filter(p => p !== "כולם");
+      if (selectedAssignees.includes(name)) {
+        selectedAssignees = selectedAssignees.filter(p => p !== name);
+      } else {
+        selectedAssignees.push(name);
+      }
+      if (selectedAssignees.length === 0) selectedAssignees = ["כולם"];
+    }
+    document.querySelectorAll('#task-assignee-picker .pick-chip').forEach(chip => {
+      chip.classList.toggle('selected', selectedAssignees.includes(chip.getAttribute('data-name')));
+    });
   }
 
   function addTask() {
     const input = document.getElementById('task-input');
+    const due = document.getElementById('task-due').value;
+    const urgent = document.getElementById('task-urgent').checked;
     const title = input.value.trim();
     if (!title) return;
 
     db.collection("families").doc(familyId).collection("tasks").add({
       title: title,
+      assignees: [...selectedAssignees],
+      due_date: due,
+      urgent: urgent,
       completed: false,
       created_at: firebase.firestore.FieldValue.serverTimestamp()
     });
     input.value = "";
+    document.getElementById('task-due').value = "";
+    document.getElementById('task-urgent').checked = false;
   }
 
   function toggleItem(col, id, state) {
@@ -336,16 +804,31 @@
   }
 
   function switchTab(tab) {
-    document.getElementById('view-shopping').classList.toggle('hidden', tab !== 'shopping');
-    document.getElementById('view-tasks').classList.toggle('hidden', tab !== 'tasks');
-    document.getElementById('nav-shopping').classList.toggle('active', tab === 'shopping');
-    document.getElementById('nav-tasks').classList.toggle('active', tab === 'tasks');
+    ['shopping', 'favorites', 'tasks'].forEach(t => {
+      document.getElementById('view-' + t).classList.toggle('hidden', t !== tab);
+      document.getElementById('nav-' + t).classList.toggle('active', t === tab);
+    });
+  }
+
+  function openProfileModal() { document.getElementById('profile-modal').classList.remove('hidden'); }
+  function closeProfileModal() { document.getElementById('profile-modal').classList.add('hidden'); }
+  function selectUserProfile(name) {
+    currentUser = name.trim();
+    localStorage.setItem("aharoni_current_user", currentUser);
+    updateProfileUI();
+    closeProfileModal();
+  }
+  function updateProfileUI() {
+    document.getElementById('profile-btn').innerText = currentUser ? "👤 " + currentUser : "👤 מי אני?";
   }
 
   function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text || "";
     return div.innerHTML;
+  }
+  function escapeAttr(text) {
+    return (text || "").split("'").join("\\'");
   }
 </script>
 </body>
