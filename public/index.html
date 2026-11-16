@@ -73,6 +73,21 @@
     }
     .chip.active { background: var(--primary); color: white; border-color: var(--primary); }
 
+    .assignee-picker { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .assignee-label { font-size: 0.82rem; color: var(--muted); font-weight: 600; margin-left: 4px; }
+    .pick-chip {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      color: var(--text);
+      padding: 6px 12px;
+      border-radius: 16px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      cursor: pointer;
+      user-select: none;
+    }
+    .pick-chip.selected { background: #0ea5e9; color: white; border-color: #0284c7; }
+
     .input-card {
       background: var(--card);
       padding: 14px;
@@ -129,7 +144,9 @@
       align-items: center;
       justify-content: space-between;
       box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      border-right: 4px solid transparent;
     }
+    .item.urgent { border-right-color: var(--danger); }
     .item.done { opacity: 0.6; }
     .item.done .item-text { text-decoration: line-through; color: var(--muted); }
     .item-left { display: flex; align-items: center; gap: 12px; flex: 1; cursor: pointer; }
@@ -138,6 +155,12 @@
     .item-title-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
     .item-text { font-size: 1rem; font-weight: 500; }
     .qty-badge { background: #f1f5f9; color: #334155; font-size: 0.78rem; padding: 2px 8px; border-radius: 6px; font-weight: 600; }
+    .meta-row { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; }
+    
+    .badge { font-size: 0.74rem; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+    .badge-person { background: #e0f2fe; color: #0369a1; }
+    .badge-urgent { background: #fee2e2; color: #b91c1c; }
+    .badge-date { background: #f1f5f9; color: #475569; }
 
     .actions { display: flex; align-items: center; gap: 2px; }
     .icon-btn { background: none; border: none; font-size: 1.05rem; cursor: pointer; padding: 6px; border-radius: 8px; color: var(--muted); }
@@ -170,20 +193,46 @@
       width: 100%;
     }
 
-    .recipe-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
-    .recipe-card {
+    /* עיצוב אקורדיון למתכונים לפי קטגוריות */
+    .recipe-accordion-cat {
       background: white;
-      padding: 16px;
       border-radius: 14px;
       border: 1px solid var(--border);
+      margin-bottom: 10px;
+      overflow: hidden;
       box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .recipe-accordion-header {
+      padding: 14px 16px;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--primary-dark);
+      background: #f8fafc;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .recipe-accordion-header:hover { background: #f1f5f9; }
+    .recipe-accordion-body {
+      padding: 12px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
+      border-top: 1px solid var(--border);
     }
-    .recipe-title { font-size: 1.1rem; font-weight: 700; color: var(--primary-dark); }
-    .recipe-section-title { font-size: 0.85rem; font-weight: 700; color: var(--muted); margin-top: 4px; }
-    .recipe-content { font-size: 0.9rem; color: var(--text); white-space: pre-line; background: #f8fafc; padding: 10px; border-radius: 8px; max-height: 250px; overflow-y: auto; }
+    .recipe-card {
+      background: #f8fafc;
+      padding: 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .recipe-title { font-size: 1.02rem; font-weight: 700; color: var(--text); }
+    .recipe-content { font-size: 0.88rem; color: var(--muted); white-space: pre-line; background: white; padding: 10px; border-radius: 8px; border: 1px solid var(--border); max-height: 200px; overflow-y: auto; }
 
     .bottom-nav {
       position: fixed; bottom: 0; left: 0; right: 0; background: white;
@@ -196,6 +245,7 @@
     .nav-item.active { color: var(--primary); }
     .hidden { display: none !important; }
     .empty-state { text-align: center; color: var(--muted); padding: 32px 16px; font-size: 0.95rem; }
+    .checkbox-label { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; color: var(--text); cursor: pointer; background: #f8fafc; padding: 8px 10px; border-radius: 8px; border: 1px solid #cbd5e1; user-select: none; }
   </style>
 </head>
 <body>
@@ -203,9 +253,26 @@
 <header>
   <h1>🏡 משפחת אהרוני-מרלנג'ון</h1>
   <div class="header-actions">
+    <button class="profile-btn" id="profile-btn" onclick="openProfileModal()">👤 מי אני?</button>
     <div class="sync-pill" id="status">מתחבר...</div>
   </div>
 </header>
+
+<div class="modal-backdrop hidden" id="profile-modal" onclick="if(event.target===this) closeProfileModal()">
+  <div class="modal-card" style="background:white; border-radius:18px; padding:20px; width:100%; max-width:360px; margin:auto;">
+    <div style="font-size:1.1rem; font-weight:700; margin-bottom:6px;">מי משתמש במכשיר הזה?</div>
+    <div style="font-size:0.85rem; color:var(--muted); margin-bottom:16px;">הגדרת משתמש לתצוגת משימות</div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px;">
+      <button class="user-choice" style="padding:12px; border-radius:12px; border:1px solid var(--border); background:#f8fafc; font-weight:600; cursor:pointer;" onclick="selectUserProfile('עודד')">עודד</button>
+      <button class="user-choice" style="padding:12px; border-radius:12px; border:1px solid var(--border); background:#f8fafc; font-weight:600; cursor:pointer;" onclick="selectUserProfile('מיה')">מיה</button>
+      <button class="user-choice" style="padding:12px; border-radius:12px; border:1px solid var(--border); background:#f8fafc; font-weight:600; cursor:pointer;" onclick="selectUserProfile('טליה')">טליה</button>
+      <button class="user-choice" style="padding:12px; border-radius:12px; border:1px solid var(--border); background:#f8fafc; font-weight:600; cursor:pointer;" onclick="selectUserProfile('דוד')">דוד</button>
+      <button class="user-choice" style="padding:12px; border-radius:12px; border:1px solid var(--border); background:#f8fafc; font-weight:600; cursor:pointer;" onclick="selectUserProfile('יאיר')">יאיר</button>
+      <button class="user-choice" style="padding:12px; border-radius:12px; border:1px solid var(--border); background:#f8fafc; font-weight:600; cursor:pointer;" onclick="selectUserProfile('')">ללא סינון</button>
+    </div>
+    <button class="btn-primary" style="width:100%;" onclick="closeProfileModal()">סגור</button>
+  </div>
+</div>
 
 <div class="container">
   <!-- טאב 1: רשימות קנייה -->
@@ -219,7 +286,7 @@
     <div class="input-card">
       <div class="row">
         <input type="text" id="shop-input" class="grow" placeholder="מה צריך לקנות?" oninput="autoDetectCategory('shop-input', 'shop-cat', 'shop')" onkeypress="if(event.key==='Enter') addShopping()">
-        <input type="text" id="shop-qty" class="qty-input" placeholder="כמות/הערה" onkeypress="if(event.key==='Enter') addShopping()">
+        <input type="text" id="shop-qty" class="qty-input" placeholder="כמות" onkeypress="if(event.key==='Enter') addShopping()">
       </div>
       <div class="row">
         <select id="shop-cat" class="grow" onchange="manualCategoryChosen['shop'] = true; this.classList.remove('auto-matched')">
@@ -250,8 +317,8 @@
     <div class="input-card">
       <div style="font-weight:700; font-size:0.95rem;">⭐ הוספת מוצר קבוע לרשימת המועדפים</div>
       <div class="row">
-        <input type="text" id="fav-input" class="grow" placeholder="שם המוצר (למשל: חלב 3%)" oninput="autoDetectCategory('fav-input', 'fav-cat', 'fav')" onkeypress="if(event.key==='Enter') addFavorite()">
-        <input type="text" id="fav-qty" class="qty-input" placeholder="כמות קבועה">
+        <input type="text" id="fav-input" class="grow" placeholder="שם המוצר" oninput="autoDetectCategory('fav-input', 'fav-cat', 'fav')" onkeypress="if(event.key==='Enter') addFavorite()">
+        <input type="text" id="fav-qty" class="qty-input" placeholder="כמות">
       </div>
       <div class="row">
         <select id="fav-cat" class="grow" onchange="manualCategoryChosen['fav'] = true; this.classList.remove('auto-matched')">
@@ -269,23 +336,62 @@
     <div class="fav-grid" id="favorites-list"></div>
   </div>
 
-  <!-- טאב 3: מתכונים -->
+  <!-- טאב 3: מתכונים (מחולק לקטגוריות עם אקורדיון) -->
   <div id="view-recipes" class="hidden">
     <div class="input-card">
-      <div style="font-weight:700; font-size:0.95rem;">🍲 ייבוא ופענוח חכם של מתכון</div>
-      <input type="text" id="recipe-title" placeholder="שם המתכון (למשל: עוגת שמרים אייל שני)">
-      <textarea id="raw-recipe-text" rows="5" placeholder="הדבק כאן את הטקסט הגולמי מהכתבה או מהוואטסאפ..."></textarea>
+      <div style="font-weight:700; font-size:0.95rem;">🍲 הוספת וייבוא מתכון</div>
+      <input type="text" id="recipe-title" placeholder="שם המתכון (למשל: עוגת שמרים)">
+      <select id="recipe-category">
+        <option value="בשר ודגים">🥩 בשר ודגים</option>
+        <option value="מאפים ולחמים">🥖 מאפים ולחמים</option>
+        <option value="עוגות וקינוחים">🍰 עוגות וקינוחים</option>
+        <option value="תבשילים ומרקים">🍲 תבשילים ומרקים</option>
+        <option value="סלטים ותוספות">🥗 סלטים ותוספות</option>
+        <option value="כללי">📦 כללי</option>
+      </select>
+      <textarea id="raw-recipe-text" rows="5" placeholder="הדבק כאן את תוכן המתכון המלא..."></textarea>
       <button class="btn-primary" onclick="addRecipe()">שמור מתכון</button>
     </div>
-    <div class="recipe-grid" id="recipes-list"></div>
+    <div id="recipes-accordion-container"></div>
   </div>
 
   <!-- טאב 4: משימות בית -->
   <div id="view-tasks" class="hidden">
+    <div class="chips-row" id="task-filter-row">
+      <div class="chip active" onclick="filterTasks('הכל', this)">הכל</div>
+      <div class="chip" onclick="filterTasks('עודד', this)">עודד</div>
+      <div class="chip" onclick="filterTasks('מיה', this)">מיה</div>
+      <div class="chip" onclick="filterTasks('טליה', this)">טליה</div>
+      <div class="chip" onclick="filterTasks('דוד', this)">דוד</div>
+      <div class="chip" onclick="filterTasks('יאיר', this)">יאיר</div>
+    </div>
+
     <div class="input-card">
       <input type="text" id="task-input" placeholder="מה המשימה?" onkeypress="if(event.key==='Enter') addTask()">
-      <button class="btn-primary" onclick="addTask()">+ הוסף משימה</button>
+      
+      <div class="assignee-picker" id="task-assignee-picker">
+        <span class="assignee-label">אחראים:</span>
+        <span class="pick-chip selected" data-name="כולם" onclick="toggleAssignee('כולם')">כולם</span>
+        <span class="pick-chip" data-name="עודד" onclick="toggleAssignee('עודד')">עודד</span>
+        <span class="pick-chip" data-name="מיה" onclick="toggleAssignee('מיה')">מיה</span>
+        <span class="pick-chip" data-name="טליה" onclick="toggleAssignee('טליה')">טליה</span>
+        <span class="pick-chip" data-name="דוד" onclick="toggleAssignee('דוד')">דוד</span>
+        <span class="pick-chip" data-name="יאיר" onclick="toggleAssignee('יאיר')">יאיר</span>
+      </div>
+
+      <div class="row" style="align-items:center;">
+        <div style="display:flex; align-items:center; gap:6px; flex:1; min-width:140px;">
+          <span style="font-size:0.82rem; color:var(--muted); font-weight:600;">📅 יעד:</span>
+          <input type="date" id="task-due" style="padding:8px 10px; font-size:0.85rem; flex:1;">
+        </div>
+        <label class="checkbox-label"><input type="checkbox" id="task-urgent"> 🔥 דחוף</label>
+      </div>
+
+      <div class="row" style="justify-content:flex-end;">
+        <button class="btn-primary" onclick="addTask()">+ הוסף משימה</button>
+      </div>
     </div>
+
     <div class="list" id="tasks-list"></div>
   </div>
 </div>
@@ -328,11 +434,17 @@
   const familyId = "aharoni_family_main";
 
   let currentShopList = "super";
+  let currentTaskFilter = "הכל";
+  let selectedAssignees = ["כולם"];
   let allShoppingItems = [];
   let allFavorites = [];
   let allRecipes = [];
   let allTasks = [];
+  let currentUser = (localStorage.getItem("aharoni_current_user") || "").trim();
   let manualCategoryChosen = { shop: false, fav: false };
+  let openRecipeCategories = {}; // שמירת מצב פתוח/סגור של קטגוריות מתכונים
+
+  updateProfileUI();
 
   const categoryIcons = {
     "ירקות ופירות": "🥦",
@@ -343,6 +455,15 @@
     "ניקיון וטואלטיקה": "🧼",
     "ביגוד והנעלה": "👕",
     "ריהוט": "🛋️",
+    "כללי": "📦"
+  };
+
+  const recipeCategoryIcons = {
+    "בשר ודגים": "🥩",
+    "מאפים ולחמים": "🥖",
+    "עוגות וקינוחים": "🍰",
+    "תבשילים ומרקים": "🍲",
+    "סלטים ותוספות": "🥗",
     "כללי": "📦"
   };
 
@@ -426,26 +547,7 @@
     db.collection("families").doc(familyId).collection("recipes")
       .onSnapshot((snapshot) => {
         allRecipes = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-        const recEl = document.getElementById('recipes-list');
-        recEl.innerHTML = "";
-        if (snapshot.empty) {
-          recEl.innerHTML = '<div class="empty-state" style="grid-column:1/-1;">אין עדיין מתכונים שמורים. הדבק למעלה מתכון חדש!</div>';
-          return;
-        }
-        snapshot.forEach(docSnap => {
-          const d = docSnap.data();
-          const card = document.createElement('div');
-          card.className = "recipe-card";
-          card.innerHTML = `
-            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-              <div class="recipe-title">${escapeHtml(d.title)}</div>
-              <button class="icon-btn del-btn" onclick="deleteItem('recipes', '${docSnap.id}')">✕</button>
-            </div>
-            <div class="recipe-content">${escapeHtml(d.content)}</div>
-            <button class="btn-primary" style="margin-top:6px; font-size:0.85rem; padding:9px;" onclick="addRecipeToShopping('${escapeAttr(d.content || '')}')">🛒 הוסף מצרכים לרשימת הקניות</button>
-          `;
-          recEl.appendChild(card);
-        });
+        renderRecipesAccordion();
       });
 
     db.collection("families").doc(familyId).collection("tasks")
@@ -453,6 +555,58 @@
         allTasks = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
         renderTasks();
       });
+  }
+
+  function renderRecipesAccordion() {
+    const container = document.getElementById('recipes-accordion-container');
+    container.innerHTML = "";
+    if (allRecipes.length === 0) {
+      container.innerHTML = '<div class="empty-state">אין עדיין מתכונים שמורים. הוסיפו למעלה מתכון חדש!</div>';
+      return;
+    }
+
+    const grouped = {};
+    allRecipes.forEach(rec => {
+      const cat = rec.category || "כללי";
+      if (!grouped[cat]) grouped[cat] = [];
+      grouped[cat].push(rec);
+    });
+
+    Object.keys(grouped).forEach(cat => {
+      const isOpen = openRecipeCategories[cat] || false;
+      const catDiv = document.createElement('div');
+      catDiv.className = "recipe-accordion-cat";
+
+      const header = document.createElement('div');
+      header.className = "recipe-accordion-header";
+      header.innerHTML = `<span>${recipeCategoryIcons[cat] || '📦'} ${escapeHtml(cat)} (${grouped[cat].length})</span><span>${isOpen ? '▲' : '▼'}</span>`;
+      header.onclick = () => {
+        openRecipeCategories[cat] = !isOpen;
+        renderRecipesAccordion();
+      };
+      catDiv.appendChild(header);
+
+      if (isOpen) {
+        const body = document.createElement('div');
+        body.className = "recipe-accordion-body";
+        grouped[cat].forEach(d => {
+          const card = document.createElement('div');
+          card.className = "recipe-card";
+          card.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+              <div class="recipe-title">${escapeHtml(d.title)}</div>
+              <button class="icon-btn del-btn" onclick="deleteItem('recipes', '${d.id}')">✕</button>
+            </div>
+            <div class="recipe-content">${escapeHtml(d.content)}</div>
+            <button class="btn-primary" style="margin-top:4px; font-size:0.85rem; padding:8px;" onclick="addRecipeToShopping('${escapeAttr(d.content || '')}')">🛒 הוסף מצרכים לרשימת הקניות</button>
+          `;
+          body.appendChild(card);
+        });
+        catDiv.appendChild(body);
+      }
+
+      container.appendChild(catDiv);
+    });
   }
 
   function renderShopping() {
@@ -541,17 +695,36 @@
   function renderTasks() {
     const listEl = document.getElementById('tasks-list');
     listEl.innerHTML = "";
-    if (allTasks.length === 0) {
-      listEl.innerHTML = '<div class="empty-state">אין משימות ✨</div>';
+    let filtered = allTasks;
+    if (currentTaskFilter !== "הכל") {
+      filtered = allTasks.filter(t => {
+        const people = Array.isArray(t.assignees) ? t.assignees : (t.assigned_to ? t.assigned_to.split(',').map(s=>s.trim()) : ["כולם"]);
+        return people.includes(currentTaskFilter) || people.includes("כולם");
+      });
+    }
+
+    if (filtered.length === 0) {
+      listEl.innerHTML = '<div class="empty-state">אין משימות פתוחות ✨</div>';
       return;
     }
-    allTasks.forEach(data => {
+
+    filtered.forEach(data => {
+      const people = Array.isArray(data.assignees) ? data.assignees : ["כולם"];
+      const peopleBadges = people.map(p => '<span class="badge badge-person">' + escapeHtml(p) + '</span>').join('');
+
       const div = document.createElement('div');
-      div.className = "item " + (data.completed ? 'done' : '');
+      div.className = "item " + (data.urgent && !data.completed ? 'urgent ' : '') + (data.completed ? 'done' : '');
       div.innerHTML = `
         <div class="item-left" onclick="toggleItem('tasks', '${data.id}', ${!data.completed})">
           <input type="checkbox" class="checkbox" ${data.completed ? 'checked' : ''}>
-          <div class="item-text">${escapeHtml(data.title)}</div>
+          <div class="item-main">
+            <span class="item-text">${escapeHtml(data.title)}</span>
+            <div class="meta-row">
+              ${peopleBadges}
+              ${data.urgent ? '<span class="badge badge-urgent">🔥 דחוף</span>' : ''}
+              ${data.due_date ? '<span class="badge badge-date">📅 ' + data.due_date + '</span>' : ''}
+            </div>
+          </div>
         </div>
         <button class="icon-btn del-btn" onclick="deleteItem('tasks', '${data.id}')">✕</button>
       `;
@@ -637,6 +810,7 @@
 
   function addRecipe() {
     const titleInput = document.getElementById('recipe-title');
+    const catSelect = document.getElementById('recipe-category');
     const textInput = document.getElementById('raw-recipe-text');
     const title = titleInput.value.trim();
     const content = textInput.value.trim();
@@ -644,11 +818,13 @@
 
     db.collection("families").doc(familyId).collection("recipes").add({
       title: title,
+      category: catSelect.value,
       content: content,
       created_at: firebase.firestore.FieldValue.serverTimestamp()
     });
     titleInput.value = "";
     textInput.value = "";
+    openRecipeCategories[catSelect.value] = true; // פתיחה אוטומטית של הקטגוריה המעודכנת
   }
 
   function addRecipeToShopping(content) {
@@ -670,17 +846,48 @@
     switchTab('shopping');
   }
 
+  function filterTasks(person, el) {
+    currentTaskFilter = person;
+    document.querySelectorAll('#task-filter-row .chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    renderTasks();
+  }
+
+  function toggleAssignee(name) {
+    if (name === "כולם") {
+      selectedAssignees = ["כולם"];
+    } else {
+      selectedAssignees = selectedAssignees.filter(p => p !== "כולם");
+      if (selectedAssignees.includes(name)) {
+        selectedAssignees = selectedAssignees.filter(p => p !== name);
+      } else {
+        selectedAssignees.push(name);
+      }
+      if (selectedAssignees.length === 0) selectedAssignees = ["כולם"];
+    }
+    document.querySelectorAll('#task-assignee-picker .pick-chip').forEach(chip => {
+      chip.classList.toggle('selected', selectedAssignees.includes(chip.getAttribute('data-name')));
+    });
+  }
+
   function addTask() {
     const input = document.getElementById('task-input');
+    const due = document.getElementById('task-due').value;
+    const urgent = document.getElementById('task-urgent').checked;
     const title = input.value.trim();
     if (!title) return;
 
     db.collection("families").doc(familyId).collection("tasks").add({
       title: title,
+      assignees: [...selectedAssignees],
+      due_date: due,
+      urgent: urgent,
       completed: false,
       created_at: firebase.firestore.FieldValue.serverTimestamp()
     });
     input.value = "";
+    document.getElementById('task-due').value = "";
+    document.getElementById('task-urgent').checked = false;
   }
 
   function toggleItem(col, id, state) {
@@ -696,6 +903,18 @@
       document.getElementById('view-' + t).classList.toggle('hidden', t !== tab);
       document.getElementById('nav-' + t).classList.toggle('active', t === tab);
     });
+  }
+
+  function openProfileModal() { document.getElementById('profile-modal').classList.remove('hidden'); }
+  function closeProfileModal() { document.getElementById('profile-modal').classList.add('hidden'); }
+  function selectUserProfile(name) {
+    currentUser = name.trim();
+    localStorage.setItem("aharoni_current_user", currentUser);
+    updateProfileUI();
+    closeProfileModal();
+  }
+  function updateProfileUI() {
+    document.getElementById('profile-btn').innerText = currentUser ? "👤 " + currentUser : "👤 מי אני?";
   }
 
   function escapeHtml(text) {
