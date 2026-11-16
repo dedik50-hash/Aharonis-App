@@ -13,6 +13,7 @@
   <script src="/__/firebase/10.12.2/firebase-app-compat.js"></script>
   <script src="/__/firebase/10.12.2/firebase-auth-compat.js"></script>
   <script src="/__/firebase/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
   <style>
     :root {
@@ -235,6 +236,24 @@
     }
     .recipe-card:hover { background: #f1f5f9; border-color: var(--primary); }
     .recipe-card-title { font-size: 1.02rem; font-weight: 700; color: var(--text); }
+    
+    /* כפתור מעוצב עם חץ בתוכו */
+    .recipe-open-btn {
+      background: #ccfbf1;
+      color: var(--primary-dark);
+      border: 1px solid #5eead4;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.15rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.1s;
+    }
+    .recipe-open-btn:active { transform: scale(0.95); background: #99f6e4; }
 
     /* מסך קריאה מלא (Fullscreen Reader) */
     #recipe-fullscreen-modal {
@@ -410,8 +429,16 @@
   <!-- טאב 3: מתכונים -->
   <div id="view-recipes" class="hidden">
     <div class="input-card">
-      <div style="font-weight:700; font-size:0.95rem;">🍲 הוספת מתכון חדש</div>
-      <textarea id="raw-recipe-text" rows="5" placeholder="הדבק כאן את תוכן המתכון המלא..."></textarea>
+      <div style="font-weight:700; font-size:0.95rem;">🍲 הוספת מתכון חדש או צילום מסך</div>
+      
+      <!-- בחירת צילום מסך מהגלריה או Google Photos במכשיר -->
+      <label style="background:#e0f2fe; color:#0369a1; padding:10px 14px; border-radius:10px; font-size:0.9rem; font-weight:600; cursor:pointer; text-align:center; display:block;">
+        📸 בחר צילום מסך של מתכון (מגלריה / Google Photos)
+        <input type="file" accept="image/*" style="display:none;" onchange="handleImageUpload(event)">
+      </label>
+      <div id="ocr-status" style="font-size:0.8rem; color:var(--muted); text-align:center;" class="hidden">מעבד תמונה ומחלץ טקסט... ⏳</div>
+
+      <textarea id="raw-recipe-text" rows="5" placeholder="או הדבק כאן את תוכן המתכון המלא..."></textarea>
       
       <div class="row">
         <select id="recipe-category-select" class="grow">
@@ -631,7 +658,32 @@
       });
   }
 
-  // ניקוי וסידור אוטומטי של טקסט המתכון (הסרת רווחים כפולים וסימונים מיותרים)
+  function handleImageUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const statusEl = document.getElementById('ocr-status');
+    statusEl.classList.remove('hidden');
+    statusEl.innerText = "קורא טקסט מהתמונה... ⏳";
+
+    Tesseract.recognize(
+      file,
+      'heb+eng',
+      { logger: m => console.log(m) }
+    ).then(({ data: { text } }) => {
+      statusEl.classList.add('hidden');
+      if (text && text.trim().length > 0) {
+        document.getElementById('raw-recipe-text').value = text.trim();
+      } else {
+        alert("לא זוהה טקסט ברור בתמונה. נסה צילום מסך ממוקד יותר.");
+      }
+    }).catch(err => {
+      statusEl.classList.add('hidden');
+      alert("שגיאה בטעינת ספריית הפענוח. נסה שוב או הדבק את הטקסט ידנית.");
+      console.error(err);
+    });
+  }
+
   function cleanRecipeText(text) {
     if (!text) return "";
     return text
@@ -666,13 +718,13 @@
     openRecipeCategories[category] = true;
   }
 
-  // פורמט תצוגת מתכון: הדגשת מצרכים ושלבים ממוספרים
+  // הדגשת מצרכים וכותרות בבולד
   function formatRecipeContentForDisplay(rawText) {
     const lines = (rawText || "").split('\n');
     return lines.map(line => {
       const l = line.trim();
       if (!l) return "";
-      if (/^(\d+[\.\)]|שלב\s*\d+|מצרכים:|הוראות:|אופן ההכנה:)/.test(l)) {
+      if (/^(\d+[\.\)]|שלב\s*\d+|מצרכים:|הוראות:|אופן ההכנה:|רכיבים)/.test(l) || l.endsWith(':')) {
         return `<strong>${escapeHtml(l)}</strong>`;
       }
       return escapeHtml(l);
@@ -717,7 +769,7 @@
     const container = document.getElementById('recipes-accordion-container');
     container.innerHTML = "";
     if (allRecipes.length === 0) {
-      container.innerHTML = '<div class="empty-state">אין עדיין מתכונים שמורים. הדבק למעלה מתכון חדש!</div>';
+      container.innerHTML = '<div class="empty-state">אין עדיין מתכונים שמורים. הדבק או העלה צילום מסך למעלה!</div>';
       return;
     }
 
@@ -751,7 +803,7 @@
           card.onclick = () => openFullscreenRecipe(d.id);
           card.innerHTML = `
             <div class="recipe-card-title">📖 ${escapeHtml(d.title)}</div>
-            <span style="color:var(--muted); font-size:0.85rem;">לחץ לפתיחה מלאה ↗</span>
+            <div class="recipe-open-btn">↗</div>
           `;
           body.appendChild(card);
         });
@@ -964,9 +1016,12 @@
   function addRecipeToShopping(content) {
     if (!content) return;
     const lines = content.split('\n');
+    let addedCount = 0;
+    
     lines.forEach(line => {
       const cleanLine = line.trim();
-      if (!cleanLine) return;
+      if (!cleanLine || cleanLine.endsWith(':') || cleanLine.includes('מצרכים') || cleanLine.includes('הוראות') || cleanLine.includes('רכיבים') || cleanLine.includes('אופן הכנה')) return;
+      
       const cat = detectCategoryFromText(cleanLine);
       db.collection("families").doc(familyId).collection("shopping_list").add({
         name: cleanLine,
@@ -976,9 +1031,15 @@
         completed: false,
         created_at: firebase.firestore.FieldValue.serverTimestamp()
       });
+      addedCount++;
     });
-    closeFullscreenRecipe();
-    switchTab('shopping');
+
+    if (addedCount > 0) {
+      closeFullscreenRecipe();
+      switchTab('shopping');
+    } else {
+      alert("לא נמצאו מצרכים תקינים לייצוא במסמך זה.");
+    }
   }
 
   function filterTasks(person, el) {
