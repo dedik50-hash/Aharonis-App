@@ -57,7 +57,7 @@
     }
     .sync-pill { font-size: 0.72rem; background: rgba(255,255,255,0.18); padding: 4px 8px; border-radius: 20px; white-space: nowrap; }
 
-    .container { max-width: 640px; margin: 0 auto; padding: 14px; }
+    .container { max-width: 900px; margin: 0 auto; padding: 14px; }
 
     .chips-row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 10px; scrollbar-width: none; }
     .chips-row::-webkit-scrollbar { display: none; }
@@ -99,18 +99,53 @@
       flex-direction: column;
       gap: 10px;
     }
+    .input-card.compact-collapsed {
+      padding: 11px 14px;
+      gap: 0;
+    }
+    .input-card.expanded-fullscreen {
+      position: fixed;
+      inset: 0;
+      z-index: 65;
+      margin: 0;
+      border-radius: 0;
+      overflow-y: auto;
+      padding: calc(16px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom));
+    }
+    .input-card.expanded-fullscreen textarea {
+      flex: 1;
+      min-height: 220px;
+    }
+    .card-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+    .expand-toggle-btn {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      color: var(--text);
+      padding: 5px 10px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
     .row { display: flex; gap: 8px; flex-wrap: wrap; }
     input, select, textarea {
-      padding: 11px 12px;
+      padding: 10px 12px;
       border: 1px solid #cbd5e1;
       border-radius: 10px;
-      font-size: 0.95rem;
+      font-size: 0.94rem;
       outline: none;
       background: #f8fafc;
       color: var(--text);
       width: 100%;
     }
     input:focus, select:focus, textarea:focus { border-color: var(--primary); background: white; }
+    select.auto-matched { border-color: var(--primary); background: #f0fdfa; }
     .grow { flex: 1; min-width: 140px; }
     .qty-input { width: 95px; }
     
@@ -128,6 +163,35 @@
     button.btn-primary:active {
       transform: scale(0.96);
       background: var(--primary-dark);
+    }
+    button.btn-secondary {
+      background: #e2e8f0;
+      color: var(--text);
+      border: none;
+      border-radius: 10px;
+      padding: 11px 14px;
+      font-size: 0.92rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .import-btn-label {
+      background: #e0f2fe;
+      color: #0369a1;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 0.86rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      flex: 1;
+      min-width: 130px;
+      border: 1px solid #bae6fd;
+    }
+    .import-btn-label.file-btn {
+      background: #f0fdfa;
+      color: #0f766e;
+      border-color: #99f6e4;
     }
 
     .section-header { display: flex; justify-content: space-between; align-items: center; margin: 16px 0 8px; }
@@ -157,7 +221,7 @@
     .item.done { opacity: 0.6; }
     .item.done .item-text { text-decoration: line-through; color: var(--muted); }
     .item-left { display: flex; align-items: center; gap: 12px; flex: 1; cursor: pointer; }
-    .checkbox { width: 22px; height: 22px; accent-color: var(--primary); cursor: pointer; flex-shrink: 0; }
+    .checkbox { width: 20px; height: 20px; accent-color: var(--primary); cursor: pointer; flex-shrink: 0; }
     .item-main { display: flex; flex-direction: column; gap: 4px; }
     .item-title-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
     .item-text { font-size: 1rem; font-weight: 500; }
@@ -171,7 +235,21 @@
 
     .actions { display: flex; align-items: center; gap: 2px; }
     .icon-btn { background: none; border: none; font-size: 1.05rem; cursor: pointer; padding: 6px; border-radius: 8px; color: var(--muted); }
+    .icon-btn:hover { background: #f1f5f9; }
+    .wa-btn { color: #15803d; }
+    .wa-btn:hover { background: #dcfce7; }
     .del-btn { color: var(--danger); }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.45);
+      z-index: 60;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
 
     .fav-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)); gap: 10px; }
     .fav-card {
@@ -273,6 +351,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 8px;
       margin-bottom: 16px;
       border-bottom: 1px solid var(--border);
       padding-bottom: 12px;
@@ -281,25 +360,38 @@
       background: white;
       border: 1px solid var(--border);
       color: var(--text);
-      padding: 8px 16px;
+      padding: 8px 14px;
       border-radius: 20px;
       font-weight: 700;
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       cursor: pointer;
       box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+      white-space: nowrap;
     }
-    .fullscreen-actions { display: flex; gap: 8px; align-items: center; }
+    .fullscreen-actions { display: flex; gap: 6px; align-items: center; }
     .font-size-btn {
       background: white;
       border: 1px solid var(--border);
       color: var(--text);
-      padding: 8px 12px;
+      padding: 8px 11px;
       border-radius: 20px;
       font-weight: 700;
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       cursor: pointer;
+      white-space: nowrap;
     }
-    .fullscreen-title { font-size: 1.5rem; font-weight: 800; color: var(--primary-dark); margin-bottom: 16px; }
+    .fullscreen-cat-badge {
+      display: inline-block;
+      background: #ccfbf1;
+      color: var(--primary-dark);
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 12px;
+      margin-bottom: 8px;
+      align-self: flex-start;
+    }
+    .fullscreen-title { font-size: 1.45rem; font-weight: 800; color: var(--primary-dark); margin-bottom: 14px; }
     .fullscreen-content {
       background: white;
       padding: 22px;
@@ -313,14 +405,206 @@
     }
     .fullscreen-content strong { color: var(--primary-dark); font-weight: 700; display: block; margin-top: 10px; }
 
+    .edit-recipe-card {
+      background: white;
+      padding: 18px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .meal-day-card {
+      background: white;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      padding: 14px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .meal-day-card.shabbat-highlight {
+      border-color: #0d9488;
+      box-shadow: 0 2px 6px rgba(13, 148, 136, 0.12);
+    }
+    .meal-day-title {
+      font-weight: 800;
+      font-size: 1rem;
+      color: var(--primary-dark);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .meal-slot-box {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .meal-slot-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .meal-slot-label {
+      font-size: 0.86rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .dish-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: white;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 6px 8px;
+      flex-wrap: wrap;
+    }
+    .dish-row.unchecked { opacity: 0.65; }
+    .dish-name-input {
+      flex: 1;
+      min-width: 130px;
+      padding: 7px 9px;
+      border: 1px solid #e2e8f0;
+      border-radius: 7px;
+      font-size: 0.9rem;
+      background: #f8fafc;
+    }
+    .dish-recipe-select {
+      width: auto;
+      min-width: 120px;
+      max-width: 170px;
+      padding: 7px 8px;
+      border: 1px solid #e2e8f0;
+      border-radius: 7px;
+      font-size: 0.82rem;
+      background: #f8fafc;
+    }
+    .mini-add-btn {
+      background: #e0f2fe;
+      color: #0369a1;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .meal-shop-btn {
+      background: #ccfbf1;
+      color: var(--primary-dark);
+      border: none;
+      padding: 5px 9px;
+      border-radius: 8px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .meal-confirm-bar {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      margin-top: 14px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .meal-summary-list {
+      font-size: 0.86rem;
+      color: var(--text);
+      background: #f8fafc;
+      border-radius: 10px;
+      padding: 10px;
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .school-table-wrap {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow-x: auto;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .school-table {
+      width: 100%;
+      min-width: 760px;
+      border-collapse: collapse;
+      font-size: 0.86rem;
+    }
+    .school-table th, .school-table td {
+      border: 1px solid var(--border);
+      padding: 8px;
+      vertical-align: top;
+      text-align: right;
+    }
+    .school-table th {
+      background: #f0fdfa;
+      color: var(--primary-dark);
+      font-weight: 800;
+      position: sticky;
+      top: 0;
+    }
+    .school-child-cell {
+      font-weight: 800;
+      color: var(--text);
+      background: #f8fafc;
+      white-space: nowrap;
+      width: 82px;
+    }
+    .school-items-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .school-item-line {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .school-item-input {
+      padding: 6px 8px;
+      font-size: 0.84rem;
+      border-radius: 7px;
+      border: 1px solid #cbd5e1;
+      background: #fff;
+    }
+    .school-add-btn {
+      background: #ccfbf1;
+      color: var(--primary-dark);
+      border: none;
+      border-radius: 7px;
+      padding: 4px 8px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      cursor: pointer;
+      align-self: flex-start;
+    }
+
     .bottom-nav {
       position: fixed; bottom: 0; left: 0; right: 0; background: white;
       border-top: 1px solid var(--border); display: flex; padding-bottom: env(safe-area-inset-bottom); z-index: 30;
     }
     .nav-item {
-      flex: 1; padding: 10px 4px; text-align: center; color: var(--muted); font-size: 0.78rem; font-weight: 600; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px;
+      flex: 1; padding: 10px 4px; text-align: center; color: var(--muted); font-size: 0.75rem; font-weight: 600; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px;
     }
-    .nav-item span.icon { font-size: 1.25rem; }
+    .nav-item span.icon { font-size: 1.2rem; }
     .nav-item.active { color: var(--primary); }
     .hidden { display: none !important; }
     .empty-state { text-align: center; color: var(--muted); padding: 32px 16px; font-size: 0.95rem; }
@@ -341,13 +625,88 @@
   <div class="fullscreen-header">
     <button class="back-btn" onclick="closeFullscreenRecipe()">← חזרה לרשימה</button>
     <div class="fullscreen-actions">
-      <button class="font-size-btn" onclick="cycleFontSize()">🔤 גודל טקסט</button>
-      <button class="icon-btn del-btn" id="fs-delete-btn" onclick="" style="font-size:1.2rem;" title="מחק מתכון">🗑️</button>
+      <button class="font-size-btn" id="fs-edit-toggle-btn" onclick="toggleRecipeEditMode()">✏️ ערוך</button>
+      <button class="font-size-btn" id="fs-font-btn" onclick="cycleFontSize()">🔤 גודל</button>
+      <button class="icon-btn del-btn" id="fs-delete-btn" onclick="" style="font-size:1.15rem;" title="מחק מתכון">🗑️</button>
     </div>
   </div>
-  <div class="fullscreen-title" id="fs-recipe-title">שם המתכון</div>
-  <div class="fullscreen-content" id="fs-recipe-content">תוכן המתכון...</div>
-  <button class="btn-primary" style="padding:14px; font-size:1.05rem;" id="fs-add-shopping-btn">🛒 הוסף מצרכים לרשימת הקניות</button>
+
+  <div id="fs-view-mode" style="display:flex; flex-direction:column;">
+    <div class="fullscreen-cat-badge" id="fs-recipe-cat">📦 כללי</div>
+    <div class="fullscreen-title" id="fs-recipe-title">שם המתכון</div>
+    <div class="fullscreen-content" id="fs-recipe-content">תוכן המתכון...</div>
+    <button class="btn-primary" style="padding:14px; font-size:1.05rem;" id="fs-add-shopping-btn">🛒 הוסף מצרכים לרשימת הקניות</button>
+  </div>
+
+  <div id="fs-edit-mode" class="edit-recipe-card hidden">
+    <div style="font-weight:700; font-size:1.05rem; color:var(--primary-dark);">✏️ עריכת מתכון</div>
+    <div>
+      <label style="font-size:0.82rem; font-weight:600; color:var(--muted); display:block; margin-bottom:4px;">שם המתכון</label>
+      <input type="text" id="edit-recipe-title" placeholder="שם המתכון">
+    </div>
+    <div>
+      <label style="font-size:0.82rem; font-weight:600; color:var(--muted); display:block; margin-bottom:4px;">קטגוריה</label>
+      <select id="edit-recipe-category">
+        <option value="טאבון">🔥 טאבון</option>
+        <option value="אסייתי">🥢 אסייתי</option>
+        <option value="בשר ודגים">🥩 בשר ודגים</option>
+        <option value="מאפים ולחמים">🥖 מאפים ולחמים</option>
+        <option value="עוגות וקינוחים">🍰 עוגות וקינוחים</option>
+        <option value="תבשילים ומרקים">🍲 תבשילים ומרקים</option>
+        <option value="סלטים ותוספות">🥗 סלטים ותוספות</option>
+        <option value="כללי">📦 כללי</option>
+      </select>
+    </div>
+    <div>
+      <label style="font-size:0.82rem; font-weight:600; color:var(--muted); display:block; margin-bottom:4px;">תוכן המתכון</label>
+      <textarea id="edit-recipe-content" rows="12"></textarea>
+    </div>
+    <div class="row" style="justify-content:flex-end;">
+      <button class="btn-secondary" onclick="cleanEditedRecipeField()">🧹 נקה רעש</button>
+      <button class="btn-secondary" onclick="cancelRecipeEdit()">ביטול</button>
+      <button class="btn-primary" onclick="saveEditedRecipe()">💾 שמור שינויים</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop hidden" id="edit-task-modal" onclick="if(event.target===this) closeEditTaskModal()">
+  <div class="modal-card" style="background:white; border-radius:18px; padding:20px; width:100%; max-width:400px; margin:auto; display:flex; flex-direction:column; gap:12px;">
+    <div style="font-size:1.08rem; font-weight:700; color:var(--primary-dark);">✏️ עריכת משימה</div>
+    <input type="text" id="edit-task-title" placeholder="שם המשימה" onkeydown="if(event.key==='Enter') saveEditedTask()">
+    <div class="assignee-picker" id="edit-task-assignee-picker">
+      <span class="assignee-label">אחראים:</span>
+      <span class="pick-chip" data-name="כולם" onclick="toggleEditTaskAssignee('כולם')">כולם</span>
+      <span class="pick-chip" data-name="עודד" onclick="toggleEditTaskAssignee('עודד')">עודד</span>
+      <span class="pick-chip" data-name="מיה" onclick="toggleEditTaskAssignee('מיה')">מיה</span>
+      <span class="pick-chip" data-name="טליה" onclick="toggleEditTaskAssignee('טליה')">טליה</span>
+      <span class="pick-chip" data-name="דוד" onclick="toggleEditTaskAssignee('דוד')">דוד</span>
+      <span class="pick-chip" data-name="יאיר" onclick="toggleEditTaskAssignee('יאיר')">יאיר</span>
+    </div>
+    <div class="row" style="align-items:center;">
+      <div style="display:flex; align-items:center; gap:6px; flex:1; min-width:140px;">
+        <span style="font-size:0.82rem; color:var(--muted); font-weight:600;">📅 יעד:</span>
+        <input type="date" id="edit-task-due" style="padding:8px 10px; font-size:0.85rem; flex:1;">
+      </div>
+      <label class="checkbox-label"><input type="checkbox" id="edit-task-urgent"> 🔥 דחוף</label>
+    </div>
+    <div class="row" style="justify-content:flex-end;">
+      <button class="btn-secondary" onclick="closeEditTaskModal()">ביטול</button>
+      <button class="btn-primary" onclick="saveEditedTask()">💾 שמור</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop hidden" id="edit-cat-modal" onclick="if(event.target===this) closeEditCategoryModal()">
+  <div class="modal-card" style="background:white; border-radius:18px; padding:20px; width:100%; max-width:360px; margin:auto;">
+    <div style="font-size:1.08rem; font-weight:700; margin-bottom:4px;">🏷️ שינוי קטגוריה לפריט</div>
+    <div id="edit-cat-item-name" style="font-size:0.9rem; color:var(--muted); margin-bottom:6px;"></div>
+    <div style="font-size:0.78rem; color:var(--primary-dark); margin-bottom:12px;">💡 הבחירה תישמר בזיכרון המשפחתי לפעמים הבאות</div>
+    <select id="edit-cat-select" style="margin-bottom:16px;"></select>
+    <div class="row" style="justify-content:flex-end;">
+      <button class="btn-secondary" onclick="closeEditCategoryModal()">ביטול</button>
+      <button class="btn-primary" onclick="saveItemCategory()">שמור קטגוריה</button>
+    </div>
+  </div>
 </div>
 
 <div class="modal-backdrop hidden" id="profile-modal" onclick="if(event.target===this) closeProfileModal()">
@@ -369,7 +728,7 @@
 <div class="container">
   <div id="view-shopping">
     <div class="chips-row" id="list-selector">
-      <div class="chip active" onclick="selectShopList('super', this)">🛒 סופר</div>
+      <div class="chip active" onclick="selectShopList('super', this)">🛒 קניות</div>
       <div class="chip" onclick="selectShopList('pharm', this)">💊 פארם</div>
       <div class="chip" onclick="selectShopList('home', this)">🌱 גינה ובית</div>
     </div>
@@ -386,9 +745,12 @@
           <option value="בשר, עוף ודגים">🥩 בשר, עוף ודגים</option>
           <option value="מאפים ולחם">🥖 מאפים ולחם</option>
           <option value="יבשים ומזווה">🍝 יבשים ומזווה</option>
-          <option value="ניקיון וטואלטיקה">🧼 ניקיון וטואלטיקה</option>
-          <option value="ביגוד והנעלה">👕 ביגוד והנעלה</option>
+          <option value="אלכוהול">🍷 אלכוהול</option>
+          <option value="חטיפים">🥨 חטיפים</option>
+          <option value="טואלטיקה">🧼 טואלטיקה</option>
+          <option value="גינון">🌱 גינון</option>
           <option value="ריהוט">🛋️ ריהוט</option>
+          <option value="ביגוד והנעלה">👕 ביגוד והנעלה</option>
           <option value="כללי">📦 כללי</option>
         </select>
         <button class="btn-primary" onclick="addShopping()">+ הוסף</button>
@@ -417,7 +779,12 @@
           <option value="בשר, עוף ודגים">🥩 בשר, עוף ודגים</option>
           <option value="מאפים ולחם">🥖 מאפים ולחם</option>
           <option value="יבשים ומזווה">🍝 יבשים ומזווה</option>
-          <option value="ניקיון וטואלטיקה">🧼 ניקיון וטואלטיקה</option>
+          <option value="אלכוהול">🍷 אלכוהול</option>
+          <option value="חטיפים">🥨 חטיפים</option>
+          <option value="טואלטיקה">🧼 טואלטיקה</option>
+          <option value="גינון">🌱 גינון</option>
+          <option value="ריהוט">🛋️ ריהוט</option>
+          <option value="ביגוד והנעלה">👕 ביגוד והנעלה</option>
           <option value="כללי">📦 כללי</option>
         </select>
         <button class="btn-primary" onclick="addFavorite()">שמור במועדפים</button>
@@ -427,35 +794,61 @@
   </div>
 
   <div id="view-recipes" class="hidden">
-    <div class="input-card">
-      <div style="font-weight:700; font-size:0.95rem;">🍲 הוספת מתכון חדש או צילום מסך</div>
-      
-      <label style="background:#e0f2fe; color:#0369a1; padding:10px 14px; border-radius:10px; font-size:0.9rem; font-weight:600; cursor:pointer; text-align:center; display:block;">
-        📸 בחר צילום מסך של מתכון (מגלריה / Google Photos)
-        <input type="file" accept="image/*" style="display:none;" onchange="handleImageUpload(event)">
-      </label>
-      <div id="ocr-status" style="font-size:0.8rem; color:var(--muted); text-align:center;" class="hidden">מעבד תמונה ומחלץ טקסט... ⏳</div>
+    <div class="input-card compact-collapsed" id="new-recipe-card">
+      <div class="card-header-row">
+        <button type="button" class="btn-primary" style="padding:8px 14px; font-size:0.88rem;" id="open-new-recipe-btn" onclick="toggleNewRecipeComposer()">+ פתח הוספת מתכון</button>
+        <button type="button" class="expand-toggle-btn hidden" id="expand-new-recipe-btn" onclick="toggleNewRecipeFullscreen()">⛶ מסך מלא</button>
+      </div>
 
-      <textarea id="raw-recipe-text" rows="5" placeholder="או הדבק כאן את תוכן המתכון המלא..."></textarea>
-      
-      <div class="row">
-        <select id="recipe-category-select" class="grow">
-          <option value="בשר ודגים">🥩 בשר ודגים</option>
-          <option value="מאפים ולחמים">🥖 מאפים ולחמים</option>
-          <option value="עוגות וקינוחים">🍰 עוגות וקינוחים</option>
-          <option value="תבשילים ומרקים">🍲 תבשילים ומרקים</option>
-          <option value="סלטים ותוספות">🥗 סלטים ותוספות</option>
-          <option value="כללי">📦 כללי</option>
-        </select>
-        <button class="btn-primary" onclick="addRecipeWithCategory()">✨ שמור מתכון</button>
+      <div id="new-recipe-composer-body" class="hidden" style="display:flex; flex-direction:column; gap:10px; margin-top:4px;">
+        <div class="row">
+          <label class="import-btn-label">
+            📸 צילום מסך / תמונה
+            <input type="file" accept="image/*" style="display:none;" onchange="handleImageUpload(event)">
+          </label>
+          <label class="import-btn-label file-btn">
+            📄 קובץ טקסט (.txt)
+            <input type="file" accept=".txt,.md,.csv,text/plain" style="display:none;" onchange="handleRecipeFileUpload(event)">
+          </label>
+        </div>
+        <div id="ocr-status" style="font-size:0.8rem; color:var(--primary-dark); font-weight:600; text-align:center;" class="hidden">מעבד ומנקה טקסט... ⏳</div>
+
+        <input type="text" id="recipe-title-input" placeholder="שם המתכון (מתמלא אוטומטית מהשורה הראשונה)">
+        <textarea id="raw-recipe-text" rows="5" placeholder="הדבק כאן את תוכן המתכון או ייבא מתמונה/קובץ..."></textarea>
+        
+        <div class="row">
+          <select id="recipe-category-select" class="grow">
+            <option value="טאבון">🔥 טאבון</option>
+            <option value="אסייתי">🥢 אסייתי</option>
+            <option value="בשר ודגים">🥩 בשר ודגים</option>
+            <option value="מאפים ולחמים">🥖 מאפים ולחמים</option>
+            <option value="עוגות וקינוחים">🍰 עוגות וקינוחים</option>
+            <option value="תבשילים ומרקים">🍲 תבשילים ומרקים</option>
+            <option value="סלטים ותוספות">🥗 סלטים ותוספות</option>
+            <option value="כללי">📦 כללי</option>
+          </select>
+          <button class="btn-secondary" type="button" onclick="cleanRecipeDraftField()" title="נקה תווים מיותרים ושורות ריקות">🧹 נקה</button>
+          <button class="btn-primary" onclick="addRecipeWithCategory()">✨ שמור</button>
+        </div>
       </div>
     </div>
     <div id="recipes-accordion-container"></div>
   </div>
 
+  <div id="view-meals" class="hidden">
+    <div class="chips-row" id="meal-filter-row">
+      <div class="chip active" onclick="selectMealFilter('shabbat', this)">🕯️ שישי-שבת</div>
+      <div class="chip" onclick="selectMealFilter('school_breakfast', this)">🥪 בוקר לבית ספר</div>
+      <div class="chip" onclick="selectMealFilter('all', this)">הכל</div>
+    </div>
+    <div id="meal-plan-container"></div>
+    <div id="meal-confirm-container"></div>
+  </div>
+
   <div id="view-tasks" class="hidden">
     <div class="chips-row" id="task-filter-row">
-      <div class="chip active" onclick="filterTasks('הכל', this)">הכל</div>
+      <div class="chip active" id="task-chip-all" onclick="filterTasks('הכל', this)">הכל</div>
+      <div class="chip hidden" id="task-chip-mine" onclick="filterTasks('שלי', this)">👤 שלי</div>
       <div class="chip" onclick="filterTasks('עודד', this)">עודד</div>
       <div class="chip" onclick="filterTasks('מיה', this)">מיה</div>
       <div class="chip" onclick="filterTasks('טליה', this)">טליה</div>
@@ -489,7 +882,12 @@
       </div>
     </div>
 
-    <div class="list" id="tasks-list"></div>
+    <div class="section-header" id="tasks-actions-bar">
+      <span style="font-size:0.85rem; color:var(--muted);" id="tasks-counter">0 משימות פתוחות</span>
+      <button class="clear-btn hidden" id="clear-done-tasks-btn" onclick="clearCompletedTasks()">🗑️ נקה משימות שהושלמו</button>
+    </div>
+
+    <div id="tasks-list"></div>
   </div>
 </div>
 
@@ -505,6 +903,10 @@
   <div class="nav-item" id="nav-recipes" onclick="switchTab('recipes')">
     <span class="icon">🍲</span>
     <span>מתכונים</span>
+  </div>
+  <div class="nav-item" id="nav-meals" onclick="switchTab('meals')">
+    <span class="icon">📅</span>
+    <span>ארוחות</span>
   </div>
   <div class="nav-item" id="nav-tasks" onclick="switchTab('tasks')">
     <span class="icon">✅</span>
@@ -530,18 +932,42 @@
   db.settings({ experimentalForceLongPolling: true });
   const familyId = "aharoni_family_main";
 
+  const weekDays = [
+    { key: "sunday", label: "ראשון", isSchoolDay: true, isShabbat: false },
+    { key: "monday", label: "שני", isSchoolDay: true, isShabbat: false },
+    { key: "tuesday", label: "שלישי", isSchoolDay: true, isShabbat: false },
+    { key: "wednesday", label: "רביעי", isSchoolDay: true, isShabbat: false },
+    { key: "thursday", label: "חמישי", isSchoolDay: true, isShabbat: false },
+    { key: "friday", label: "שישי", isSchoolDay: true, isShabbat: true },
+    { key: "saturday", label: "שבת", isSchoolDay: false, isShabbat: true }
+  ];
+
+  const schoolDays = weekDays.filter(d => d.isSchoolDay);
+  const schoolKids = ["טליה", "דוד", "יאיר"];
+
   let currentShopList = "super";
+  let currentMealFilter = "shabbat";
   let currentTaskFilter = "הכל";
   let selectedAssignees = ["כולם"];
+  let editTaskAssignees = ["כולם"];
+  let editingTaskId = null;
   let allShoppingItems = [];
   let allFavorites = [];
   let allRecipes = [];
   let allTasks = [];
+  let mealPlanData = {};
+  let draftMealsBySlot = {};
+  let schoolBreakfastData = {};
+  let learnedCategoryMemory = {};
   let currentUser = (localStorage.getItem("aharoni_current_user") || "").trim();
   let manualCategoryChosen = { shop: false, fav: false };
   let openRecipeCategories = {};
   let currentFontSizeLevel = 1;
+  let activeRecipeId = null;
   let activeRecipeContent = "";
+  let editingShoppingItemId = null;
+  let isNewRecipeComposerOpen = false;
+  let pendingFocusTarget = null;
 
   updateProfileUI();
 
@@ -551,13 +977,58 @@
     "בשר, עוף ודגים": "🥩",
     "מאפים ולחם": "🥖",
     "יבשים ומזווה": "🍝",
-    "ניקיון וטואלטיקה": "🧼",
-    "ביגוד והנעלה": "👕",
+    "אלכוהול": "🍷",
+    "חטיפים": "🥨",
+    "טואלטיקה": "🧼",
+    "גינון": "🌱",
     "ריהוט": "🛋️",
+    "ביגוד והנעלה": "👕",
     "כללי": "📦"
   };
 
+  function isPharmacyItem(itemOrCat, listType) {
+    const canonCat = canonicalizeCategory(typeof itemOrCat === "string" ? itemOrCat : (itemOrCat && itemOrCat.category));
+    const type = typeof itemOrCat === "string" ? listType : (itemOrCat && itemOrCat.list_type);
+    return type === "pharm" || canonCat === "טואלטיקה";
+  }
+
+  function canonicalizeCategory(cat, listType) {
+    if (listType === "pharm") return "טואלטיקה";
+    if (!cat) return "כללי";
+    const trimmed = cat.trim();
+    if (trimmed === "ניקיון וטואלטיקה" || trimmed === "ניקיון" || trimmed === "פארם") return "טואלטיקה";
+    if (trimmed === "גינה") return "גינון";
+    return categoryIcons[trimmed] ? trimmed : "כללי";
+  }
+
+  function getListTypeForCategory(cat, currentViewList) {
+    const c = canonicalizeCategory(cat);
+    if (c === "טואלטיקה") return "pharm";
+    if (c === "גינון" || c === "ריהוט") return "home";
+    if (currentViewList === "pharm" && c === "כללי") return "pharm";
+    return "super";
+  }
+
+  function getDefaultCategoryForList(listType) {
+    if (listType === "pharm") return "טואלטיקה";
+    if (listType === "home") return "גינון";
+    return "ירקות ופירות";
+  }
+
+  function itemMatchesCurrentShopView(item, viewType) {
+    if (viewType === "pharm") {
+      return isPharmacyItem(item);
+    }
+    if (viewType === "home") {
+      const cat = canonicalizeCategory(item.category);
+      return item.list_type === "home" || cat === "גינון" || cat === "ריהוט";
+    }
+    return true;
+  }
+
   const recipeCategoryIcons = {
+    "טאבון": "🔥",
+    "אסייתי": "🥢",
     "בשר ודגים": "🥩",
     "מאפים ולחמים": "🥖",
     "עוגות וקינוחים": "🍰",
@@ -567,23 +1038,100 @@
   };
 
   const categoryKeywords = {
-    "ירקות ופירות": ["עגבני", "מלפפון", "פלפל", "גמבה", "בצל", "שום", "תפוח אדמה", "גזר", "קישוא", "חציל", "חסה", "כרוב", "אבוקדו", "לימון", "תפוז", "בננה", "תפוח", "פטרוזיליה", "כוסברה", "נענע", "בטטה", "סלק"],
-    "מוצרי חלב וביצים": ["חלב", "גבינ", "קוטג", "שמנת", "יוגורט", "חמאה", "ביצים", "ביצה", "צהובה", "מוצרלה", "בולגרית"],
-    "בשר, עוף ודגים": ["עוף", "חזה עוף", "שניצל", "פרגית", "בשר", "טחון", "אנטריקוט", "דג", "סלמון", "אמנון", "דניס"],
-    "מאפים ולחם": ["לחם", "פיתה", "לחמני", "חלה", "באגט", "בורקס", "עוגה", "עוגיות", "פוקאצ"],
-    "יבשים ומזווה": ["פסטה", "ספגטי", "פתיתים", "אורז", "קוסקוס", "קמח", "סוכר", "מלח", "שמן", "טחינה", "רסק", "שימורים", "טונה", "תבלין", "קפה", "תה", "שוקולד", "דבש", "סילאן", "קורנפלקס", "קינמון", "שמרים"],
-    "ניקיון וטואלטיקה": ["סבון", "שמפו", "מרכך", "משחת שיניים", "דאודורנט", "נייר טואלט", "מגבונים", "נוזל כלים", "טבליות למדיח", "אבקת כביסה", "שקיות אשפה"]
+    "ירקות ופירות": ["עגבני", "מלפפון", "פלפל", "גמבה", "בצל", "שום", "תפוח אדמה", "גזר", "קישוא", "חציל", "חסה", "כרוב", "אבוקדו", "לימון", "תפוז", "בננה", "תפוח", "פטרוזיליה", "כוסברה", "נענע", "בטטה", "סלק", "מנגו", "אבטיח", "מלון", "ענבים", "תות", "אגס", "אפרסק", "נקטרינה", "שזיף", "רימון", "קלמנטינה", "פומלה", "אננס", "קיווי", "דלעת", "ברוקולי", "כרובית", "סלרי", "צנון", "פטריות"],
+    "מוצרי חלב וביצים": ["חלב", "גבינ", "קוטג", "שמנת", "יוגורט", "חמאה", "ביצים", "ביצה", "צהובה", "מוצרלה", "בולגרית", "לבנה", "שוקו", "מעדן", "פרמזן", "ריקוטה", "מסקרפונה"],
+    "בשר, עוף ודגים": ["עוף", "חזה עוף", "שניצל", "פרגית", "בשר", "טחון", "אנטריקוט", "דג", "סלמון", "אמנון", "דניס", "כבד", "נקניקי", "המבורגר", "פסטרמה", "חזה הודו", "כבש", "סטייק"],
+    "מאפים ולחם": ["לחם", "פיתה", "לחמני", "חלה", "באגט", "בורקס", "עוגה", "עוגיות", "פוקאצ", "קרואסון", "טורטייה", "פרעצל", "בייגלה"],
+    "יבשים ומזווה": ["פסטה", "ספגטי", "פתיתים", "אורז", "קוסקוס", "קמח", "סוכר", "מלח", "שמן", "טחינה", "רסק", "שימורים", "טונה", "תבלין", "קפה", "תה", "שוקולד", "דבש", "סילאן", "קורנפלקס", "קינמון", "שמרים", "חומוס", "עדשים", "שעועית", "רוטב", "סולת", "שיבולת שועל", "גרנולה"],
+    "אלכוהול": ["בירה", "יין", "וויסקי", "וודקה", "ג'ין", "רום", "טקילה", "ערק", "ליקר", "אפרול", "פרוסקו", "שמפניה", "קוניאק", "ברנדי", "קמפרי", "ורמוט"],
+    "חטיפים": ["חטיף", "צ'יפס", "במבה", "ביסלי", "אפרופו", "דוריטוס", "פופקורן", "פיצוחים", "בוטנים", "שקדים", "אגוזים", "גרעינים", "וופלים", "חטיף אנרגיה", "קרקר", "טורטיה צ'יפס"],
+    "טואלטיקה": ["סבון", "שמפו", "מרכך", "משחת שיניים", "מברשת שיניים", "דאודורנט", "נייר טואלט", "מגבונים", "נוזל כלים", "טבליות למדיח", "אבקת כביסה", "מרכך כביסה", "ג'ל כביסה", "שקיות אשפה", "אקונומיקה", "ספוג", "מסיר שומנים", "מטליות", "נייר סופג", "קרם גוף", "קרם ידיים", "תחליב רחצה", "פארם", "טואלטיקה"],
+    "גינון": ["עציץ", "אדנית", "אדמה", "תערובת שתילה", "דשן", "קומפוסט", "זרעים", "שתיל", "טפטפת", "טפטפות", "צינור השקיה", "ממטרה", "מזמרה", "מגרפה", "את חפירה", "דשא", "הדברה", "רשת הצללה", "ברז השקיה"],
+    "ריהוט": ["שולחן", "כיסא", "כיסאות", "ספה", "כורסה", "ארון", "שידה", "מדף", "מדפים", "מיטה", "מזרן", "מנורה", "אהיל", "שטיח", "וילון", "מראה", "ספסל", "הדום", "כוננית"],
+    "ביגוד והנעלה": ["חולצה", "חולצות", "מכנסיים", "מכנס", "ג'ינס", "נעליים", "נעל", "סנדלים", "כפכפים", "גרביים", "תחתונים", "גופייה", "סוודר", "מעיל", "כובע", "בגד ים", "פיג'מה", "שמלה", "חצאית"]
   };
 
+  function normalizeItemKey(text) {
+    return (text || "")
+      .trim()
+      .toLowerCase()
+      .replace(/[."'`׳״()\[\]{}]/g, "")
+      .replace(/\s+/g, " ");
+  }
+
+  function learnItemCategory(itemName, category) {
+    const canonCat = canonicalizeCategory(category);
+    const key = normalizeItemKey(itemName);
+    if (!key || key.length < 2 || !canonCat || !categoryIcons[canonCat]) return;
+    learnedCategoryMemory[key] = canonCat;
+    const docId = encodeURIComponent(key).slice(0, 120);
+    db.collection("families").doc(familyId).collection("category_memory").doc(docId).set({
+      key: key,
+      name: itemName.trim(),
+      category: canonCat,
+      updated_at: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true }).catch(err => console.error("category_memory write error:", err));
+  }
+
+  function buildCategoryOptionsHtml(selectedCategory) {
+    const canonSelected = canonicalizeCategory(selectedCategory);
+    return Object.keys(categoryIcons).map(cat => {
+      const selectedAttr = cat === canonSelected ? ' selected' : '';
+      return `<option value="${escapeAttr(cat)}"${selectedAttr}>${categoryIcons[cat] || '📦'} ${escapeHtml(cat)}</option>`;
+    }).join('');
+  }
+
+  function openEditCategoryModal(itemId) {
+    const item = allShoppingItems.find(i => i.id === itemId);
+    if (!item) return;
+    editingShoppingItemId = itemId;
+    document.getElementById('edit-cat-item-name').innerText = item.name + (item.qty ? " (" + item.qty + ")" : "");
+    document.getElementById('edit-cat-select').innerHTML = buildCategoryOptionsHtml(item.category || "כללי");
+    document.getElementById('edit-cat-modal').classList.remove('hidden');
+  }
+
+  function closeEditCategoryModal() {
+    editingShoppingItemId = null;
+    document.getElementById('edit-cat-modal').classList.add('hidden');
+  }
+
+  function saveItemCategory() {
+    if (!editingShoppingItemId) return;
+    const item = allShoppingItems.find(i => i.id === editingShoppingItemId);
+    const newCat = canonicalizeCategory(document.getElementById('edit-cat-select').value);
+    const newListType = getListTypeForCategory(newCat);
+    if (item && item.name) {
+      learnItemCategory(item.name, newCat);
+    }
+    db.collection("families").doc(familyId).collection("shopping_list")
+      .doc(editingShoppingItemId)
+      .update({ category: newCat, list_type: newListType })
+      .then(() => {
+        closeEditCategoryModal();
+      });
+  }
+
   function detectCategoryFromText(text) {
-    const clean = (text || "").trim().toLowerCase();
-    if (!clean || clean.length < 2) return "כללי";
-    for (const [category, words] of Object.entries(categoryKeywords)) {
-      for (const kw of words) {
-        if (clean.includes(kw)) return category;
+    const clean = normalizeItemKey(text);
+    if (!clean || clean.length < 2) return null;
+
+    if (learnedCategoryMemory[clean]) {
+      return canonicalizeCategory(learnedCategoryMemory[clean]);
+    }
+
+    const learnedKeys = Object.keys(learnedCategoryMemory).sort((a, b) => b.length - a.length);
+    for (const savedKey of learnedKeys) {
+      if (savedKey.length >= 3 && (clean.includes(savedKey) || savedKey.includes(clean))) {
+        return canonicalizeCategory(learnedCategoryMemory[savedKey]);
       }
     }
-    return "כללי";
+
+    for (const [category, words] of Object.entries(categoryKeywords)) {
+      for (const kw of words) {
+        if (clean.includes(kw)) return canonicalizeCategory(category);
+      }
+    }
+    return null;
   }
 
   function autoDetectCategory(inputId, selectId, formKey) {
@@ -592,28 +1140,76 @@
     const val = inputEl.value.trim();
     if (!val || manualCategoryChosen[formKey]) return;
     const detected = detectCategoryFromText(val);
-    if (detected && detected !== "כללי") {
+    if (detected) {
       selectEl.value = detected;
       selectEl.classList.add('auto-matched');
+    } else {
+      selectEl.classList.remove('auto-matched');
     }
   }
 
-  auth.signInAnonymously().catch(() => {
-    document.getElementById('status').innerText = "שגיאת חיבור";
+  function resolveCategoryForSave(name, selectEl, formKey) {
+    if (formKey === 'shop' && currentShopList === 'pharm' && !manualCategoryChosen[formKey]) {
+      return "טואלטיקה";
+    }
+    if (manualCategoryChosen[formKey]) {
+      return canonicalizeCategory(selectEl.value || getDefaultCategoryForList(currentShopList));
+    }
+    return canonicalizeCategory(detectCategoryFromText(name) || selectEl.value || getDefaultCategoryForList(currentShopList));
+  }
+
+  let dataListenersStarted = false;
+
+  auth.signInAnonymously().catch((err) => {
+    console.error("Anonymous sign-in failed:", err);
+    const code = err && err.code ? err.code : "unknown";
+    document.getElementById('status').innerText = "שגיאה: " + code;
   });
 
   auth.onAuthStateChanged((user) => {
     if (user) {
       document.getElementById('status').innerText = "מסונכרן 🟢";
-      listenToData();
+      if (!dataListenersStarted) {
+        dataListenersStarted = true;
+        listenToData();
+      }
     }
   });
 
   function listenToData() {
+    db.collection("families").doc(familyId).collection("category_memory")
+      .onSnapshot((snapshot) => {
+        const updatedMemory = {};
+        snapshot.forEach(docSnap => {
+          const d = docSnap.data();
+          const canon = canonicalizeCategory(d.category);
+          if (d.key && canon && categoryIcons[canon]) {
+            updatedMemory[d.key] = canon;
+          }
+        });
+        learnedCategoryMemory = updatedMemory;
+      }, (err) => {
+        console.error("category_memory listener error:", err);
+      });
+
     db.collection("families").doc(familyId).collection("shopping_list")
       .onSnapshot((snapshot) => {
-        allShoppingItems = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        allShoppingItems = snapshot.docs.map(d => {
+          const raw = d.data();
+          const isPharm = isPharmacyItem(raw);
+          const canonCat = isPharm ? "טואלטיקה" : canonicalizeCategory(raw.category);
+          const listType = isPharm ? "pharm" : (raw.list_type || getListTypeForCategory(canonCat));
+          return {
+            id: d.id,
+            ...raw,
+            category: canonCat,
+            list_type: listType
+          };
+        });
         renderShopping();
+      }, (err) => {
+        console.error("shopping_list listener error:", err);
+        document.getElementById('status').innerText = "שגיאת DB";
       });
 
     db.collection("families").doc(familyId).collection("favorites")
@@ -627,33 +1223,542 @@
         }
         snapshot.forEach(docSnap => {
           const d = docSnap.data();
+          const canonCat = canonicalizeCategory(d.category || 'כללי');
           const card = document.createElement('div');
           card.className = "fav-card";
           card.innerHTML = `
             <div class="fav-top">
               <div>
                 <div class="fav-name">${escapeHtml(d.name)} ${d.qty ? '(' + escapeHtml(d.qty) + ')' : ''}</div>
-                <div class="fav-cat">${categoryIcons[d.category] || '📦'} ${escapeHtml(d.category || 'כללי')}</div>
+                <div class="fav-cat">${categoryIcons[canonCat] || '📦'} ${escapeHtml(canonCat)}</div>
               </div>
               <button class="icon-btn del-btn" onclick="deleteItem('favorites', '${docSnap.id}')">✕</button>
             </div>
-            <button class="fav-add" onclick="quickAddFromFav('${escapeAttr(d.name)}', '${escapeAttr(d.qty || '')}', '${escapeAttr(d.category || 'כללי')}')">+ הוסף לרשימה</button>
+            <button class="fav-add" onclick="quickAddFromFav('${escapeAttr(d.name)}', '${escapeAttr(d.qty || '')}', '${escapeAttr(canonCat)}')">+ הוסף לרשימה</button>
           `;
           favEl.appendChild(card);
         });
-      });
+      }, (err) => console.error("favorites listener error:", err));
 
     db.collection("families").doc(familyId).collection("recipes")
       .onSnapshot((snapshot) => {
         allRecipes = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
         renderRecipesAccordion();
-      });
+        renderMealPlan();
+      }, (err) => console.error("recipes listener error:", err));
+
+    db.collection("families").doc(familyId).collection("meal_plan")
+      .onSnapshot((snapshot) => {
+        const loaded = {};
+        snapshot.forEach(docSnap => {
+          loaded[docSnap.id] = docSnap.data();
+        });
+        mealPlanData = loaded;
+        syncDraftMealsFromFirestore();
+        renderMealPlan();
+      }, (err) => console.error("meal_plan listener error:", err));
+
+    db.collection("families").doc(familyId).collection("school_breakfast")
+      .onSnapshot((snapshot) => {
+        const loaded = {};
+        snapshot.forEach(docSnap => {
+          loaded[docSnap.id] = docSnap.data();
+        });
+        schoolBreakfastData = loaded;
+        renderMealPlan();
+      }, (err) => console.error("school_breakfast listener error:", err));
 
     db.collection("families").doc(familyId).collection("tasks")
       .onSnapshot((snapshot) => {
         allTasks = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
         renderTasks();
+      }, (err) => console.error("tasks listener error:", err));
+  }
+
+  function getSlotKey(dayKey, slotKey) {
+    return `${dayKey}__${slotKey}`;
+  }
+
+  function extractDishesFromDoc(dayDoc, slotKey) {
+    if (dayDoc && Array.isArray(dayDoc[`${slotKey}_dishes`])) {
+      return dayDoc[`${slotKey}_dishes`].map(d => ({
+        checked: d.checked !== false,
+        text: d.text || "",
+        recipe_id: d.recipe_id || ""
+      }));
+    }
+    const legacyText = (dayDoc && dayDoc[`${slotKey}_text`]) || "";
+    const legacyRecipe = (dayDoc && dayDoc[`${slotKey}_recipe_id`]) || "";
+    if (legacyText || legacyRecipe) {
+      return [{ checked: true, text: legacyText, recipe_id: legacyRecipe }];
+    }
+    return [{ checked: true, text: "", recipe_id: "" }];
+  }
+
+  function syncDraftMealsFromFirestore() {
+    weekDays.forEach(day => {
+      ["lunch", "dinner"].forEach(slotKey => {
+        const k = getSlotKey(day.key, slotKey);
+        if (!draftMealsBySlot[k]) {
+          draftMealsBySlot[k] = extractDishesFromDoc(mealPlanData[day.key], slotKey);
+        }
       });
+    });
+  }
+
+  function ensureDraftSlot(dayKey, slotKey) {
+    const k = getSlotKey(dayKey, slotKey);
+    if (!draftMealsBySlot[k]) {
+      draftMealsBySlot[k] = extractDishesFromDoc(mealPlanData[dayKey], slotKey);
+    }
+    return draftMealsBySlot[k];
+  }
+
+  function selectMealFilter(filterKey, el) {
+    currentMealFilter = filterKey;
+    document.querySelectorAll('#meal-filter-row .chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    renderMealPlan();
+  }
+
+  function renderDishMealBox(dayKey, slotKey, labelText) {
+    const dishes = ensureDraftSlot(dayKey, slotKey);
+    const selectedRecipes = dishes.filter(d => d.checked && d.recipe_id);
+    const firstRecipeId = selectedRecipes.length > 0 ? selectedRecipes[0].recipe_id : "";
+
+    const rowsHtml = dishes.map((dish, idx) => {
+      const optionsHtml = `<option value="">-- מתכון --</option>` + allRecipes.map(r => {
+        const selectedAttr = r.id === dish.recipe_id ? ' selected' : '';
+        return `<option value="${escapeAttr(r.id)}"${selectedAttr}>${escapeHtml(r.title)}</option>`;
+      }).join('');
+
+      return `
+        <div class="dish-row ${dish.checked ? '' : 'unchecked'}">
+          <input type="checkbox" class="checkbox" ${dish.checked ? 'checked' : ''} onchange="onToggleDishCheck('${dayKey}', '${slotKey}', ${idx}, this.checked)">
+          <input type="text" class="dish-name-input" id="dish-${dayKey}-${slotKey}-${idx}" value="${escapeAttr(dish.text)}" placeholder="שם מנה... (Enter לשורה חדשה)" oninput="onDishTextInput('${dayKey}', '${slotKey}', ${idx}, this.value)" onkeydown="onDishKeyDown(event, '${dayKey}', '${slotKey}', ${idx})">
+          <select class="dish-recipe-select" onchange="onDishRecipeChange('${dayKey}', '${slotKey}', ${idx}, this.value)">
+            ${optionsHtml}
+          </select>
+          ${dishes.length > 1 ? `<button type="button" class="icon-btn del-btn" title="הסר שורה" onclick="removeDishRow('${dayKey}', '${slotKey}', ${idx})">✕</button>` : ''}
+        </div>
+      `;
+    }).join('');
+
+    return `
+      <div class="meal-slot-box">
+        <div class="meal-slot-header">
+          <span class="meal-slot-label">${escapeHtml(labelText)}</span>
+          <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+            <button type="button" class="mini-add-btn" onclick="addDishRow('${dayKey}', '${slotKey}', -1)">+ מנה</button>
+            ${firstRecipeId ? `<button type="button" class="meal-shop-btn" onclick="addRecipeToShoppingById('${escapeAttr(firstRecipeId)}')">🛒 מצרכים לקניות</button>` : ''}
+          </div>
+        </div>
+        ${rowsHtml}
+      </div>
+    `;
+  }
+
+  function onToggleDishCheck(dayKey, slotKey, idx, checked) {
+    const dishes = ensureDraftSlot(dayKey, slotKey);
+    if (!dishes[idx]) return;
+    dishes[idx].checked = checked;
+    renderMealPlan();
+  }
+
+  function onDishTextInput(dayKey, slotKey, idx, val) {
+    const dishes = ensureDraftSlot(dayKey, slotKey);
+    if (!dishes[idx]) return;
+    dishes[idx].text = val;
+    renderMealConfirmSummary();
+  }
+
+  function onDishRecipeChange(dayKey, slotKey, idx, recipeId) {
+    const dishes = ensureDraftSlot(dayKey, slotKey);
+    if (!dishes[idx]) return;
+    dishes[idx].recipe_id = recipeId;
+    if (recipeId) {
+      const r = allRecipes.find(item => item.id === recipeId);
+      if (r && !dishes[idx].text.trim()) {
+        dishes[idx].text = r.title;
+      }
+    }
+    renderMealPlan();
+  }
+
+  function addDishRow(dayKey, slotKey, afterIdx) {
+    const dishes = ensureDraftSlot(dayKey, slotKey);
+    const newRow = { checked: true, text: "", recipe_id: "" };
+    const insertAt = afterIdx >= 0 ? afterIdx + 1 : dishes.length;
+    dishes.splice(insertAt, 0, newRow);
+    pendingFocusTarget = `dish-${dayKey}-${slotKey}-${insertAt}`;
+    renderMealPlan();
+  }
+
+  function removeDishRow(dayKey, slotKey, idx) {
+    const dishes = ensureDraftSlot(dayKey, slotKey);
+    dishes.splice(idx, 1);
+    if (dishes.length === 0) {
+      dishes.push({ checked: true, text: "", recipe_id: "" });
+    }
+    renderMealPlan();
+  }
+
+  function onDishKeyDown(event, dayKey, slotKey, idx) {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      addDishRow(dayKey, slotKey, idx);
+    }
+  }
+
+  function getSchoolKidDayItems(dayKey, kidName) {
+    const dayDoc = schoolBreakfastData[dayKey] || {};
+    const list = dayDoc[kidName];
+    if (Array.isArray(list) && list.length > 0) return list;
+    return [""];
+  }
+
+  function onSchoolItemChange(dayKey, kidName, idx, val) {
+    const current = [...getSchoolKidDayItems(dayKey, kidName)];
+    current[idx] = val;
+    db.collection("families").doc(familyId).collection("school_breakfast")
+      .doc(dayKey)
+      .set({ [kidName]: current }, { merge: true })
+      .catch(err => console.error("school_breakfast save error:", err));
+  }
+
+  function addSchoolKidItem(dayKey, kidName, afterIdx) {
+    const current = [...getSchoolKidDayItems(dayKey, kidName)];
+    const insertAt = afterIdx >= 0 ? afterIdx + 1 : current.length;
+    current.splice(insertAt, 0, "");
+    pendingFocusTarget = `school-${dayKey}-${kidName}-${insertAt}`;
+    db.collection("families").doc(familyId).collection("school_breakfast")
+      .doc(dayKey)
+      .set({ [kidName]: current }, { merge: true })
+      .catch(err => console.error("school_breakfast add error:", err));
+  }
+
+  function removeSchoolKidItem(dayKey, kidName, idx) {
+    const current = [...getSchoolKidDayItems(dayKey, kidName)];
+    current.splice(idx, 1);
+    if (current.length === 0) current.push("");
+    db.collection("families").doc(familyId).collection("school_breakfast")
+      .doc(dayKey)
+      .set({ [kidName]: current }, { merge: true })
+      .catch(err => console.error("school_breakfast remove error:", err));
+  }
+
+  function onSchoolItemKeyDown(event, dayKey, kidName, idx) {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      addSchoolKidItem(dayKey, kidName, idx);
+    }
+  }
+
+  function renderSchoolBreakfastTable() {
+    const headerCells = schoolDays.map(d => `<th>${escapeHtml(d.label)}</th>`).join('');
+    const bodyRows = schoolKids.map(kid => {
+      const cells = schoolDays.map(day => {
+        const items = getSchoolKidDayItems(day.key, kid);
+        const inputsHtml = items.map((val, idx) => `
+          <div class="school-item-line">
+            <input type="text" class="school-item-input" id="school-${day.key}-${kid}-${idx}" value="${escapeAttr(val)}" placeholder="מנה / כריך..." onchange="onSchoolItemChange('${day.key}', '${escapeAttr(kid)}', ${idx}, this.value)" onkeydown="onSchoolItemKeyDown(event, '${day.key}', '${escapeAttr(kid)}', ${idx})">
+            ${items.length > 1 ? `<button type="button" class="icon-btn del-btn" style="padding:2px 4px; font-size:0.85rem;" onclick="removeSchoolKidItem('${day.key}', '${escapeAttr(kid)}', ${idx})">✕</button>` : ''}
+          </div>
+        `).join('');
+
+        return `
+          <td>
+            <div class="school-items-stack">
+              ${inputsHtml}
+              <button type="button" class="school-add-btn" onclick="addSchoolKidItem('${day.key}', '${escapeAttr(kid)}', -1)">+ מנה</button>
+            </div>
+          </td>
+        `;
+      }).join('');
+
+      return `<tr><td class="school-child-cell">🎒 ${escapeHtml(kid)}</td>${cells}</tr>`;
+    }).join('');
+
+    return `
+      <div class="school-table-wrap" style="margin-bottom:14px;">
+        <table class="school-table">
+          <thead>
+            <tr>
+              <th>ילד</th>
+              ${headerCells}
+            </tr>
+          </thead>
+          <tbody>
+            ${bodyRows}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  function collectCheckedDraftMeals() {
+    const result = [];
+    weekDays.forEach(day => {
+      ["lunch", "dinner"].forEach(slotKey => {
+        if (day.key === "saturday" && slotKey === "dinner") return;
+        const k = getSlotKey(day.key, slotKey);
+        const dishes = ensureDraftSlot(day.key, slotKey);
+        const checkedDishes = dishes.filter(d => d.checked && (d.text.trim() || d.recipe_id));
+        if (checkedDishes.length > 0) {
+          const slotLabel = day.key === "friday" && slotKey === "dinner"
+            ? "ערב שבת"
+            : day.key === "saturday" && slotKey === "lunch"
+              ? "צהריים שבת"
+              : slotKey === "lunch" ? "צהריים" : "ערב";
+          result.push({
+            dayKey: day.key,
+            dayLabel: day.label,
+            slotKey,
+            slotLabel,
+            dishes: checkedDishes
+          });
+        }
+      });
+    });
+    return result;
+  }
+
+  function renderMealConfirmSummary() {
+    const confirmContainer = document.getElementById('meal-confirm-container');
+    if (!confirmContainer) return;
+
+    if (currentMealFilter === "school_breakfast") {
+      confirmContainer.innerHTML = "";
+      return;
+    }
+
+    const checkedGroups = collectCheckedDraftMeals();
+    const linesHtml = checkedGroups.length === 0
+      ? '<div style="color:var(--muted);">אין מנות מסומנות לאישור כרגע. סמן צ׳ק-בוקס והקלד מנה או בחר מתכון.</div>'
+      : checkedGroups.map(g => {
+          const names = g.dishes.map(d => {
+            const rec = d.recipe_id ? allRecipes.find(r => r.id === d.recipe_id) : null;
+            const label = d.text.trim() || (rec ? rec.title : "");
+            return rec && d.text.trim() !== rec.title ? `${label} (${rec.title})` : label;
+          }).join(", ");
+          return `<div>• <strong>יום ${escapeHtml(g.dayLabel)} — ${escapeHtml(g.slotLabel)}:</strong> ${escapeHtml(names)}</div>`;
+        }).join('');
+
+    confirmContainer.innerHTML = `
+      <div class="meal-confirm-bar">
+        <div style="font-weight:800; font-size:0.95rem; color:var(--primary-dark);">✅ אישור מנות שנבחרו</div>
+        <div class="meal-summary-list">${linesHtml}</div>
+        <div class="row" style="justify-content:flex-end;">
+          <button type="button" class="btn-primary" onclick="confirmAndSaveMeals()">✅ אשר והכנס לרשימה</button>
+        </div>
+      </div>
+    `;
+  }
+
+  function confirmAndSaveMeals() {
+    const batch = db.batch();
+    weekDays.forEach(day => {
+      const docRef = db.collection("families").doc(familyId).collection("meal_plan").doc(day.key);
+      const dayUpdate = {};
+      ["lunch", "dinner"].forEach(slotKey => {
+        if (day.key === "saturday" && slotKey === "dinner") return;
+        const k = getSlotKey(day.key, slotKey);
+        const dishes = ensureDraftSlot(day.key, slotKey);
+        const checkedOnly = dishes.filter(d => d.checked && (d.text.trim() || d.recipe_id)).map(d => ({
+          checked: true,
+          text: d.text.trim() || (allRecipes.find(r => r.id === d.recipe_id)?.title || ""),
+          recipe_id: d.recipe_id || ""
+        }));
+        dayUpdate[`${slotKey}_dishes`] = checkedOnly;
+        dayUpdate[`${slotKey}_text`] = checkedOnly.map(d => d.text).join(", ");
+        dayUpdate[`${slotKey}_recipe_id`] = checkedOnly.find(d => d.recipe_id)?.recipe_id || "";
+        draftMealsBySlot[k] = checkedOnly.length > 0 ? checkedOnly : [{ checked: true, text: "", recipe_id: "" }];
+      });
+      batch.set(docRef, dayUpdate, { merge: true });
+    });
+
+    batch.commit().then(() => {
+      const statusEl = document.getElementById('status');
+      const prev = statusEl.innerText;
+      statusEl.innerText = "מנות אושרו ✅";
+      setTimeout(() => { statusEl.innerText = prev; }, 1600);
+      renderMealPlan();
+    }).catch(err => {
+      console.error("Error confirming meals:", err);
+      alert("שגיאה בשמירת המנות.");
+    });
+  }
+
+  function renderMealPlan() {
+    const container = document.getElementById('meal-plan-container');
+    if (!container) return;
+
+    const activeEl = document.activeElement;
+    const focusedId = activeEl && activeEl.id ? activeEl.id : null;
+    const selectionStart = activeEl && typeof activeEl.selectionStart === 'number' ? activeEl.selectionStart : null;
+
+    if (currentMealFilter === "school_breakfast") {
+      container.innerHTML = renderSchoolBreakfastTable();
+      renderMealConfirmSummary();
+      restoreMealFocus(focusedId, selectionStart);
+      return;
+    }
+
+    let daysToRender = weekDays;
+    if (currentMealFilter === "shabbat") {
+      daysToRender = weekDays.filter(d => d.isShabbat);
+    }
+
+    const cardsHtml = daysToRender.map(day => {
+      const slotsHtml = [];
+      if (day.key === "friday") {
+        slotsHtml.push(renderDishMealBox(day.key, 'dinner', '🕯️ ארוחת ערב שבת'));
+        if (currentMealFilter === "all") {
+          slotsHtml.push(renderDishMealBox(day.key, 'lunch', '☀️ ארוחת צהריים'));
+        }
+      } else if (day.key === "saturday") {
+        slotsHtml.push(renderDishMealBox(day.key, 'lunch', '🍽️ ארוחת צהריים שבת'));
+      } else {
+        slotsHtml.push(renderDishMealBox(day.key, 'lunch', '☀️ ארוחת צהריים'));
+        slotsHtml.push(renderDishMealBox(day.key, 'dinner', '🌙 ארוחת ערב'));
+      }
+
+      return `
+        <div class="meal-day-card ${day.isShabbat ? 'shabbat-highlight' : ''}">
+          <div class="meal-day-title">יום ${escapeHtml(day.label)}</div>
+          ${slotsHtml.join('')}
+        </div>
+      `;
+    }).join('');
+
+    const schoolSectionHtml = currentMealFilter === "all"
+      ? `<div class="cat-title">🎒 ארוחות בוקר לבית ספר (א'–ו')</div>` + renderSchoolBreakfastTable()
+      : "";
+
+    container.innerHTML = cardsHtml + schoolSectionHtml;
+    renderMealConfirmSummary();
+    restoreMealFocus(focusedId, selectionStart);
+  }
+
+  function restoreMealFocus(focusedId, selectionStart) {
+    const targetId = pendingFocusTarget || focusedId;
+    pendingFocusTarget = null;
+    if (!targetId) return;
+    const el = document.getElementById(targetId);
+    if (el && document.activeElement !== el) {
+      el.focus();
+      if (!pendingFocusTarget && selectionStart !== null && typeof el.setSelectionRange === 'function') {
+        try { el.setSelectionRange(selectionStart, selectionStart); } catch (e) {}
+      }
+    }
+  }
+
+  function addRecipeToShoppingById(recipeId) {
+    const recipe = allRecipes.find(r => r.id === recipeId);
+    if (!recipe || !recipe.content) {
+      alert("לא נמצאו מצרכים למתכון זה.");
+      return;
+    }
+    addRecipeToShopping(recipe.content);
+  }
+
+  function toggleNewRecipeComposer() {
+    isNewRecipeComposerOpen = !isNewRecipeComposerOpen;
+    const card = document.getElementById('new-recipe-card');
+    const body = document.getElementById('new-recipe-composer-body');
+    const openBtn = document.getElementById('open-new-recipe-btn');
+    const expandBtn = document.getElementById('expand-new-recipe-btn');
+
+    if (isNewRecipeComposerOpen) {
+      card.classList.remove('compact-collapsed');
+      body.classList.remove('hidden');
+      expandBtn.classList.remove('hidden');
+      openBtn.innerText = "✕ סגור";
+    } else {
+      card.classList.remove('expanded-fullscreen');
+      card.classList.add('compact-collapsed');
+      body.classList.add('hidden');
+      expandBtn.classList.add('hidden');
+      expandBtn.innerText = "⛶ מסך מלא";
+      openBtn.innerText = "+ פתח הוספת מתכון";
+    }
+  }
+
+  function toggleNewRecipeFullscreen() {
+    const card = document.getElementById('new-recipe-card');
+    const btn = document.getElementById('expand-new-recipe-btn');
+    const isExpanded = card.classList.toggle('expanded-fullscreen');
+    btn.innerText = isExpanded ? "↙ צמצם מסך" : "⛶ מסך מלא";
+  }
+
+  function cleanRecipeText(text) {
+    if (!text) return "";
+
+    const noisePatterns = [
+      /^פרסומת$/i,
+      /^תגובות$/i,
+      /^שתף/i,
+      /^הדפס/i,
+      /^שמור מתכון/i,
+      /^דלג לתוכן/i,
+      /^תפריט$/i,
+      /^חיפוש$/i,
+      /^עקבו אחרינו/i,
+      /^כל הזכויות שמורות/i,
+      /^צילום:/i,
+      /^מאת:/i,
+      /^עודכן ב/i,
+      /^[^\u0590-\u05FFa-zA-Z0-9]+$/
+    ];
+
+    const cleanedLines = text
+      .replace(/\r\n/g, '\n')
+      .replace(/\u200B|\u200C|\u200D|\uFEFF|\uFFFD/g, '')
+      .replace(/[|¦~^`´¨¸°¤§¶©®™•●▪■□◆◇★☆♦♣♠♥✓✔✕✖✗✘←→↑↓↔]/g, ' ')
+      .split('\n')
+      .map(line => {
+        return line
+          .replace(/^[\s\-–—*_•·▪►▸»«<>\\/|]+/, '')
+          .replace(/[\s\\/|]+$/, '')
+          .replace(/\s{2,}/g, ' ')
+          .trim();
+      })
+      .filter(line => {
+        if (!line) return false;
+        if (line.length === 1 && !/^\d$/.test(line)) return false;
+        const validChars = (line.match(/[\u0590-\u05FFa-zA-Z0-9]/g) || []).length;
+        if (validChars === 0) return false;
+        if (line.length >= 4 && (validChars / line.length) < 0.45) return false;
+        if (noisePatterns.some(rx => rx.test(line))) return false;
+        return true;
+      });
+
+    const deduped = [];
+    for (const line of cleanedLines) {
+      if (deduped.length === 0 || deduped[deduped.length - 1] !== line) {
+        deduped.push(line);
+      }
+    }
+
+    return deduped.join('\n');
+  }
+
+  function applyImportedRecipeText(rawText) {
+    const cleaned = cleanRecipeText(rawText);
+    const textArea = document.getElementById('raw-recipe-text');
+    const titleInput = document.getElementById('recipe-title-input');
+
+    textArea.value = cleaned;
+    const lines = cleaned.split('\n');
+    if (lines.length > 0 && !titleInput.value.trim()) {
+      titleInput.value = lines[0].length > 55 ? lines[0].substring(0, 55) + "..." : lines[0];
+    }
+  }
+
+  function cleanRecipeDraftField() {
+    const textArea = document.getElementById('raw-recipe-text');
+    if (!textArea.value.trim()) return;
+    applyImportedRecipeText(textArea.value);
   }
 
   function handleImageUpload(event) {
@@ -662,7 +1767,7 @@
 
     const statusEl = document.getElementById('ocr-status');
     statusEl.classList.remove('hidden');
-    statusEl.innerText = "קורא טקסט מהתמונה... ⏳";
+    statusEl.innerText = "קורא טקסט מהתמונה ומנקה רעשים... ⏳";
 
     Tesseract.recognize(
       file,
@@ -670,37 +1775,60 @@
       { logger: m => console.log(m) }
     ).then(({ data: { text } }) => {
       statusEl.classList.add('hidden');
+      event.target.value = "";
       if (text && text.trim().length > 0) {
-        document.getElementById('raw-recipe-text').value = text.trim();
+        applyImportedRecipeText(text);
       } else {
         alert("לא זוהה טקסט ברור בתמונה. נסה צילום מסך ממוקד יותר.");
       }
     }).catch(err => {
       statusEl.classList.add('hidden');
+      event.target.value = "";
       alert("שגיאה בטעינת ספריית הפענוח. נסה שוב או הדבק את הטקסט ידנית.");
       console.error(err);
     });
   }
 
-  function cleanRecipeText(text) {
-    if (!text) return "";
-    return text
-      .split('\n')
-      .map(line => line.trim())
-      .filter(line => line.length > 0 && !line.includes('פרסומת') && !line.includes('תגובות'))
-      .join('\n');
+  function handleRecipeFileUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const statusEl = document.getElementById('ocr-status');
+    statusEl.classList.remove('hidden');
+    statusEl.innerText = "טוען ומנקה קובץ... ⏳";
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      statusEl.classList.add('hidden');
+      event.target.value = "";
+      const raw = e.target.result || "";
+      if (raw.trim().length > 0) {
+        applyImportedRecipeText(raw);
+      } else {
+        alert("הקובץ ריק או לא ניתן לקריאה.");
+      }
+    };
+    reader.onerror = function() {
+      statusEl.classList.add('hidden');
+      event.target.value = "";
+      alert("שגיאה בקריאת הקובץ.");
+    };
+    reader.readAsText(file, 'UTF-8');
   }
 
   function addRecipeWithCategory() {
+    const titleInput = document.getElementById('recipe-title-input');
     const textInput = document.getElementById('raw-recipe-text');
     const catSelect = document.getElementById('recipe-category-select');
     const cleanedContent = cleanRecipeText(textInput.value);
     if (!cleanedContent) return;
 
     const lines = cleanedContent.split('\n');
-    let title = "מתכון חדש";
-    if (lines.length > 0) {
-      title = lines[0].length > 45 ? lines[0].substring(0, 45) + "..." : lines[0];
+    let title = titleInput.value.trim();
+    if (!title) {
+      title = lines.length > 0
+        ? (lines[0].length > 55 ? lines[0].substring(0, 55) + "..." : lines[0])
+        : "מתכון חדש";
     }
 
     const category = catSelect.value;
@@ -712,8 +1840,13 @@
       created_at: firebase.firestore.FieldValue.serverTimestamp()
     });
 
+    titleInput.value = "";
     textInput.value = "";
     openRecipeCategories[category] = true;
+
+    if (isNewRecipeComposerOpen) {
+      toggleNewRecipeComposer();
+    }
   }
 
   function formatRecipeContentForDisplay(rawText) {
@@ -732,8 +1865,11 @@
     const recipe = allRecipes.find(r => r.id === id);
     if (!recipe) return;
 
+    activeRecipeId = recipe.id;
     activeRecipeContent = recipe.content || "";
 
+    const cat = recipe.category || "כללי";
+    document.getElementById('fs-recipe-cat').innerText = `${recipeCategoryIcons[cat] || '📦'} ${cat}`;
     document.getElementById('fs-recipe-title').innerText = recipe.title;
     document.getElementById('fs-recipe-content').innerHTML = formatRecipeContentForDisplay(recipe.content);
     document.getElementById('fs-delete-btn').setAttribute('onclick', `deleteItem('recipes', '${recipe.id}'); closeFullscreenRecipe();`);
@@ -741,13 +1877,81 @@
     document.getElementById('fs-add-shopping-btn').onclick = function() {
       addRecipeToShopping(activeRecipeContent);
     };
+
+    document.getElementById('fs-view-mode').classList.remove('hidden');
+    document.getElementById('fs-edit-mode').classList.add('hidden');
+    document.getElementById('fs-edit-toggle-btn').innerText = "✏️ ערוך";
+    document.getElementById('fs-font-btn').classList.remove('hidden');
     
     currentFontSizeLevel = 1;
     applyFontSize();
     document.getElementById('recipe-fullscreen-modal').classList.remove('hidden');
   }
 
+  function toggleRecipeEditMode() {
+    const isEditing = !document.getElementById('fs-edit-mode').classList.contains('hidden');
+    if (isEditing) {
+      cancelRecipeEdit();
+      return;
+    }
+
+    const recipe = allRecipes.find(r => r.id === activeRecipeId);
+    if (!recipe) return;
+
+    document.getElementById('edit-recipe-title').value = recipe.title || "";
+    document.getElementById('edit-recipe-category').value = recipe.category || "כללי";
+    document.getElementById('edit-recipe-content').value = recipe.content || "";
+
+    document.getElementById('fs-view-mode').classList.add('hidden');
+    document.getElementById('fs-edit-mode').classList.remove('hidden');
+    document.getElementById('fs-edit-toggle-btn').innerText = "👁️ צפייה";
+    document.getElementById('fs-font-btn').classList.add('hidden');
+  }
+
+  function cancelRecipeEdit() {
+    document.getElementById('fs-edit-mode').classList.add('hidden');
+    document.getElementById('fs-view-mode').classList.remove('hidden');
+    document.getElementById('fs-edit-toggle-btn').innerText = "✏️ ערוך";
+    document.getElementById('fs-font-btn').classList.remove('hidden');
+  }
+
+  function cleanEditedRecipeField() {
+    const el = document.getElementById('edit-recipe-content');
+    el.value = cleanRecipeText(el.value);
+  }
+
+  function saveEditedRecipe() {
+    if (!activeRecipeId) return;
+
+    const newTitle = document.getElementById('edit-recipe-title').value.trim() || "מתכון ללא שם";
+    const newCategory = document.getElementById('edit-recipe-category').value || "כללי";
+    const newContent = cleanRecipeText(document.getElementById('edit-recipe-content').value);
+
+    if (!newContent) {
+      alert("תוכן המתכון לא יכול להיות ריק.");
+      return;
+    }
+
+    db.collection("families").doc(familyId).collection("recipes").doc(activeRecipeId).update({
+      title: newTitle,
+      category: newCategory,
+      content: newContent,
+      updated_at: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(() => {
+      activeRecipeContent = newContent;
+      openRecipeCategories[newCategory] = true;
+      document.getElementById('fs-recipe-cat').innerText = `${recipeCategoryIcons[newCategory] || '📦'} ${newCategory}`;
+      document.getElementById('fs-recipe-title').innerText = newTitle;
+      document.getElementById('fs-recipe-content').innerHTML = formatRecipeContentForDisplay(newContent);
+      cancelRecipeEdit();
+    }).catch(err => {
+      console.error("Error updating recipe:", err);
+      alert("שגיאה בשמירת העריכה.");
+    });
+  }
+
   function closeFullscreenRecipe() {
+    activeRecipeId = null;
     document.getElementById('recipe-fullscreen-modal').classList.add('hidden');
   }
 
@@ -771,7 +1975,7 @@
     const container = document.getElementById('recipes-accordion-container');
     container.innerHTML = "";
     if (allRecipes.length === 0) {
-      container.innerHTML = '<div class="empty-state">אין עדיין מתכונים שמורים. הדבק או העלה צילום מסך למעלה!</div>';
+      container.innerHTML = '<div class="empty-state">אין עדיין מתכונים שמורים. הדבק, טען קובץ או העלה צילום מסך למעלה!</div>';
       return;
     }
 
@@ -782,7 +1986,12 @@
       grouped[cat].push(rec);
     });
 
-    Object.keys(grouped).forEach(cat => {
+    const orderedCategories = [
+      ...Object.keys(recipeCategoryIcons).filter(c => grouped[c]),
+      ...Object.keys(grouped).filter(c => !recipeCategoryIcons[c])
+    ];
+
+    orderedCategories.forEach(cat => {
       const isOpen = openRecipeCategories[cat] || false;
       const catDiv = document.createElement('div');
       catDiv.className = "recipe-accordion-cat";
@@ -819,7 +2028,8 @@
   function renderShopping() {
     const container = document.getElementById('shopping-container');
     container.innerHTML = "";
-    const filtered = allShoppingItems.filter(item => (item.list_type || "super") === currentShopList);
+
+    const filtered = allShoppingItems.filter(item => itemMatchesCurrentShopView(item, currentShopList));
     const activeItems = filtered.filter(i => !i.completed);
     const doneItems = filtered.filter(i => i.completed);
 
@@ -833,12 +2043,26 @@
 
     const grouped = {};
     activeItems.forEach(item => {
-      const cat = item.category || "כללי";
+      let cat = isPharmacyItem(item) ? "טואלטיקה" : canonicalizeCategory(item.category || "כללי");
+      if (currentShopList === "home" && cat === "כללי") {
+        cat = "גינון";
+      }
       if (!grouped[cat]) grouped[cat] = [];
       grouped[cat].push(item);
     });
 
-    Object.keys(grouped).forEach(cat => {
+    const priorityOrder = currentShopList === "pharm"
+      ? ["טואלטיקה"]
+      : currentShopList === "home"
+        ? ["גינון", "ריהוט"]
+        : ["טואלטיקה", "גינון", "ריהוט"];
+
+    const sortedCats = [
+      ...priorityOrder.filter(c => grouped[c]),
+      ...Object.keys(grouped).filter(c => !priorityOrder.includes(c))
+    ];
+
+    sortedCats.forEach(cat => {
       const header = document.createElement('div');
       header.className = "cat-title";
       header.innerHTML = (categoryIcons[cat] || '📦') + " " + escapeHtml(cat) + " (" + grouped[cat].length + ")";
@@ -860,6 +2084,7 @@
             </div>
           </div>
           <div class="actions">
+            <button class="icon-btn" title="שנה קטגוריה" onclick="openEditCategoryModal('${item.id}')">🏷️</button>
             <button class="icon-btn" title="שמור במועדפים" onclick="saveAsFavorite('${escapeAttr(item.name)}', '${escapeAttr(item.qty || '')}', '${escapeAttr(cat)}')">⭐</button>
             <button class="icon-btn del-btn" onclick="deleteItem('shopping_list', '${item.id}')">✕</button>
           </div>
@@ -891,7 +2116,10 @@
               </div>
             </div>
           </div>
-          <button class="icon-btn del-btn" onclick="deleteItem('shopping_list', '${item.id}')">✕</button>
+          <div class="actions">
+            <button class="icon-btn" title="שנה קטגוריה" onclick="openEditCategoryModal('${item.id}')">🏷️</button>
+            <button class="icon-btn del-btn" onclick="deleteItem('shopping_list', '${item.id}')">✕</button>
+          </div>
         `;
         doneList.appendChild(div);
       });
@@ -899,43 +2127,179 @@
     }
   }
 
+  function sendTaskToWhatsApp(taskId) {
+    const task = allTasks.find(t => t.id === taskId);
+    if (!task) return;
+
+    const people = Array.isArray(task.assignees) && task.assignees.length
+      ? task.assignees.join(", ")
+      : "כולם";
+
+    const lines = [
+      `${task.urgent ? "🔥 *משימה דחופה*:" : "✅ *משימה*:"} ${task.title}`,
+      `👥 אחראים: ${people}`
+    ];
+    if (task.due_date) {
+      lines.push(`📅 יעד: ${task.due_date}`);
+    }
+
+    const url = "https://wa.me/?text=" + encodeURIComponent(lines.join("\n"));
+    window.open(url, "_blank", "noopener,noreferrer");
+  }
+
+  function getTaskAssignees(task) {
+    if (Array.isArray(task.assignees) && task.assignees.length > 0) return task.assignees;
+    if (typeof task.assigned_to === "string" && task.assigned_to.trim()) {
+      return task.assigned_to.split(',').map(s => s.trim()).filter(Boolean);
+    }
+    return ["כולם"];
+  }
+
+  function sortTasksSmart(list) {
+    return [...list].sort((a, b) => {
+      if (Boolean(a.urgent) !== Boolean(b.urgent)) return a.urgent ? -1 : 1;
+      if (a.due_date && b.due_date) return a.due_date.localeCompare(b.due_date);
+      if (a.due_date) return -1;
+      if (b.due_date) return 1;
+      return 0;
+    });
+  }
+
   function renderTasks() {
     const listEl = document.getElementById('tasks-list');
     listEl.innerHTML = "";
+
+    const targetPerson = currentTaskFilter === "שלי" && currentUser ? currentUser : currentTaskFilter;
     let filtered = allTasks;
-    if (currentTaskFilter !== "הכל") {
+    if (targetPerson && targetPerson !== "הכל") {
       filtered = allTasks.filter(t => {
-        const people = Array.isArray(t.assignees) ? t.assignees : (t.assigned_to ? t.assigned_to.split(',').map(s=>s.trim()) : ["כולם"]);
-        return people.includes(currentTaskFilter) || people.includes("כולם");
+        const people = getTaskAssignees(t);
+        return people.includes(targetPerson) || people.includes("כולם");
       });
     }
+
+    const openTasks = sortTasksSmart(filtered.filter(t => !t.completed));
+    const doneTasks = filtered.filter(t => t.completed);
+
+    document.getElementById('tasks-counter').innerText = openTasks.length + " משימות פתוחות";
+    document.getElementById('clear-done-tasks-btn').classList.toggle('hidden', doneTasks.length === 0);
 
     if (filtered.length === 0) {
       listEl.innerHTML = '<div class="empty-state">אין משימות פתוחות ✨</div>';
       return;
     }
 
-    filtered.forEach(data => {
-      const people = Array.isArray(data.assignees) ? data.assignees : ["כולם"];
-      const peopleBadges = people.map(p => '<span class="badge badge-person">' + escapeHtml(p) + '</span>').join('');
+    if (openTasks.length > 0) {
+      const openHeader = document.createElement('div');
+      openHeader.className = "cat-title";
+      openHeader.innerText = "📌 משימות פתוחות (" + openTasks.length + ")";
+      listEl.appendChild(openHeader);
 
-      const div = document.createElement('div');
-      div.className = "item " + (data.urgent && !data.completed ? 'urgent ' : '') + (data.completed ? 'done' : '');
-      div.innerHTML = `
-        <div class="item-left" onclick="toggleItem('tasks', '${data.id}', ${!data.completed})">
-          <input type="checkbox" class="checkbox" ${data.completed ? 'checked' : ''}>
-          <div class="item-main">
-            <span class="item-text">${escapeHtml(data.title)}</span>
-            <div class="meta-row">
-              ${peopleBadges}
-              ${data.urgent ? '<span class="badge badge-urgent">🔥 דחוף</span>' : ''}
-              ${data.due_date ? '<span class="badge badge-date">📅 ' + data.due_date + '</span>' : ''}
-            </div>
+      const openList = document.createElement('div');
+      openList.className = "list";
+      openTasks.forEach(data => openList.appendChild(buildTaskElement(data)));
+      listEl.appendChild(openList);
+    }
+
+    if (doneTasks.length > 0) {
+      const doneHeader = document.createElement('div');
+      doneHeader.className = "cat-title";
+      doneHeader.style.color = "#64748b";
+      doneHeader.innerText = "✔️ הושלמו (" + doneTasks.length + ")";
+      listEl.appendChild(doneHeader);
+
+      const doneList = document.createElement('div');
+      doneList.className = "list";
+      doneTasks.forEach(data => doneList.appendChild(buildTaskElement(data)));
+      listEl.appendChild(doneList);
+    }
+  }
+
+  function buildTaskElement(data) {
+    const people = getTaskAssignees(data);
+    const peopleBadges = people.map(p => '<span class="badge badge-person">' + escapeHtml(p) + '</span>').join('');
+
+    const div = document.createElement('div');
+    div.className = "item " + (data.urgent && !data.completed ? 'urgent ' : '') + (data.completed ? 'done' : '');
+    div.innerHTML = `
+      <div class="item-left" onclick="toggleItem('tasks', '${data.id}', ${!data.completed})">
+        <input type="checkbox" class="checkbox" ${data.completed ? 'checked' : ''}>
+        <div class="item-main">
+          <span class="item-text">${escapeHtml(data.title)}</span>
+          <div class="meta-row">
+            ${peopleBadges}
+            ${data.urgent ? '<span class="badge badge-urgent">🔥 דחוף</span>' : ''}
+            ${data.due_date ? '<span class="badge badge-date">📅 ' + escapeHtml(data.due_date) + '</span>' : ''}
           </div>
         </div>
-        <button class="icon-btn del-btn" onclick="deleteItem('tasks', '${data.id}')">✕</button>
-      `;
-      listEl.appendChild(div);
+      </div>
+      <div class="actions">
+        <button class="icon-btn" title="ערוך משימה" onclick="openEditTaskModal('${data.id}')">✏️</button>
+        <button class="icon-btn wa-btn" title="שלח בווטסאפ" onclick="sendTaskToWhatsApp('${data.id}')">📲</button>
+        <button class="icon-btn del-btn" title="מחק משימה" onclick="deleteItem('tasks', '${data.id}')">✕</button>
+      </div>
+    `;
+    return div;
+  }
+
+  function openEditTaskModal(taskId) {
+    const task = allTasks.find(t => t.id === taskId);
+    if (!task) return;
+    editingTaskId = taskId;
+    document.getElementById('edit-task-title').value = task.title || "";
+    document.getElementById('edit-task-due').value = task.due_date || "";
+    document.getElementById('edit-task-urgent').checked = Boolean(task.urgent);
+    editTaskAssignees = [...getTaskAssignees(task)];
+    refreshEditTaskAssigneeChips();
+    document.getElementById('edit-task-modal').classList.remove('hidden');
+  }
+
+  function closeEditTaskModal() {
+    editingTaskId = null;
+    document.getElementById('edit-task-modal').classList.add('hidden');
+  }
+
+  function toggleEditTaskAssignee(name) {
+    if (name === "כולם") {
+      editTaskAssignees = ["כולם"];
+    } else {
+      editTaskAssignees = editTaskAssignees.filter(p => p !== "כולם");
+      if (editTaskAssignees.includes(name)) {
+        editTaskAssignees = editTaskAssignees.filter(p => p !== name);
+      } else {
+        editTaskAssignees.push(name);
+      }
+      if (editTaskAssignees.length === 0) editTaskAssignees = ["כולם"];
+    }
+    refreshEditTaskAssigneeChips();
+  }
+
+  function refreshEditTaskAssigneeChips() {
+    document.querySelectorAll('#edit-task-assignee-picker .pick-chip').forEach(chip => {
+      chip.classList.toggle('selected', editTaskAssignees.includes(chip.getAttribute('data-name')));
+    });
+  }
+
+  function saveEditedTask() {
+    if (!editingTaskId) return;
+    const newTitle = document.getElementById('edit-task-title').value.trim();
+    if (!newTitle) return;
+    const newDue = document.getElementById('edit-task-due').value;
+    const newUrgent = document.getElementById('edit-task-urgent').checked;
+
+    db.collection("families").doc(familyId).collection("tasks").doc(editingTaskId).update({
+      title: newTitle,
+      assignees: [...editTaskAssignees],
+      due_date: newDue,
+      urgent: newUrgent
+    }).then(() => {
+      closeEditTaskModal();
+    }).catch(err => console.error("Error updating task:", err));
+  }
+
+  function clearCompletedTasks() {
+    allTasks.filter(t => t.completed).forEach(task => {
+      db.collection("families").doc(familyId).collection("tasks").doc(task.id).delete();
     });
   }
 
@@ -943,6 +2307,19 @@
     currentShopList = type;
     document.querySelectorAll('#list-selector .chip').forEach(c => c.classList.remove('active'));
     el.classList.add('active');
+
+    manualCategoryChosen['shop'] = false;
+    const catSelect = document.getElementById('shop-cat');
+    const currentInputVal = document.getElementById('shop-input').value.trim();
+    if (currentInputVal) {
+      const detected = detectCategoryFromText(currentInputVal);
+      catSelect.value = type === "pharm" ? "טואלטיקה" : (detected || getDefaultCategoryForList(type));
+      catSelect.classList.toggle('auto-matched', Boolean(detected) || type === "pharm");
+    } else {
+      catSelect.value = getDefaultCategoryForList(type);
+      catSelect.classList.remove('auto-matched');
+    }
+
     renderShopping();
   }
 
@@ -953,23 +2330,27 @@
     const name = input.value.trim();
     if (!name) return;
 
-    const cat = (!manualCategoryChosen['shop'] && detectCategoryFromText(name)) || catSelect.value;
+    const cat = resolveCategoryForSave(name, catSelect, 'shop');
+    const targetList = getListTypeForCategory(cat, currentShopList);
+    learnItemCategory(name, cat);
+
     db.collection("families").doc(familyId).collection("shopping_list").add({
       name: name,
       qty: qtyInput.value.trim(),
       category: cat,
-      list_type: currentShopList,
+      list_type: targetList,
       completed: false,
       created_at: firebase.firestore.FieldValue.serverTimestamp()
     });
     input.value = "";
     qtyInput.value = "";
     manualCategoryChosen['shop'] = false;
+    catSelect.value = getDefaultCategoryForList(currentShopList);
     catSelect.classList.remove('auto-matched');
   }
 
   function clearCompletedShopping() {
-    allShoppingItems.filter(i => (i.list_type || "super") === currentShopList && i.completed).forEach(item => {
+    allShoppingItems.filter(i => itemMatchesCurrentShopView(i, currentShopList) && i.completed).forEach(item => {
       db.collection("families").doc(familyId).collection("shopping_list").doc(item.id).delete();
     });
   }
@@ -981,7 +2362,9 @@
     const name = input.value.trim();
     if (!name) return;
 
-    const cat = (!manualCategoryChosen['fav'] && detectCategoryFromText(name)) || catSelect.value;
+    const cat = resolveCategoryForSave(name, catSelect, 'fav');
+    learnItemCategory(name, cat);
+
     db.collection("families").doc(familyId).collection("favorites").add({
       name: name,
       qty: qtyInput.value.trim(),
@@ -995,20 +2378,29 @@
   }
 
   function saveAsFavorite(name, qty, category) {
+    const canonCat = canonicalizeCategory(category);
+    learnItemCategory(name, canonCat);
     db.collection("families").doc(familyId).collection("favorites").add({
       name: name,
       qty: qty,
-      category: category,
+      category: canonCat,
       created_at: firebase.firestore.FieldValue.serverTimestamp()
     });
   }
 
   function quickAddFromFav(name, qty, category) {
+    const canonCat = canonicalizeCategory(category);
+    const targetList = getListTypeForCategory(canonCat, currentShopList);
+    currentShopList = targetList;
+    document.querySelectorAll('#list-selector .chip').forEach((c, idx) => {
+      const listKeys = ['super', 'pharm', 'home'];
+      c.classList.toggle('active', listKeys[idx] === targetList);
+    });
     db.collection("families").doc(familyId).collection("shopping_list").add({
       name: name,
       qty: qty,
-      category: category,
-      list_type: currentShopList,
+      category: canonCat,
+      list_type: targetList,
       completed: false,
       created_at: firebase.firestore.FieldValue.serverTimestamp()
     });
@@ -1027,12 +2419,12 @@
       const cleanLine = line.trim();
       if (!cleanLine || cleanLine.endsWith(':') || cleanLine.includes('מצרכים') || cleanLine.includes('הוראות') || cleanLine.includes('רכיבים') || cleanLine.includes('אופן הכנה') || /^\d+[\.\)]/.test(cleanLine)) return;
       
-      const cat = detectCategoryFromText(cleanLine);
+      const cat = canonicalizeCategory(detectCategoryFromText(cleanLine) || "כללי");
       db.collection("families").doc(familyId).collection("shopping_list").add({
         name: cleanLine,
         qty: "",
         category: cat,
-        list_type: "super",
+        list_type: getListTypeForCategory(cat),
         completed: false,
         created_at: firebase.firestore.FieldValue.serverTimestamp()
       });
@@ -1050,7 +2442,7 @@
   function filterTasks(person, el) {
     currentTaskFilter = person;
     document.querySelectorAll('#task-filter-row .chip').forEach(c => c.classList.remove('active'));
-    el.classList.add('active');
+    if (el) el.classList.add('active');
     renderTasks();
   }
 
@@ -1078,9 +2470,13 @@
     const title = input.value.trim();
     if (!title) return;
 
+    const assigneesToSave = selectedAssignees.length > 0
+      ? [...selectedAssignees]
+      : (currentUser ? [currentUser] : ["כולם"]);
+
     db.collection("families").doc(familyId).collection("tasks").add({
       title: title,
-      assignees: [...selectedAssignees],
+      assignees: assigneesToSave,
       due_date: due,
       urgent: urgent,
       completed: false,
@@ -1100,7 +2496,7 @@
   }
 
   function switchTab(tab) {
-    ['shopping', 'favorites', 'recipes', 'tasks'].forEach(t => {
+    ['shopping', 'favorites', 'recipes', 'meals', 'tasks'].forEach(t => {
       document.getElementById('view-' + t).classList.toggle('hidden', t !== tab);
       document.getElementById('nav-' + t).classList.toggle('active', t === tab);
     });
@@ -1112,10 +2508,22 @@
     currentUser = name.trim();
     localStorage.setItem("aharoni_current_user", currentUser);
     updateProfileUI();
+    if (currentUser) {
+      selectedAssignees = [currentUser];
+      document.querySelectorAll('#task-assignee-picker .pick-chip').forEach(chip => {
+        chip.classList.toggle('selected', selectedAssignees.includes(chip.getAttribute('data-name')));
+      });
+    }
+    renderTasks();
     closeProfileModal();
   }
   function updateProfileUI() {
     document.getElementById('profile-btn').innerText = currentUser ? "👤 " + currentUser : "👤 מי אני?";
+    const mineChip = document.getElementById('task-chip-mine');
+    if (mineChip) {
+      mineChip.classList.toggle('hidden', !currentUser);
+      mineChip.innerText = currentUser ? `👤 שלי (${currentUser})` : "👤 שלי";
+    }
   }
 
   function escapeHtml(text) {
