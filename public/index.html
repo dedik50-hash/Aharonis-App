@@ -647,7 +647,7 @@
       name: itemName.trim(),
       category: category,
       updated_at: firebase.firestore.FieldValue.serverTimestamp()
-    }, { merge: true });
+    }, { merge: true }).catch(err => console.error("category_memory write error:", err));
   }
 
   function buildCategoryOptionsHtml(selectedCategory) {
@@ -730,14 +730,21 @@
     return detectCategoryFromText(name) || selectEl.value || "כללי";
   }
 
-  auth.signInAnonymously().catch(() => {
-    document.getElementById('status').innerText = "שגיאת חיבור";
+  let dataListenersStarted = false;
+
+  auth.signInAnonymously().catch((err) => {
+    console.error("Anonymous sign-in failed:", err);
+    const code = err && err.code ? err.code : "unknown";
+    document.getElementById('status').innerText = "שגיאה: " + code;
   });
 
   auth.onAuthStateChanged((user) => {
     if (user) {
       document.getElementById('status').innerText = "מסונכרן 🟢";
-      listenToData();
+      if (!dataListenersStarted) {
+        dataListenersStarted = true;
+        listenToData();
+      }
     }
   });
 
@@ -752,12 +759,17 @@
           }
         });
         learnedCategoryMemory = updatedMemory;
+      }, (err) => {
+        console.error("category_memory listener error:", err);
       });
 
     db.collection("families").doc(familyId).collection("shopping_list")
       .onSnapshot((snapshot) => {
         allShoppingItems = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
         renderShopping();
+      }, (err) => {
+        console.error("shopping_list listener error:", err);
+        document.getElementById('status').innerText = "שגיאת DB";
       });
 
     db.collection("families").doc(familyId).collection("favorites")
@@ -785,19 +797,19 @@
           `;
           favEl.appendChild(card);
         });
-      });
+      }, (err) => console.error("favorites listener error:", err));
 
     db.collection("families").doc(familyId).collection("recipes")
       .onSnapshot((snapshot) => {
         allRecipes = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
         renderRecipesAccordion();
-      });
+      }, (err) => console.error("recipes listener error:", err));
 
     db.collection("families").doc(familyId).collection("tasks")
       .onSnapshot((snapshot) => {
         allTasks = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
         renderTasks();
-      });
+      }, (err) => console.error("tasks listener error:", err));
   }
 
   function handleImageUpload(event) {
@@ -1031,10 +1043,254 @@
             <input type="checkbox" class="checkbox" checked>
             <div class="item-main">
               <div class="item-title-row">
-                <span class="item-text" style="text-decoration:line-through;">${escapeHtml(item.name)}</span>${item.qty ? '<span class="qty-badge">' + escapeHtml(item.qty) + '</span>' : ''}
+                <span class="item-text" style="text-decoration:line-through;">${escapeHtml(item.name)}</span>
+                ${item.qty ? '<span class="qty-badge">' + escapeHtml(item.qty) + '</span>' : ''}
               </div>
             </div>
           </div>
           <div class="actions">
             <button class="icon-btn" title="שנה קטגוריה" onclick="openEditCategoryModal('${item.id}')">🏷️</button>
-            <button class="icon-btn del-btn" onclick="deleteItem('shopping_list
+            <button class="icon-btn del-btn" onclick="deleteItem('shopping_list', '${item.id}')">✕</button>
+          </div>
+        `;
+        doneList.appendChild(div);
+      });
+      container.appendChild(doneList);
+    }
+  }
+
+  function renderTasks() {
+    const listEl = document.getElementById('tasks-list');
+    listEl.innerHTML = "";
+    let filtered = allTasks;
+    if (currentTaskFilter !== "הכל") {
+      filtered = allTasks.filter(t => {
+        const people = Array.isArray(t.assignees) ? t.assignees : (t.assigned_to ? t.assigned_to.split(',').map(s=>s.trim()) : ["כולם"]);
+        return people.includes(currentTaskFilter) || people.includes("כולם");
+      });
+    }
+
+    if (filtered.length === 0) {
+      listEl.innerHTML = '<div class="empty-state">אין משימות פתוחות ✨</div>';
+      return;
+    }
+
+    filtered.forEach(data => {
+      const people = Array.isArray(data.assignees) ? data.assignees : ["כולם"];
+      const peopleBadges = people.map(p => '<span class="badge badge-person">' + escapeHtml(p) + '</span>').join('');
+
+      const div = document.createElement('div');
+      div.className = "item " + (data.urgent && !data.completed ? 'urgent ' : '') + (data.completed ? 'done' : '');
+      div.innerHTML = `
+        <div class="item-left" onclick="toggleItem('tasks', '${data.id}', ${!data.completed})">
+          <input type="checkbox" class="checkbox" ${data.completed ? 'checked' : ''}>
+          <div class="item-main">
+            <span class="item-text">${escapeHtml(data.title)}</span>
+            <div class="meta-row">
+              ${peopleBadges}
+              ${data.urgent ? '<span class="badge badge-urgent">🔥 דחוף</span>' : ''}
+              ${data.due_date ? '<span class="badge badge-date">📅 ' + data.due_date + '</span>' : ''}
+            </div>
+          </div>
+        </div>
+        <button class="icon-btn del-btn" onclick="deleteItem('tasks', '${data.id}')">✕</button>
+      `;
+      listEl.appendChild(div);
+    });
+  }
+
+  function selectShopList(type, el) {
+    currentShopList = type;
+    document.querySelectorAll('#list-selector .chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    renderShopping();
+  }
+
+  function addShopping() {
+    const input = document.getElementById('shop-input');
+    const qtyInput = document.getElementById('shop-qty');
+    const catSelect = document.getElementById('shop-cat');
+    const name = input.value.trim();
+    if (!name) return;
+
+    const cat = resolveCategoryForSave(name, catSelect, 'shop');
+    learnItemCategory(name, cat);
+
+    db.collection("families").doc(familyId).collection("shopping_list").add({
+      name: name,
+      qty: qtyInput.value.trim(),
+      category: cat,
+      list_type: currentShopList,
+      completed: false,
+      created_at: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    input.value = "";
+    qtyInput.value = "";
+    manualCategoryChosen['shop'] = false;
+    catSelect.classList.remove('auto-matched');
+  }
+
+  function clearCompletedShopping() {
+    allShoppingItems.filter(i => (i.list_type || "super") === currentShopList && i.completed).forEach(item => {
+      db.collection("families").doc(familyId).collection("shopping_list").doc(item.id).delete();
+    });
+  }
+
+  function addFavorite() {
+    const input = document.getElementById('fav-input');
+    const qtyInput = document.getElementById('fav-qty');
+    const catSelect = document.getElementById('fav-cat');
+    const name = input.value.trim();
+    if (!name) return;
+
+    const cat = resolveCategoryForSave(name, catSelect, 'fav');
+    learnItemCategory(name, cat);
+
+    db.collection("families").doc(familyId).collection("favorites").add({
+      name: name,
+      qty: qtyInput.value.trim(),
+      category: cat,
+      created_at: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    input.value = "";
+    qtyInput.value = "";
+    manualCategoryChosen['fav'] = false;
+    catSelect.classList.remove('auto-matched');
+  }
+
+  function saveAsFavorite(name, qty, category) {
+    learnItemCategory(name, category);
+    db.collection("families").doc(familyId).collection("favorites").add({
+      name: name,
+      qty: qty,
+      category: category,
+      created_at: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  }
+
+  function quickAddFromFav(name, qty, category) {
+    db.collection("families").doc(familyId).collection("shopping_list").add({
+      name: name,
+      qty: qty,
+      category: category,
+      list_type: currentShopList,
+      completed: false,
+      created_at: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    switchTab('shopping');
+  }
+
+  function addRecipeToShopping(content) {
+    if (!content) {
+      alert("תוכן המתכון ריק.");
+      return;
+    }
+    const lines = content.split('\n');
+    let addedCount = 0;
+    
+    lines.forEach(line => {
+      const cleanLine = line.trim();
+      if (!cleanLine || cleanLine.endsWith(':') || cleanLine.includes('מצרכים') || cleanLine.includes('הוראות') || cleanLine.includes('רכיבים') || cleanLine.includes('אופן הכנה') || /^\d+[\.\)]/.test(cleanLine)) return;
+      
+      const cat = detectCategoryFromText(cleanLine) || "כללי";
+      db.collection("families").doc(familyId).collection("shopping_list").add({
+        name: cleanLine,
+        qty: "",
+        category: cat,
+        list_type: "super",
+        completed: false,
+        created_at: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      addedCount++;
+    });
+
+    if (addedCount > 0) {
+      closeFullscreenRecipe();
+      switchTab('shopping');
+    } else {
+      alert("לא נמצאו מצרכים תקינים לייצוא במסמך זה.");
+    }
+  }
+
+  function filterTasks(person, el) {
+    currentTaskFilter = person;
+    document.querySelectorAll('#task-filter-row .chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    renderTasks();
+  }
+
+  function toggleAssignee(name) {
+    if (name === "כולם") {
+      selectedAssignees = ["כולם"];
+    } else {
+      selectedAssignees = selectedAssignees.filter(p => p !== "כולם");
+      if (selectedAssignees.includes(name)) {
+        selectedAssignees = selectedAssignees.filter(p => p !== name);
+      } else {
+        selectedAssignees.push(name);
+      }
+      if (selectedAssignees.length === 0) selectedAssignees = ["כולם"];
+    }
+    document.querySelectorAll('#task-assignee-picker .pick-chip').forEach(chip => {
+      chip.classList.toggle('selected', selectedAssignees.includes(chip.getAttribute('data-name')));
+    });
+  }
+
+  function addTask() {
+    const input = document.getElementById('task-input');
+    const due = document.getElementById('task-due').value;
+    const urgent = document.getElementById('task-urgent').checked;
+    const title = input.value.trim();
+    if (!title) return;
+
+    db.collection("families").doc(familyId).collection("tasks").add({
+      title: title,
+      assignees: [...selectedAssignees],
+      due_date: due,
+      urgent: urgent,
+      completed: false,
+      created_at: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    input.value = "";
+    document.getElementById('task-due').value = "";
+    document.getElementById('task-urgent').checked = false;
+  }
+
+  function toggleItem(col, id, state) {
+    db.collection("families").doc(familyId).collection(col).doc(id).update({ completed: state });
+  }
+
+  function deleteItem(col, id) {
+    db.collection("families").doc(familyId).collection(col).doc(id).delete();
+  }
+
+  function switchTab(tab) {
+    ['shopping', 'favorites', 'recipes', 'tasks'].forEach(t => {
+      document.getElementById('view-' + t).classList.toggle('hidden', t !== tab);
+      document.getElementById('nav-' + t).classList.toggle('active', t === tab);
+    });
+  }
+
+  function openProfileModal() { document.getElementById('profile-modal').classList.remove('hidden'); }
+  function closeProfileModal() { document.getElementById('profile-modal').classList.add('hidden'); }
+  function selectUserProfile(name) {
+    currentUser = name.trim();
+    localStorage.setItem("aharoni_current_user", currentUser);
+    updateProfileUI();
+    closeProfileModal();
+  }
+  function updateProfileUI() {
+    document.getElementById('profile-btn').innerText = currentUser ? "👤 " + currentUser : "👤 מי אני?";
+  }
+
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text || "";
+    return div.innerHTML;
+  }
+  function escapeAttr(text) {
+    return (text || "").replace(/'/g, "\\'").replace(/"/g, '&quot;');
+  }
+</script>
+</body>
+</html>
