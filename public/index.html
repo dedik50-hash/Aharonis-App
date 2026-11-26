@@ -99,6 +99,36 @@
       flex-direction: column;
       gap: 10px;
     }
+    .input-card.expanded-fullscreen {
+      position: fixed;
+      inset: 0;
+      z-index: 65;
+      margin: 0;
+      border-radius: 0;
+      overflow-y: auto;
+      padding: calc(16px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom));
+    }
+    .input-card.expanded-fullscreen textarea {
+      flex: 1;
+      min-height: 220px;
+    }
+    .card-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+    .expand-toggle-btn {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      color: var(--text);
+      padding: 5px 10px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
     .row { display: flex; gap: 8px; flex-wrap: wrap; }
     input, select, textarea {
       padding: 11px 12px;
@@ -202,6 +232,8 @@
     .actions { display: flex; align-items: center; gap: 2px; }
     .icon-btn { background: none; border: none; font-size: 1.05rem; cursor: pointer; padding: 6px; border-radius: 8px; color: var(--muted); }
     .icon-btn:hover { background: #f1f5f9; }
+    .wa-btn { color: #15803d; }
+    .wa-btn:hover { background: #dcfce7; }
     .del-btn { color: var(--danger); }
 
     .modal-backdrop {
@@ -380,14 +412,60 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
 
+    .meal-day-card {
+      background: white;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      padding: 14px;
+      margin-bottom: 10px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .meal-day-title {
+      font-weight: 800;
+      font-size: 1rem;
+      color: var(--primary-dark);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 6px;
+    }
+    .meal-slot-box {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .meal-slot-label {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .meal-shop-btn {
+      background: #ccfbf1;
+      color: var(--primary-dark);
+      border: none;
+      padding: 4px 9px;
+      border-radius: 8px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
     .bottom-nav {
       position: fixed; bottom: 0; left: 0; right: 0; background: white;
       border-top: 1px solid var(--border); display: flex; padding-bottom: env(safe-area-inset-bottom); z-index: 30;
     }
     .nav-item {
-      flex: 1; padding: 10px 4px; text-align: center; color: var(--muted); font-size: 0.78rem; font-weight: 600; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px;
+      flex: 1; padding: 10px 4px; text-align: center; color: var(--muted); font-size: 0.75rem; font-weight: 600; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px;
     }
-    .nav-item span.icon { font-size: 1.25rem; }
+    .nav-item span.icon { font-size: 1.2rem; }
     .nav-item.active { color: var(--primary); }
     .hidden { display: none !important; }
     .empty-state { text-align: center; color: var(--muted); padding: 32px 16px; font-size: 0.95rem; }
@@ -484,8 +562,8 @@
 <div class="container">
   <div id="view-shopping">
     <div class="chips-row" id="list-selector">
-      <div class="chip active" onclick="selectShopList('super', this)">🛒 סופר</div>
-      <div class="chip" onclick="selectShopList('pharm', this)">💊 פארם (טואלטיקה)</div>
+      <div class="chip active" onclick="selectShopList('super', this)">🛒 קניות</div>
+      <div class="chip" onclick="selectShopList('pharm', this)">💊 פארם</div>
       <div class="chip" onclick="selectShopList('home', this)">🌱 גינה ובית</div>
     </div>
 
@@ -550,8 +628,11 @@
   </div>
 
   <div id="view-recipes" class="hidden">
-    <div class="input-card">
-      <div style="font-weight:700; font-size:0.95rem;">🍲 הוספת מתכון חדש (צילום מסך, קובץ או הדבקה)</div>
+    <div class="input-card" id="new-recipe-card">
+      <div class="card-header-row">
+        <div style="font-weight:700; font-size:0.95rem;">🍲 הוספת מתכון חדש</div>
+        <button type="button" class="expand-toggle-btn" id="expand-new-recipe-btn" onclick="toggleNewRecipeFullscreen()">⛶ מסך מלא</button>
+      </div>
       
       <div class="row">
         <label class="import-btn-label">
@@ -584,6 +665,14 @@
       </div>
     </div>
     <div id="recipes-accordion-container"></div>
+  </div>
+
+  <div id="view-meals" class="hidden">
+    <div class="input-card" style="margin-bottom:12px;">
+      <div style="font-weight:700; font-size:0.95rem;">📅 תכנון ארוחות שבועי</div>
+      <div style="font-size:0.82rem; color:var(--muted);">ארוחת בוקר לבית ספר, צהריים וערב — בחר מתכון שמור או הקלד ארוחה חופשית</div>
+    </div>
+    <div id="meal-plan-container"></div>
   </div>
 
   <div id="view-tasks" class="hidden">
@@ -639,6 +728,10 @@
     <span class="icon">🍲</span>
     <span>מתכונים</span>
   </div>
+  <div class="nav-item" id="nav-meals" onclick="switchTab('meals')">
+    <span class="icon">📅</span>
+    <span>ארוחות</span>
+  </div>
   <div class="nav-item" id="nav-tasks" onclick="switchTab('tasks')">
     <span class="icon">✅</span>
     <span>משימות</span>
@@ -663,6 +756,16 @@
   db.settings({ experimentalForceLongPolling: true });
   const familyId = "aharoni_family_main";
 
+  const weekDays = [
+    { key: "sunday", label: "ראשון" },
+    { key: "monday", label: "שני" },
+    { key: "tuesday", label: "שלישי" },
+    { key: "wednesday", label: "רביעי" },
+    { key: "thursday", label: "חמישי" },
+    { key: "friday", label: "שישי" },
+    { key: "saturday", label: "שבת" }
+  ];
+
   let currentShopList = "super";
   let currentTaskFilter = "הכל";
   let selectedAssignees = ["כולם"];
@@ -670,6 +773,7 @@
   let allFavorites = [];
   let allRecipes = [];
   let allTasks = [];
+  let mealPlanData = {};
   let learnedCategoryMemory = {};
   let currentUser = (localStorage.getItem("aharoni_current_user") || "").trim();
   let manualCategoryChosen = { shop: false, fav: false };
@@ -696,7 +800,6 @@
     "כללי": "📦"
   };
 
-  // נרמול קטגוריות ישנות לחדשות המסונכרנות
   function canonicalizeCategory(cat) {
     if (!cat) return "כללי";
     const trimmed = cat.trim();
@@ -705,7 +808,6 @@
     return categoryIcons[trimmed] ? trimmed : "כללי";
   }
 
-  // מיפוי קטגוריה ללשונית הרשימה המתאימה
   function getListTypeForCategory(cat) {
     const c = canonicalizeCategory(cat);
     if (c === "טואלטיקה") return "pharm";
@@ -713,11 +815,23 @@
     return "super";
   }
 
-  // קטגוריית ברירת מחדל לפי הלשונית העליונה שנבחרה
   function getDefaultCategoryForList(listType) {
     if (listType === "pharm") return "טואלטיקה";
     if (listType === "home") return "גינון";
     return "ירקות ופירות";
+  }
+
+  function itemMatchesCurrentShopView(item, viewType) {
+    const cat = canonicalizeCategory(item.category);
+    const listType = item.list_type || getListTypeForCategory(cat);
+
+    if (viewType === "pharm") {
+      return listType === "pharm" || cat === "טואלטיקה";
+    }
+    if (viewType === "home") {
+      return listType === "home" || cat === "גינון" || cat === "ריהוט";
+    }
+    return true;
   }
 
   const recipeCategoryIcons = {
@@ -843,7 +957,6 @@
   }
 
   function resolveCategoryForSave(name, selectEl, formKey) {
-    // בלשונית פארם המוצרים מרוכזים תמיד תחת טואלטיקה אלא אם נבחרה קטגוריה ידנית אחרת
     if (formKey === 'shop' && currentShopList === 'pharm' && !manualCategoryChosen[formKey]) {
       return "טואלטיקה";
     }
@@ -937,13 +1050,117 @@
       .onSnapshot((snapshot) => {
         allRecipes = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
         renderRecipesAccordion();
+        renderMealPlan();
       }, (err) => console.error("recipes listener error:", err));
+
+    db.collection("families").doc(familyId).collection("meal_plan")
+      .onSnapshot((snapshot) => {
+        const loaded = {};
+        snapshot.forEach(docSnap => {
+          loaded[docSnap.id] = docSnap.data();
+        });
+        mealPlanData = loaded;
+        renderMealPlan();
+      }, (err) => console.error("meal_plan listener error:", err));
 
     db.collection("families").doc(familyId).collection("tasks")
       .onSnapshot((snapshot) => {
         allTasks = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
         renderTasks();
       }, (err) => console.error("tasks listener error:", err));
+  }
+
+  function renderMealSlotBox(dayKey, slotKey, labelText, placeholderText, dayDoc) {
+    const recipeId = dayDoc[`${slotKey}_recipe_id`] || "";
+    const mealText = dayDoc[`${slotKey}_text`] || "";
+
+    const optionsHtml = `<option value="">-- בחר מתכון שמור --</option>` + allRecipes.map(r => {
+      const selectedAttr = r.id === recipeId ? ' selected' : '';
+      return `<option value="${escapeAttr(r.id)}"${selectedAttr}>${escapeHtml(r.title)}</option>`;
+    }).join('');
+
+    return `
+      <div class="meal-slot-box">
+        <div class="meal-slot-label">
+          <span>${escapeHtml(labelText)}</span>
+          ${recipeId ? `<button type="button" class="meal-shop-btn" onclick="addRecipeToShoppingById('${escapeAttr(recipeId)}')">🛒 הוסף מצרכים לקניות</button>` : ''}
+        </div>
+        <select id="meal-${dayKey}-${slotKey}-sel" onchange="onSelectMealRecipe('${dayKey}', '${slotKey}', this.value)">
+          ${optionsHtml}
+        </select>
+        <input type="text" id="meal-${dayKey}-${slotKey}-txt" value="${escapeAttr(mealText)}" placeholder="${escapeAttr(placeholderText)}" onchange="onSaveMealText('${dayKey}', '${slotKey}', this.value)">
+      </div>
+    `;
+  }
+
+  function renderMealPlan() {
+    const container = document.getElementById('meal-plan-container');
+    if (!container) return;
+
+    const activeEl = document.activeElement;
+    const focusedId = activeEl && activeEl.id ? activeEl.id : null;
+    const selectionStart = activeEl && typeof activeEl.selectionStart === 'number' ? activeEl.selectionStart : null;
+
+    container.innerHTML = weekDays.map(day => {
+      const dayDoc = mealPlanData[day.key] || {};
+
+      return `
+        <div class="meal-day-card">
+          <div class="meal-day-title">יום ${escapeHtml(day.label)}</div>
+          ${renderMealSlotBox(day.key, 'breakfast', '🥪 ארוחת בוקר לבית ספר', 'מה נכין לילדים לבית ספר...', dayDoc)}
+          ${renderMealSlotBox(day.key, 'lunch', '☀️ ארוחת צהריים', 'שם ארוחת הצהריים...', dayDoc)}
+          ${renderMealSlotBox(day.key, 'dinner', '🌙 ארוחת ערב', 'שם ארוחת הערב...', dayDoc)}
+        </div>
+      `;
+    }).join('');
+
+    if (focusedId) {
+      const restoredEl = document.getElementById(focusedId);
+      if (restoredEl && document.activeElement !== restoredEl) {
+        restoredEl.focus();
+        if (selectionStart !== null && typeof restoredEl.setSelectionRange === 'function') {
+          restoredEl.setSelectionRange(selectionStart, selectionStart);
+        }
+      }
+    }
+  }
+
+  function onSelectMealRecipe(dayKey, slot, recipeId) {
+    const recipe = allRecipes.find(r => r.id === recipeId);
+    const updateObj = {};
+    updateObj[`${slot}_recipe_id`] = recipeId || "";
+    if (recipe) {
+      updateObj[`${slot}_text`] = recipe.title;
+    }
+    db.collection("families").doc(familyId).collection("meal_plan")
+      .doc(dayKey)
+      .set(updateObj, { merge: true })
+      .catch(err => console.error("Error updating meal plan recipe:", err));
+  }
+
+  function onSaveMealText(dayKey, slot, textVal) {
+    const updateObj = {};
+    updateObj[`${slot}_text`] = (textVal || "").trim();
+    db.collection("families").doc(familyId).collection("meal_plan")
+      .doc(dayKey)
+      .set(updateObj, { merge: true })
+      .catch(err => console.error("Error saving meal plan text:", err));
+  }
+
+  function addRecipeToShoppingById(recipeId) {
+    const recipe = allRecipes.find(r => r.id === recipeId);
+    if (!recipe || !recipe.content) {
+      alert("לא נמצאו מצרכים למתכון זה.");
+      return;
+    }
+    addRecipeToShopping(recipe.content);
+  }
+
+  function toggleNewRecipeFullscreen() {
+    const card = document.getElementById('new-recipe-card');
+    const btn = document.getElementById('expand-new-recipe-btn');
+    const isExpanded = card.classList.toggle('expanded-fullscreen');
+    btn.innerText = isExpanded ? "↙ צמצם מסך" : "⛶ מסך מלא";
   }
 
   function cleanRecipeText(text) {
@@ -1098,6 +1315,12 @@
     titleInput.value = "";
     textInput.value = "";
     openRecipeCategories[category] = true;
+
+    const card = document.getElementById('new-recipe-card');
+    if (card.classList.contains('expanded-fullscreen')) {
+      card.classList.remove('expanded-fullscreen');
+      document.getElementById('expand-new-recipe-btn').innerText = "⛶ מסך מלא";
+    }
   }
 
   function formatRecipeContentForDisplay(rawText) {
@@ -1280,18 +1503,7 @@
     const container = document.getElementById('shopping-container');
     container.innerHTML = "";
 
-    const filtered = allShoppingItems.filter(item => {
-      const cat = canonicalizeCategory(item.category);
-      if (currentShopList === "pharm") {
-        return item.list_type === "pharm" || cat === "טואלטיקה";
-      }
-      if (currentShopList === "home") {
-        return item.list_type === "home" || cat === "גינון" || cat === "ריהוט";
-      }
-      // בלשונית סופר: כל מה שלא שייך בלעדית לפארם/גינון/ריהוט (אלא אם סומן מפורשות כ-super)
-      return item.list_type === "super" || (!item.list_type && cat !== "טואלטיקה" && cat !== "גינון" && cat !== "ריהוט");
-    });
-
+    const filtered = allShoppingItems.filter(item => itemMatchesCurrentShopView(item, currentShopList));
     const activeItems = filtered.filter(i => !i.completed);
     const doneItems = filtered.filter(i => i.completed);
 
@@ -1319,7 +1531,7 @@
       ? ["טואלטיקה"]
       : currentShopList === "home"
         ? ["גינון", "ריהוט"]
-        : [];
+        : ["טואלטיקה", "גינון", "ריהוט"];
 
     const sortedCats = [
       ...priorityOrder.filter(c => grouped[c]),
@@ -1391,6 +1603,26 @@
     }
   }
 
+  function sendTaskToWhatsApp(taskId) {
+    const task = allTasks.find(t => t.id === taskId);
+    if (!task) return;
+
+    const people = Array.isArray(task.assignees) && task.assignees.length
+      ? task.assignees.join(", ")
+      : "כולם";
+
+    const lines = [
+      `${task.urgent ? "🔥 *משימה דחופה*:" : "✅ *משימה*:"} ${task.title}`,
+      `👥 אחראים: ${people}`
+    ];
+    if (task.due_date) {
+      lines.push(`📅 יעד: ${task.due_date}`);
+    }
+
+    const url = "https://wa.me/?text=" + encodeURIComponent(lines.join("\n"));
+    window.open(url, "_blank", "noopener,noreferrer");
+  }
+
   function renderTasks() {
     const listEl = document.getElementById('tasks-list');
     listEl.innerHTML = "";
@@ -1425,7 +1657,10 @@
             </div>
           </div>
         </div>
-        <button class="icon-btn del-btn" onclick="deleteItem('tasks', '${data.id}')">✕</button>
+        <div class="actions">
+          <button class="icon-btn wa-btn" title="שלח בווטסאפ" onclick="sendTaskToWhatsApp('${data.id}')">📲</button>
+          <button class="icon-btn del-btn" title="מחק משימה" onclick="deleteItem('tasks', '${data.id}')">✕</button>
+        </div>
       `;
       listEl.appendChild(div);
     });
@@ -1436,7 +1671,6 @@
     document.querySelectorAll('#list-selector .chip').forEach(c => c.classList.remove('active'));
     el.classList.add('active');
 
-    // סנכרון אוטומטי של תיבת הקטגוריה ללשונית שנבחרה (כל עוד המשתמש לא בחר ידנית)
     manualCategoryChosen['shop'] = false;
     const catSelect = document.getElementById('shop-cat');
     const currentInputVal = document.getElementById('shop-input').value.trim();
@@ -1479,7 +1713,7 @@
   }
 
   function clearCompletedShopping() {
-    allShoppingItems.filter(i => (i.list_type || "super") === currentShopList && i.completed).forEach(item => {
+    allShoppingItems.filter(i => itemMatchesCurrentShopView(i, currentShopList) && i.completed).forEach(item => {
       db.collection("families").doc(familyId).collection("shopping_list").doc(item.id).delete();
     });
   }
@@ -1621,7 +1855,7 @@
   }
 
   function switchTab(tab) {
-    ['shopping', 'favorites', 'recipes', 'tasks'].forEach(t => {
+    ['shopping', 'favorites', 'recipes', 'meals', 'tasks'].forEach(t => {
       document.getElementById('view-' + t).classList.toggle('hidden', t !== tab);
       document.getElementById('nav-' + t).classList.toggle('active', t === tab);
     });
