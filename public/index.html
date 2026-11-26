@@ -99,6 +99,10 @@
       flex-direction: column;
       gap: 10px;
     }
+    .input-card.compact-collapsed {
+      padding: 11px 14px;
+      gap: 0;
+    }
     .input-card.expanded-fullscreen {
       position: fixed;
       inset: 0;
@@ -423,6 +427,10 @@
       flex-direction: column;
       gap: 10px;
     }
+    .meal-day-card.shabbat-highlight {
+      border-color: #0d9488;
+      box-shadow: 0 2px 6px rgba(13, 148, 136, 0.1);
+    }
     .meal-day-title {
       font-weight: 800;
       font-size: 1rem;
@@ -628,49 +636,52 @@
   </div>
 
   <div id="view-recipes" class="hidden">
-    <div class="input-card" id="new-recipe-card">
+    <div class="input-card compact-collapsed" id="new-recipe-card">
       <div class="card-header-row">
-        <div style="font-weight:700; font-size:0.95rem;">🍲 הוספת מתכון חדש</div>
-        <button type="button" class="expand-toggle-btn" id="expand-new-recipe-btn" onclick="toggleNewRecipeFullscreen()">⛶ מסך מלא</button>
+        <button type="button" class="btn-primary" style="padding:8px 14px; font-size:0.88rem;" id="open-new-recipe-btn" onclick="toggleNewRecipeComposer()">+ פתח הוספת מתכון</button>
+        <button type="button" class="expand-toggle-btn hidden" id="expand-new-recipe-btn" onclick="toggleNewRecipeFullscreen()">⛶ מסך מלא</button>
       </div>
-      
-      <div class="row">
-        <label class="import-btn-label">
-          📸 צילום מסך / תמונה
-          <input type="file" accept="image/*" style="display:none;" onchange="handleImageUpload(event)">
-        </label>
-        <label class="import-btn-label file-btn">
-          📄 קובץ טקסט (.txt)
-          <input type="file" accept=".txt,.md,.csv,text/plain" style="display:none;" onchange="handleRecipeFileUpload(event)">
-        </label>
-      </div>
-      <div id="ocr-status" style="font-size:0.8rem; color:var(--primary-dark); font-weight:600; text-align:center;" class="hidden">מעבד ומנקה טקסט... ⏳</div>
 
-      <input type="text" id="recipe-title-input" placeholder="שם המתכון (מתמלא אוטומטית מהשורה הראשונה)">
-      <textarea id="raw-recipe-text" rows="6" placeholder="הדבק כאן את תוכן המתכון או ייבא מתמונה/קובץ..."></textarea>
-      
-      <div class="row">
-        <select id="recipe-category-select" class="grow">
-          <option value="טאבון">🔥 טאבון</option>
-          <option value="אסייתי">🥢 אסייתי</option>
-          <option value="בשר ודגים">🥩 בשר ודגים</option>
-          <option value="מאפים ולחמים">🥖 מאפים ולחמים</option>
-          <option value="עוגות וקינוחים">🍰 עוגות וקינוחים</option>
-          <option value="תבשילים ומרקים">🍲 תבשילים ומרקים</option>
-          <option value="סלטים ותוספות">🥗 סלטים ותוספות</option>
-          <option value="כללי">📦 כללי</option>
-        </select>
-        <button class="btn-secondary" type="button" onclick="cleanRecipeDraftField()" title="נקה תווים מיותרים ושורות ריקות">🧹 נקה טקסט</button>
-        <button class="btn-primary" onclick="addRecipeWithCategory()">✨ שמור מתכון</button>
+      <div id="new-recipe-composer-body" class="hidden" style="display:flex; flex-direction:column; gap:10px; margin-top:4px;">
+        <div class="row">
+          <label class="import-btn-label">
+            📸 צילום מסך / תמונה
+            <input type="file" accept="image/*" style="display:none;" onchange="handleImageUpload(event)">
+          </label>
+          <label class="import-btn-label file-btn">
+            📄 קובץ טקסט (.txt)
+            <input type="file" accept=".txt,.md,.csv,text/plain" style="display:none;" onchange="handleRecipeFileUpload(event)">
+          </label>
+        </div>
+        <div id="ocr-status" style="font-size:0.8rem; color:var(--primary-dark); font-weight:600; text-align:center;" class="hidden">מעבד ומנקה טקסט... ⏳</div>
+
+        <input type="text" id="recipe-title-input" placeholder="שם המתכון (מתמלא אוטומטית מהשורה הראשונה)">
+        <textarea id="raw-recipe-text" rows="5" placeholder="הדבק כאן את תוכן המתכון או ייבא מתמונה/קובץ..."></textarea>
+        
+        <div class="row">
+          <select id="recipe-category-select" class="grow">
+            <option value="טאבון">🔥 טאבון</option>
+            <option value="אסייתי">🥢 אסייתי</option>
+            <option value="בשר ודגים">🥩 בשר ודגים</option>
+            <option value="מאפים ולחמים">🥖 מאפים ולחמים</option>
+            <option value="עוגות וקינוחים">🍰 עוגות וקינוחים</option>
+            <option value="תבשילים ומרקים">🍲 תבשילים ומרקים</option>
+            <option value="סלטים ותוספות">🥗 סלטים ותוספות</option>
+            <option value="כללי">📦 כללי</option>
+          </select>
+          <button class="btn-secondary" type="button" onclick="cleanRecipeDraftField()" title="נקה תווים מיותרים ושורות ריקות">🧹 נקה</button>
+          <button class="btn-primary" onclick="addRecipeWithCategory()">✨ שמור</button>
+        </div>
       </div>
     </div>
     <div id="recipes-accordion-container"></div>
   </div>
 
   <div id="view-meals" class="hidden">
-    <div class="input-card" style="margin-bottom:12px;">
-      <div style="font-weight:700; font-size:0.95rem;">📅 תכנון ארוחות שבועי</div>
-      <div style="font-size:0.82rem; color:var(--muted);">ארוחת בוקר לבית ספר, צהריים וערב — בחר מתכון שמור או הקלד ארוחה חופשית</div>
+    <div class="chips-row" id="meal-filter-row">
+      <div class="chip active" onclick="selectMealFilter('all', this)">הכל</div>
+      <div class="chip" onclick="selectMealFilter('shabbat', this)">🕯️ שישי-שבת</div>
+      <div class="chip" onclick="selectMealFilter('school_breakfast', this)">🥪 בוקר לבית ספר</div>
     </div>
     <div id="meal-plan-container"></div>
   </div>
@@ -757,16 +768,17 @@
   const familyId = "aharoni_family_main";
 
   const weekDays = [
-    { key: "sunday", label: "ראשון" },
-    { key: "monday", label: "שני" },
-    { key: "tuesday", label: "שלישי" },
-    { key: "wednesday", label: "רביעי" },
-    { key: "thursday", label: "חמישי" },
-    { key: "friday", label: "שישי" },
-    { key: "saturday", label: "שבת" }
+    { key: "sunday", label: "ראשון", isSchoolDay: true, isShabbat: false },
+    { key: "monday", label: "שני", isSchoolDay: true, isShabbat: false },
+    { key: "tuesday", label: "שלישי", isSchoolDay: true, isShabbat: false },
+    { key: "wednesday", label: "רביעי", isSchoolDay: true, isShabbat: false },
+    { key: "thursday", label: "חמישי", isSchoolDay: true, isShabbat: false },
+    { key: "friday", label: "שישי", isSchoolDay: true, isShabbat: true },
+    { key: "saturday", label: "שבת", isSchoolDay: false, isShabbat: true }
   ];
 
   let currentShopList = "super";
+  let currentMealFilter = "all";
   let currentTaskFilter = "הכל";
   let selectedAssignees = ["כולם"];
   let allShoppingItems = [];
@@ -782,6 +794,7 @@
   let activeRecipeId = null;
   let activeRecipeContent = "";
   let editingShoppingItemId = null;
+  let isNewRecipeComposerOpen = false;
 
   updateProfileUI();
 
@@ -1070,6 +1083,13 @@
       }, (err) => console.error("tasks listener error:", err));
   }
 
+  function selectMealFilter(filterKey, el) {
+    currentMealFilter = filterKey;
+    document.querySelectorAll('#meal-filter-row .chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    renderMealPlan();
+  }
+
   function renderMealSlotBox(dayKey, slotKey, labelText, placeholderText, dayDoc) {
     const recipeId = dayDoc[`${slotKey}_recipe_id`] || "";
     const mealText = dayDoc[`${slotKey}_text`] || "";
@@ -1101,15 +1121,42 @@
     const focusedId = activeEl && activeEl.id ? activeEl.id : null;
     const selectionStart = activeEl && typeof activeEl.selectionStart === 'number' ? activeEl.selectionStart : null;
 
-    container.innerHTML = weekDays.map(day => {
+    let daysToRender = weekDays;
+    if (currentMealFilter === "shabbat") {
+      daysToRender = weekDays.filter(d => d.isShabbat);
+    } else if (currentMealFilter === "school_breakfast") {
+      daysToRender = weekDays.filter(d => d.isSchoolDay);
+    }
+
+    container.innerHTML = daysToRender.map(day => {
       const dayDoc = mealPlanData[day.key] || {};
+      const slotsHtml = [];
+
+      if (currentMealFilter === "school_breakfast") {
+        slotsHtml.push(renderMealSlotBox(day.key, 'breakfast', '🥪 ארוחת בוקר לבית ספר', 'מה נכין לילדים לבית ספר...', dayDoc));
+      } else if (currentMealFilter === "shabbat") {
+        if (day.key === "friday") {
+          slotsHtml.push(renderMealSlotBox(day.key, 'dinner', '🕯️ ארוחת ערב שבת', 'מה מכינים לערב שבת...', dayDoc));
+        } else if (day.key === "saturday") {
+          slotsHtml.push(renderMealSlotBox(day.key, 'breakfast', '☕ בוקר שבת', 'מה אוכלים בבוקר שבת...', dayDoc));
+          slotsHtml.push(renderMealSlotBox(day.key, 'lunch', '🍽️ צהריים שבת', 'מה מכינים לצהריי שבת...', dayDoc));
+        }
+      } else {
+        if (day.isSchoolDay) {
+          slotsHtml.push(renderMealSlotBox(day.key, 'breakfast', '🥪 ארוחת בוקר לבית ספר', 'מה נכין לילדים לבית ספר...', dayDoc));
+        } else if (day.key === "saturday") {
+          slotsHtml.push(renderMealSlotBox(day.key, 'breakfast', '☕ בוקר שבת', 'מה אוכלים בבוקר שבת...', dayDoc));
+        }
+        slotsHtml.push(renderMealSlotBox(day.key, 'lunch', '☀️ ארוחת צהריים', 'שם ארוחת הצהריים...', dayDoc));
+        if (day.key !== "saturday") {
+          slotsHtml.push(renderMealSlotBox(day.key, 'dinner', day.key === "friday" ? '🕯️ ארוחת ערב שבת' : '🌙 ארוחת ערב', 'שם ארוחת הערב...', dayDoc));
+        }
+      }
 
       return `
-        <div class="meal-day-card">
+        <div class="meal-day-card ${day.isShabbat ? 'shabbat-highlight' : ''}">
           <div class="meal-day-title">יום ${escapeHtml(day.label)}</div>
-          ${renderMealSlotBox(day.key, 'breakfast', '🥪 ארוחת בוקר לבית ספר', 'מה נכין לילדים לבית ספר...', dayDoc)}
-          ${renderMealSlotBox(day.key, 'lunch', '☀️ ארוחת צהריים', 'שם ארוחת הצהריים...', dayDoc)}
-          ${renderMealSlotBox(day.key, 'dinner', '🌙 ארוחת ערב', 'שם ארוחת הערב...', dayDoc)}
+          ${slotsHtml.join('')}
         </div>
       `;
     }).join('');
@@ -1154,6 +1201,28 @@
       return;
     }
     addRecipeToShopping(recipe.content);
+  }
+
+  function toggleNewRecipeComposer() {
+    isNewRecipeComposerOpen = !isNewRecipeComposerOpen;
+    const card = document.getElementById('new-recipe-card');
+    const body = document.getElementById('new-recipe-composer-body');
+    const openBtn = document.getElementById('open-new-recipe-btn');
+    const expandBtn = document.getElementById('expand-new-recipe-btn');
+
+    if (isNewRecipeComposerOpen) {
+      card.classList.remove('compact-collapsed');
+      body.classList.remove('hidden');
+      expandBtn.classList.remove('hidden');
+      openBtn.innerText = "✕ סגור";
+    } else {
+      card.classList.remove('expanded-fullscreen');
+      card.classList.add('compact-collapsed');
+      body.classList.add('hidden');
+      expandBtn.classList.add('hidden');
+      expandBtn.innerText = "⛶ מסך מלא";
+      openBtn.innerText = "+ פתח הוספת מתכון";
+    }
   }
 
   function toggleNewRecipeFullscreen() {
@@ -1316,10 +1385,8 @@
     textInput.value = "";
     openRecipeCategories[category] = true;
 
-    const card = document.getElementById('new-recipe-card');
-    if (card.classList.contains('expanded-fullscreen')) {
-      card.classList.remove('expanded-fullscreen');
-      document.getElementById('expand-new-recipe-btn').innerText = "⛶ מסך מלא";
+    if (isNewRecipeComposerOpen) {
+      toggleNewRecipeComposer();
     }
   }
 
