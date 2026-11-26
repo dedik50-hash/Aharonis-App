@@ -746,9 +746,9 @@
           <option value="מאפים ולחם">🥖 מאפים ולחם</option>
           <option value="קפואים">❄️ קפואים</option>
           <option value="יבשים ומזווה">🍝 יבשים ומזווה</option>
-          <option value="אלכוהול">🍷 אלכוהול</option>
           <option value="חטיפים">🥨 חטיפים</option>
           <option value="טואלטיקה">🧼 טואלטיקה</option>
+          <option value="אלכוהול">🍷 אלכוהול</option>
           <option value="גינון">🌱 גינון</option>
           <option value="ריהוט">🛋️ ריהוט</option>
           <option value="ביגוד והנעלה">👕 ביגוד והנעלה</option>
@@ -781,9 +781,9 @@
           <option value="מאפים ולחם">🥖 מאפים ולחם</option>
           <option value="קפואים">❄️ קפואים</option>
           <option value="יבשים ומזווה">🍝 יבשים ומזווה</option>
-          <option value="אלכוהול">🍷 אלכוהול</option>
           <option value="חטיפים">🥨 חטיפים</option>
           <option value="טואלטיקה">🧼 טואלטיקה</option>
+          <option value="אלכוהול">🍷 אלכוהול</option>
           <option value="גינון">🌱 גינון</option>
           <option value="ריהוט">🛋️ ריהוט</option>
           <option value="ביגוד והנעלה">👕 ביגוד והנעלה</option>
@@ -947,6 +947,22 @@
   const schoolDays = weekDays.filter(d => d.isSchoolDay);
   const schoolKids = ["טליה", "דוד", "יאיר"];
 
+  const categorySelectOrder = [
+    "ירקות ופירות",
+    "מוצרי חלב וביצים",
+    "בשר, עוף ודגים",
+    "מאפים ולחם",
+    "קפואים",
+    "יבשים ומזווה",
+    "חטיפים",
+    "טואלטיקה",
+    "אלכוהול",
+    "גינון",
+    "ריהוט",
+    "ביגוד והנעלה",
+    "כללי"
+  ];
+
   let currentShopList = "super";
   let currentMealFilter = "shabbat";
   let currentTaskFilter = "הכל";
@@ -980,14 +996,19 @@
     "מאפים ולחם": "🥖",
     "קפואים": "❄️",
     "יבשים ומזווה": "🍝",
-    "אלכוהול": "🍷",
     "חטיפים": "🥨",
     "טואלטיקה": "🧼",
+    "אלכוהול": "🍷",
     "גינון": "🌱",
     "ריהוט": "🛋️",
     "ביגוד והנעלה": "👕",
     "כללי": "📦"
   };
+
+  function getOrderedCategories() {
+    const extraCats = Object.keys(categoryIcons).filter(cat => !categorySelectOrder.includes(cat));
+    return [...categorySelectOrder, ...extraCats];
+  }
 
   function isPharmacyItem(itemOrCat, listType) {
     const canonCat = canonicalizeCategory(typeof itemOrCat === "string" ? itemOrCat : (itemOrCat && itemOrCat.category));
@@ -1048,9 +1069,9 @@
     "מאפים ולחם": ["לחם", "פיתה", "לחמני", "חלה", "באגט", "בורקס", "עוגה", "עוגיות", "פוקאצ", "קרואסון", "טורטייה", "פרעצל", "בייגלה"],
     "קפואים": ["קפוא", "קפואה", "קפואים", "גלידה", "גלידות", "ארטיק", "קרטיב", "שניצל תירס", "נאגטס", "צ'יפס קפוא", "בצק עלים", "בצק פילו", "מלאווח", "ג'חנון", "אפונה קפואה", "אדממה", "פירות יער קפואים", "בורקס קפוא", "פיצה קפואה", "קובה קפואה", "קרח"],
     "יבשים ומזווה": ["פסטה", "ספגטי", "פתיתים", "אורז", "קוסקוס", "קמח", "סוכר", "מלח", "שמן", "טחינה", "רסק", "שימורים", "טונה", "תבלין", "קפה", "תה", "שוקולד", "דבש", "סילאן", "קורנפלקס", "קינמון", "שמרים", "חומוס", "עדשים", "שעועית", "רוטב", "סולת", "שיבולת שועל", "גרנולה"],
-    "אלכוהול": ["בירה", "יין", "וויסקי", "וודקה", "ג'ין", "רום", "טקילה", "ערק", "ליקר", "אפרול", "פרוסקו", "שמפניה", "קוניאק", "ברנדי", "קמפרי", "ורמוט"],
     "חטיפים": ["חטיף", "צ'יפס", "במבה", "ביסלי", "אפרופו", "דוריטוס", "פופקורן", "פיצוחים", "בוטנים", "שקדים", "אגוזים", "גרעינים", "וופלים", "חטיף אנרגיה", "קרקר", "טורטיה צ'יפס"],
     "טואלטיקה": ["סבון", "שמפו", "מרכך", "משחת שיניים", "מברשת שיניים", "דאודורנט", "נייר טואלט", "מגבונים", "נוזל כלים", "טבליות למדיח", "אבקת כביסה", "מרכך כביסה", "ג'ל כביסה", "שקיות אשפה", "אקונומיקה", "ספוג", "מסיר שומנים", "מטליות", "נייר סופג", "קרם גוף", "קרם ידיים", "תחליב רחצה", "פארם", "טואלטיקה"],
+    "אלכוהול": ["בירה", "יין", "וויסקי", "וודקה", "ג'ין", "רום", "טקילה", "ערק", "ליקר", "אפרול", "פרוסקו", "שמפניה", "קוניאק", "ברנדי", "קמפרי", "ורמוט"],
     "גינון": ["עציץ", "אדנית", "אדמה", "תערובת שתילה", "דשן", "קומפוסט", "זרעים", "שתיל", "טפטפת", "טפטפות", "צינור השקיה", "ממטרה", "מזמרה", "מגרפה", "את חפירה", "דשא", "הדברה", "רשת הצללה", "ברז השקיה"],
     "ריהוט": ["שולחן", "כיסא", "כיסאות", "ספה", "כורסה", "ארון", "שידה", "מדף", "מדפים", "מיטה", "מזרן", "מנורה", "אהיל", "שטיח", "וילון", "מראה", "ספסל", "הדום", "כוננית"],
     "ביגוד והנעלה": ["חולצה", "חולצות", "מכנסיים", "מכנס", "ג'ינס", "נעליים", "נעל", "סנדלים", "כפכפים", "גרביים", "תחתונים", "גופייה", "סוודר", "מעיל", "כובע", "בגד ים", "פיג'מה", "שמלה", "חצאית"]
@@ -1080,7 +1101,7 @@
 
   function buildCategoryOptionsHtml(selectedCategory) {
     const canonSelected = canonicalizeCategory(selectedCategory);
-    return Object.keys(categoryIcons).map(cat => {
+    return getOrderedCategories().map(cat => {
       const selectedAttr = cat === canonSelected ? ' selected' : '';
       return `<option value="${escapeAttr(cat)}"${selectedAttr}>${categoryIcons[cat] || '📦'} ${escapeHtml(cat)}</option>`;
     }).join('');
@@ -1228,7 +1249,19 @@
           favEl.innerHTML = '<div class="empty-state" style="grid-column:1/-1;">אין עדיין מוצרים קבועים. הוסיפו למעלה מוצרים שקונים כל שבוע!</div>';
           return;
         }
-        snapshot.forEach(docSnap => {
+        const order = getOrderedCategories();
+        const sortedFavs = [...snapshot.docs].sort((a, b) => {
+          const catA = canonicalizeCategory(a.data().category || 'כללי');
+          const catB = canonicalizeCategory(b.data().category || 'כללי');
+          const idxA = order.indexOf(catA);
+          const idxB = order.indexOf(catB);
+          const rankA = idxA === -1 ? 999 : idxA;
+          const rankB = idxB === -1 ? 999 : idxB;
+          if (rankA !== rankB) return rankA - rankB;
+          return (a.data().name || "").localeCompare(b.data().name || "", "he");
+        });
+
+        sortedFavs.forEach(docSnap => {
           const d = docSnap.data();
           const canonCat = canonicalizeCategory(d.category || 'כללי');
           const card = document.createElement('div');
@@ -1303,10 +1336,14 @@
   }
 
   function syncDraftMealsFromFirestore() {
+    const activeEl = document.activeElement;
+    const activeId = activeEl && activeEl.id ? activeEl.id : "";
+
     weekDays.forEach(day => {
       ["lunch", "dinner"].forEach(slotKey => {
         const k = getSlotKey(day.key, slotKey);
-        if (!draftMealsBySlot[k]) {
+        const isEditingThisSlot = activeId.startsWith(`dish-${day.key}-${slotKey}-`);
+        if (!isEditingThisSlot) {
           draftMealsBySlot[k] = extractDishesFromDoc(mealPlanData[day.key], slotKey);
         }
       });
@@ -1563,6 +1600,8 @@
 
   function confirmAndSaveMeals() {
     const batch = db.batch();
+    const nextDraftByKey = {};
+
     weekDays.forEach(day => {
       const docRef = db.collection("families").doc(familyId).collection("meal_plan").doc(day.key);
       const dayUpdate = {};
@@ -1570,28 +1609,32 @@
         if (day.key === "saturday" && slotKey === "dinner") return;
         const k = getSlotKey(day.key, slotKey);
         const dishes = ensureDraftSlot(day.key, slotKey);
-        const checkedOnly = dishes.filter(d => d.checked && (d.text.trim() || d.recipe_id)).map(d => ({
-          checked: true,
-          text: d.text.trim() || (allRecipes.find(r => r.id === d.recipe_id)?.title || ""),
-          recipe_id: d.recipe_id || ""
-        }));
+        const checkedOnly = dishes
+          .filter(d => d.checked && (d.text.trim() || d.recipe_id))
+          .map(d => ({
+            checked: true,
+            text: d.text.trim() || (allRecipes.find(r => r.id === d.recipe_id)?.title || ""),
+            recipe_id: d.recipe_id || ""
+          }));
+
         dayUpdate[`${slotKey}_dishes`] = checkedOnly;
         dayUpdate[`${slotKey}_text`] = checkedOnly.map(d => d.text).join(", ");
         dayUpdate[`${slotKey}_recipe_id`] = checkedOnly.find(d => d.recipe_id)?.recipe_id || "";
-        draftMealsBySlot[k] = checkedOnly.length > 0 ? checkedOnly : [{ checked: true, text: "", recipe_id: "" }];
+        nextDraftByKey[k] = checkedOnly.length > 0 ? checkedOnly : [{ checked: true, text: "", recipe_id: "" }];
       });
       batch.set(docRef, dayUpdate, { merge: true });
     });
 
     batch.commit().then(() => {
+      Object.assign(draftMealsBySlot, nextDraftByKey);
       const statusEl = document.getElementById('status');
       const prev = statusEl.innerText;
-      statusEl.innerText = "מנות אושרו ✅";
+      statusEl.innerText = "מנות אושרו ונשמרו ✅";
       setTimeout(() => { statusEl.innerText = prev; }, 1600);
       renderMealPlan();
     }).catch(err => {
       console.error("Error confirming meals:", err);
-      alert("שגיאה בשמירת המנות.");
+      alert("שגיאה בשמירת המנות ל-Firestore.");
     });
   }
 
@@ -2057,15 +2100,9 @@
       grouped[cat].push(item);
     });
 
-    const priorityOrder = currentShopList === "pharm"
-      ? ["טואלטיקה"]
-      : currentShopList === "home"
-        ? ["גינון", "ריהוט"]
-        : ["טואלטיקה", "גינון", "ריהוט", "קפואים"];
-
     const sortedCats = [
-      ...priorityOrder.filter(c => grouped[c]),
-      ...Object.keys(grouped).filter(c => !priorityOrder.includes(c))
+      ...categorySelectOrder.filter(c => grouped[c]),
+      ...Object.keys(grouped).filter(c => !categorySelectOrder.includes(c))
     ];
 
     sortedCats.forEach(cat => {
@@ -2133,13 +2170,21 @@
     }
   }
 
+  function formatMentionName(name) {
+    const clean = (name || "").trim();
+    if (!clean) return "";
+    if (clean === "כולם") return "@כולם";
+    return clean.startsWith("@") ? clean : "@" + clean;
+  }
+
   function sendTaskToWhatsApp(taskId) {
     const task = allTasks.find(t => t.id === taskId);
     if (!task) return;
 
-    const people = Array.isArray(task.assignees) && task.assignees.length
-      ? task.assignees.join(", ")
-      : "כולם";
+    const rawPeople = Array.isArray(task.assignees) && task.assignees.length
+      ? task.assignees
+      : ["כולם"];
+    const people = rawPeople.map(formatMentionName).filter(Boolean).join(", ");
 
     const lines = [
       `${task.urgent ? "🔥 *משימה דחופה*:" : "✅ *משימה*:"} ${task.title}`,
