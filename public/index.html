@@ -669,6 +669,33 @@
   </div>
 </div>
 
+<div class="modal-backdrop hidden" id="edit-task-modal" onclick="if(event.target===this) closeEditTaskModal()">
+  <div class="modal-card" style="background:white; border-radius:18px; padding:20px; width:100%; max-width:400px; margin:auto; display:flex; flex-direction:column; gap:12px;">
+    <div style="font-size:1.08rem; font-weight:700; color:var(--primary-dark);">✏️ עריכת משימה</div>
+    <input type="text" id="edit-task-title" placeholder="שם המשימה" onkeydown="if(event.key==='Enter') saveEditedTask()">
+    <div class="assignee-picker" id="edit-task-assignee-picker">
+      <span class="assignee-label">אחראים:</span>
+      <span class="pick-chip" data-name="כולם" onclick="toggleEditTaskAssignee('כולם')">כולם</span>
+      <span class="pick-chip" data-name="עודד" onclick="toggleEditTaskAssignee('עודד')">עודד</span>
+      <span class="pick-chip" data-name="מיה" onclick="toggleEditTaskAssignee('מיה')">מיה</span>
+      <span class="pick-chip" data-name="טליה" onclick="toggleEditTaskAssignee('טליה')">טליה</span>
+      <span class="pick-chip" data-name="דוד" onclick="toggleEditTaskAssignee('דוד')">דוד</span>
+      <span class="pick-chip" data-name="יאיר" onclick="toggleEditTaskAssignee('יאיר')">יאיר</span>
+    </div>
+    <div class="row" style="align-items:center;">
+      <div style="display:flex; align-items:center; gap:6px; flex:1; min-width:140px;">
+        <span style="font-size:0.82rem; color:var(--muted); font-weight:600;">📅 יעד:</span>
+        <input type="date" id="edit-task-due" style="padding:8px 10px; font-size:0.85rem; flex:1;">
+      </div>
+      <label class="checkbox-label"><input type="checkbox" id="edit-task-urgent"> 🔥 דחוף</label>
+    </div>
+    <div class="row" style="justify-content:flex-end;">
+      <button class="btn-secondary" onclick="closeEditTaskModal()">ביטול</button>
+      <button class="btn-primary" onclick="saveEditedTask()">💾 שמור</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-backdrop hidden" id="edit-cat-modal" onclick="if(event.target===this) closeEditCategoryModal()">
   <div class="modal-card" style="background:white; border-radius:18px; padding:20px; width:100%; max-width:360px; margin:auto;">
     <div style="font-size:1.08rem; font-weight:700; margin-bottom:4px;">🏷️ שינוי קטגוריה לפריט</div>
@@ -820,7 +847,8 @@
 
   <div id="view-tasks" class="hidden">
     <div class="chips-row" id="task-filter-row">
-      <div class="chip active" onclick="filterTasks('הכל', this)">הכל</div>
+      <div class="chip active" id="task-chip-all" onclick="filterTasks('הכל', this)">הכל</div>
+      <div class="chip hidden" id="task-chip-mine" onclick="filterTasks('שלי', this)">👤 שלי</div>
       <div class="chip" onclick="filterTasks('עודד', this)">עודד</div>
       <div class="chip" onclick="filterTasks('מיה', this)">מיה</div>
       <div class="chip" onclick="filterTasks('טליה', this)">טליה</div>
@@ -854,7 +882,12 @@
       </div>
     </div>
 
-    <div class="list" id="tasks-list"></div>
+    <div class="section-header" id="tasks-actions-bar">
+      <span style="font-size:0.85rem; color:var(--muted);" id="tasks-counter">0 משימות פתוחות</span>
+      <button class="clear-btn hidden" id="clear-done-tasks-btn" onclick="clearCompletedTasks()">🗑️ נקה משימות שהושלמו</button>
+    </div>
+
+    <div id="tasks-list"></div>
   </div>
 </div>
 
@@ -916,6 +949,8 @@
   let currentMealFilter = "shabbat";
   let currentTaskFilter = "הכל";
   let selectedAssignees = ["כולם"];
+  let editTaskAssignees = ["כולם"];
+  let editingTaskId = null;
   let allShoppingItems = [];
   let allFavorites = [];
   let allRecipes = [];
@@ -2112,46 +2147,159 @@
     window.open(url, "_blank", "noopener,noreferrer");
   }
 
+  function getTaskAssignees(task) {
+    if (Array.isArray(task.assignees) && task.assignees.length > 0) return task.assignees;
+    if (typeof task.assigned_to === "string" && task.assigned_to.trim()) {
+      return task.assigned_to.split(',').map(s => s.trim()).filter(Boolean);
+    }
+    return ["כולם"];
+  }
+
+  function sortTasksSmart(list) {
+    return [...list].sort((a, b) => {
+      if (Boolean(a.urgent) !== Boolean(b.urgent)) return a.urgent ? -1 : 1;
+      if (a.due_date && b.due_date) return a.due_date.localeCompare(b.due_date);
+      if (a.due_date) return -1;
+      if (b.due_date) return 1;
+      return 0;
+    });
+  }
+
   function renderTasks() {
     const listEl = document.getElementById('tasks-list');
     listEl.innerHTML = "";
+
+    const targetPerson = currentTaskFilter === "שלי" && currentUser ? currentUser : currentTaskFilter;
     let filtered = allTasks;
-    if (currentTaskFilter !== "הכל") {
+    if (targetPerson && targetPerson !== "הכל") {
       filtered = allTasks.filter(t => {
-        const people = Array.isArray(t.assignees) ? t.assignees : (t.assigned_to ? t.assigned_to.split(',').map(s=>s.trim()) : ["כולם"]);
-        return people.includes(currentTaskFilter) || people.includes("כולם");
+        const people = getTaskAssignees(t);
+        return people.includes(targetPerson) || people.includes("כולם");
       });
     }
+
+    const openTasks = sortTasksSmart(filtered.filter(t => !t.completed));
+    const doneTasks = filtered.filter(t => t.completed);
+
+    document.getElementById('tasks-counter').innerText = openTasks.length + " משימות פתוחות";
+    document.getElementById('clear-done-tasks-btn').classList.toggle('hidden', doneTasks.length === 0);
 
     if (filtered.length === 0) {
       listEl.innerHTML = '<div class="empty-state">אין משימות פתוחות ✨</div>';
       return;
     }
 
-    filtered.forEach(data => {
-      const people = Array.isArray(data.assignees) ? data.assignees : ["כולם"];
-      const peopleBadges = people.map(p => '<span class="badge badge-person">' + escapeHtml(p) + '</span>').join('');
+    if (openTasks.length > 0) {
+      const openHeader = document.createElement('div');
+      openHeader.className = "cat-title";
+      openHeader.innerText = "📌 משימות פתוחות (" + openTasks.length + ")";
+      listEl.appendChild(openHeader);
 
-      const div = document.createElement('div');
-      div.className = "item " + (data.urgent && !data.completed ? 'urgent ' : '') + (data.completed ? 'done' : '');
-      div.innerHTML = `
-        <div class="item-left" onclick="toggleItem('tasks', '${data.id}', ${!data.completed})">
-          <input type="checkbox" class="checkbox" ${data.completed ? 'checked' : ''}>
-          <div class="item-main">
-            <span class="item-text">${escapeHtml(data.title)}</span>
-            <div class="meta-row">
-              ${peopleBadges}
-              ${data.urgent ? '<span class="badge badge-urgent">🔥 דחוף</span>' : ''}
-              ${data.due_date ? '<span class="badge badge-date">📅 ' + data.due_date + '</span>' : ''}
-            </div>
+      const openList = document.createElement('div');
+      openList.className = "list";
+      openTasks.forEach(data => openList.appendChild(buildTaskElement(data)));
+      listEl.appendChild(openList);
+    }
+
+    if (doneTasks.length > 0) {
+      const doneHeader = document.createElement('div');
+      doneHeader.className = "cat-title";
+      doneHeader.style.color = "#64748b";
+      doneHeader.innerText = "✔️ הושלמו (" + doneTasks.length + ")";
+      listEl.appendChild(doneHeader);
+
+      const doneList = document.createElement('div');
+      doneList.className = "list";
+      doneTasks.forEach(data => doneList.appendChild(buildTaskElement(data)));
+      listEl.appendChild(doneList);
+    }
+  }
+
+  function buildTaskElement(data) {
+    const people = getTaskAssignees(data);
+    const peopleBadges = people.map(p => '<span class="badge badge-person">' + escapeHtml(p) + '</span>').join('');
+
+    const div = document.createElement('div');
+    div.className = "item " + (data.urgent && !data.completed ? 'urgent ' : '') + (data.completed ? 'done' : '');
+    div.innerHTML = `
+      <div class="item-left" onclick="toggleItem('tasks', '${data.id}', ${!data.completed})">
+        <input type="checkbox" class="checkbox" ${data.completed ? 'checked' : ''}>
+        <div class="item-main">
+          <span class="item-text">${escapeHtml(data.title)}</span>
+          <div class="meta-row">
+            ${peopleBadges}
+            ${data.urgent ? '<span class="badge badge-urgent">🔥 דחוף</span>' : ''}
+            ${data.due_date ? '<span class="badge badge-date">📅 ' + escapeHtml(data.due_date) + '</span>' : ''}
           </div>
         </div>
-        <div class="actions">
-          <button class="icon-btn wa-btn" title="שלח בווטסאפ" onclick="sendTaskToWhatsApp('${data.id}')">📲</button>
-          <button class="icon-btn del-btn" title="מחק משימה" onclick="deleteItem('tasks', '${data.id}')">✕</button>
-        </div>
-      `;
-      listEl.appendChild(div);
+      </div>
+      <div class="actions">
+        <button class="icon-btn" title="ערוך משימה" onclick="openEditTaskModal('${data.id}')">✏️</button>
+        <button class="icon-btn wa-btn" title="שלח בווטסאפ" onclick="sendTaskToWhatsApp('${data.id}')">📲</button>
+        <button class="icon-btn del-btn" title="מחק משימה" onclick="deleteItem('tasks', '${data.id}')">✕</button>
+      </div>
+    `;
+    return div;
+  }
+
+  function openEditTaskModal(taskId) {
+    const task = allTasks.find(t => t.id === taskId);
+    if (!task) return;
+    editingTaskId = taskId;
+    document.getElementById('edit-task-title').value = task.title || "";
+    document.getElementById('edit-task-due').value = task.due_date || "";
+    document.getElementById('edit-task-urgent').checked = Boolean(task.urgent);
+    editTaskAssignees = [...getTaskAssignees(task)];
+    refreshEditTaskAssigneeChips();
+    document.getElementById('edit-task-modal').classList.remove('hidden');
+  }
+
+  function closeEditTaskModal() {
+    editingTaskId = null;
+    document.getElementById('edit-task-modal').classList.add('hidden');
+  }
+
+  function toggleEditTaskAssignee(name) {
+    if (name === "כולם") {
+      editTaskAssignees = ["כולם"];
+    } else {
+      editTaskAssignees = editTaskAssignees.filter(p => p !== "כולם");
+      if (editTaskAssignees.includes(name)) {
+        editTaskAssignees = editTaskAssignees.filter(p => p !== name);
+      } else {
+        editTaskAssignees.push(name);
+      }
+      if (editTaskAssignees.length === 0) editTaskAssignees = ["כולם"];
+    }
+    refreshEditTaskAssigneeChips();
+  }
+
+  function refreshEditTaskAssigneeChips() {
+    document.querySelectorAll('#edit-task-assignee-picker .pick-chip').forEach(chip => {
+      chip.classList.toggle('selected', editTaskAssignees.includes(chip.getAttribute('data-name')));
+    });
+  }
+
+  function saveEditedTask() {
+    if (!editingTaskId) return;
+    const newTitle = document.getElementById('edit-task-title').value.trim();
+    if (!newTitle) return;
+    const newDue = document.getElementById('edit-task-due').value;
+    const newUrgent = document.getElementById('edit-task-urgent').checked;
+
+    db.collection("families").doc(familyId).collection("tasks").doc(editingTaskId).update({
+      title: newTitle,
+      assignees: [...editTaskAssignees],
+      due_date: newDue,
+      urgent: newUrgent
+    }).then(() => {
+      closeEditTaskModal();
+    }).catch(err => console.error("Error updating task:", err));
+  }
+
+  function clearCompletedTasks() {
+    allTasks.filter(t => t.completed).forEach(task => {
+      db.collection("families").doc(familyId).collection("tasks").doc(task.id).delete();
     });
   }
 
@@ -2294,7 +2442,7 @@
   function filterTasks(person, el) {
     currentTaskFilter = person;
     document.querySelectorAll('#task-filter-row .chip').forEach(c => c.classList.remove('active'));
-    el.classList.add('active');
+    if (el) el.classList.add('active');
     renderTasks();
   }
 
@@ -2322,9 +2470,13 @@
     const title = input.value.trim();
     if (!title) return;
 
+    const assigneesToSave = selectedAssignees.length > 0
+      ? [...selectedAssignees]
+      : (currentUser ? [currentUser] : ["כולם"]);
+
     db.collection("families").doc(familyId).collection("tasks").add({
       title: title,
-      assignees: [...selectedAssignees],
+      assignees: assigneesToSave,
       due_date: due,
       urgent: urgent,
       completed: false,
@@ -2356,10 +2508,22 @@
     currentUser = name.trim();
     localStorage.setItem("aharoni_current_user", currentUser);
     updateProfileUI();
+    if (currentUser) {
+      selectedAssignees = [currentUser];
+      document.querySelectorAll('#task-assignee-picker .pick-chip').forEach(chip => {
+        chip.classList.toggle('selected', selectedAssignees.includes(chip.getAttribute('data-name')));
+      });
+    }
+    renderTasks();
     closeProfileModal();
   }
   function updateProfileUI() {
     document.getElementById('profile-btn').innerText = currentUser ? "👤 " + currentUser : "👤 מי אני?";
+    const mineChip = document.getElementById('task-chip-mine');
+    if (mineChip) {
+      mineChip.classList.toggle('hidden', !currentUser);
+      mineChip.innerText = currentUser ? `👤 שלי (${currentUser})` : "👤 שלי";
+    }
   }
 
   function escapeHtml(text) {
