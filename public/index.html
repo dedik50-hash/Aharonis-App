@@ -141,6 +141,25 @@
       cursor: pointer;
     }
 
+    .import-btn-label {
+      background: #e0f2fe;
+      color: #0369a1;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 0.86rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      flex: 1;
+      min-width: 130px;
+      border: 1px solid #bae6fd;
+    }
+    .import-btn-label.file-btn {
+      background: #f0fdfa;
+      color: #0f766e;
+      border-color: #99f6e4;
+    }
+
     .section-header { display: flex; justify-content: space-between; align-items: center; margin: 16px 0 8px; }
     .cat-title {
       font-size: 0.85rem;
@@ -296,6 +315,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 8px;
       margin-bottom: 16px;
       border-bottom: 1px solid var(--border);
       padding-bottom: 12px;
@@ -304,25 +324,38 @@
       background: white;
       border: 1px solid var(--border);
       color: var(--text);
-      padding: 8px 16px;
+      padding: 8px 14px;
       border-radius: 20px;
       font-weight: 700;
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       cursor: pointer;
       box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+      white-space: nowrap;
     }
-    .fullscreen-actions { display: flex; gap: 8px; align-items: center; }
+    .fullscreen-actions { display: flex; gap: 6px; align-items: center; }
     .font-size-btn {
       background: white;
       border: 1px solid var(--border);
       color: var(--text);
-      padding: 8px 12px;
+      padding: 8px 11px;
       border-radius: 20px;
       font-weight: 700;
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       cursor: pointer;
+      white-space: nowrap;
     }
-    .fullscreen-title { font-size: 1.5rem; font-weight: 800; color: var(--primary-dark); margin-bottom: 16px; }
+    .fullscreen-cat-badge {
+      display: inline-block;
+      background: #ccfbf1;
+      color: var(--primary-dark);
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 12px;
+      margin-bottom: 8px;
+      align-self: flex-start;
+    }
+    .fullscreen-title { font-size: 1.45rem; font-weight: 800; color: var(--primary-dark); margin-bottom: 14px; }
     .fullscreen-content {
       background: white;
       padding: 22px;
@@ -335,6 +368,17 @@
       margin-bottom: 20px;
     }
     .fullscreen-content strong { color: var(--primary-dark); font-weight: 700; display: block; margin-top: 10px; }
+
+    .edit-recipe-card {
+      background: white;
+      padding: 18px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
 
     .bottom-nav {
       position: fixed; bottom: 0; left: 0; right: 0; background: white;
@@ -364,13 +408,48 @@
   <div class="fullscreen-header">
     <button class="back-btn" onclick="closeFullscreenRecipe()">← חזרה לרשימה</button>
     <div class="fullscreen-actions">
-      <button class="font-size-btn" onclick="cycleFontSize()">🔤 גודל טקסט</button>
-      <button class="icon-btn del-btn" id="fs-delete-btn" onclick="" style="font-size:1.2rem;" title="מחק מתכון">🗑️</button>
+      <button class="font-size-btn" id="fs-edit-toggle-btn" onclick="toggleRecipeEditMode()">✏️ ערוך</button>
+      <button class="font-size-btn" id="fs-font-btn" onclick="cycleFontSize()">🔤 גודל</button>
+      <button class="icon-btn del-btn" id="fs-delete-btn" onclick="" style="font-size:1.15rem;" title="מחק מתכון">🗑️</button>
     </div>
   </div>
-  <div class="fullscreen-title" id="fs-recipe-title">שם המתכון</div>
-  <div class="fullscreen-content" id="fs-recipe-content">תוכן המתכון...</div>
-  <button class="btn-primary" style="padding:14px; font-size:1.05rem;" id="fs-add-shopping-btn">🛒 הוסף מצרכים לרשימת הקניות</button>
+
+  <div id="fs-view-mode" style="display:flex; flex-direction:column;">
+    <div class="fullscreen-cat-badge" id="fs-recipe-cat">📦 כללי</div>
+    <div class="fullscreen-title" id="fs-recipe-title">שם המתכון</div>
+    <div class="fullscreen-content" id="fs-recipe-content">תוכן המתכון...</div>
+    <button class="btn-primary" style="padding:14px; font-size:1.05rem;" id="fs-add-shopping-btn">🛒 הוסף מצרכים לרשימת הקניות</button>
+  </div>
+
+  <div id="fs-edit-mode" class="edit-recipe-card hidden">
+    <div style="font-weight:700; font-size:1.05rem; color:var(--primary-dark);">✏️ עריכת מתכון</div>
+    <div>
+      <label style="font-size:0.82rem; font-weight:600; color:var(--muted); display:block; margin-bottom:4px;">שם המתכון</label>
+      <input type="text" id="edit-recipe-title" placeholder="שם המתכון">
+    </div>
+    <div>
+      <label style="font-size:0.82rem; font-weight:600; color:var(--muted); display:block; margin-bottom:4px;">קטגוריה</label>
+      <select id="edit-recipe-category">
+        <option value="טאבון">🔥 טאבון</option>
+        <option value="אסייתי">🥢 אסייתי</option>
+        <option value="בשר ודגים">🥩 בשר ודגים</option>
+        <option value="מאפים ולחמים">🥖 מאפים ולחמים</option>
+        <option value="עוגות וקינוחים">🍰 עוגות וקינוחים</option>
+        <option value="תבשילים ומרקים">🍲 תבשילים ומרקים</option>
+        <option value="סלטים ותוספות">🥗 סלטים ותוספות</option>
+        <option value="כללי">📦 כללי</option>
+      </select>
+    </div>
+    <div>
+      <label style="font-size:0.82rem; font-weight:600; color:var(--muted); display:block; margin-bottom:4px;">תוכן המתכון</label>
+      <textarea id="edit-recipe-content" rows="12"></textarea>
+    </div>
+    <div class="row" style="justify-content:flex-end;">
+      <button class="btn-secondary" onclick="cleanEditedRecipeField()">🧹 נקה רעש</button>
+      <button class="btn-secondary" onclick="cancelRecipeEdit()">ביטול</button>
+      <button class="btn-primary" onclick="saveEditedRecipe()">💾 שמור שינויים</button>
+    </div>
+  </div>
 </div>
 
 <div class="modal-backdrop hidden" id="edit-cat-modal" onclick="if(event.target===this) closeEditCategoryModal()">
@@ -406,7 +485,7 @@
   <div id="view-shopping">
     <div class="chips-row" id="list-selector">
       <div class="chip active" onclick="selectShopList('super', this)">🛒 סופר</div>
-      <div class="chip" onclick="selectShopList('pharm', this)">💊 פארם</div>
+      <div class="chip" onclick="selectShopList('pharm', this)">💊 פארם (טואלטיקה)</div>
       <div class="chip" onclick="selectShopList('home', this)">🌱 גינה ובית</div>
     </div>
 
@@ -424,10 +503,10 @@
           <option value="יבשים ומזווה">🍝 יבשים ומזווה</option>
           <option value="אלכוהול">🍷 אלכוהול</option>
           <option value="חטיפים">🥨 חטיפים</option>
-          <option value="ניקיון וטואלטיקה">🧼 ניקיון וטואלטיקה</option>
-          <option value="גינה">🌱 גינה</option>
-          <option value="ביגוד והנעלה">👕 ביגוד והנעלה</option>
+          <option value="טואלטיקה">🧼 טואלטיקה</option>
+          <option value="גינון">🌱 גינון</option>
           <option value="ריהוט">🛋️ ריהוט</option>
+          <option value="ביגוד והנעלה">👕 ביגוד והנעלה</option>
           <option value="כללי">📦 כללי</option>
         </select>
         <button class="btn-primary" onclick="addShopping()">+ הוסף</button>
@@ -458,10 +537,10 @@
           <option value="יבשים ומזווה">🍝 יבשים ומזווה</option>
           <option value="אלכוהול">🍷 אלכוהול</option>
           <option value="חטיפים">🥨 חטיפים</option>
-          <option value="ניקיון וטואלטיקה">🧼 ניקיון וטואלטיקה</option>
-          <option value="גינה">🌱 גינה</option>
-          <option value="ביגוד והנעלה">👕 ביגוד והנעלה</option>
+          <option value="טואלטיקה">🧼 טואלטיקה</option>
+          <option value="גינון">🌱 גינון</option>
           <option value="ריהוט">🛋️ ריהוט</option>
+          <option value="ביגוד והנעלה">👕 ביגוד והנעלה</option>
           <option value="כללי">📦 כללי</option>
         </select>
         <button class="btn-primary" onclick="addFavorite()">שמור במועדפים</button>
@@ -472,18 +551,27 @@
 
   <div id="view-recipes" class="hidden">
     <div class="input-card">
-      <div style="font-weight:700; font-size:0.95rem;">🍲 הוספת מתכון חדש או צילום מסך</div>
+      <div style="font-weight:700; font-size:0.95rem;">🍲 הוספת מתכון חדש (צילום מסך, קובץ או הדבקה)</div>
       
-      <label style="background:#e0f2fe; color:#0369a1; padding:10px 14px; border-radius:10px; font-size:0.9rem; font-weight:600; cursor:pointer; text-align:center; display:block;">
-        📸 בחר צילום מסך של מתכון (מגלריה / Google Photos)
-        <input type="file" accept="image/*" style="display:none;" onchange="handleImageUpload(event)">
-      </label>
-      <div id="ocr-status" style="font-size:0.8rem; color:var(--muted); text-align:center;" class="hidden">מעבד תמונה ומחלץ טקסט... ⏳</div>
+      <div class="row">
+        <label class="import-btn-label">
+          📸 צילום מסך / תמונה
+          <input type="file" accept="image/*" style="display:none;" onchange="handleImageUpload(event)">
+        </label>
+        <label class="import-btn-label file-btn">
+          📄 קובץ טקסט (.txt)
+          <input type="file" accept=".txt,.md,.csv,text/plain" style="display:none;" onchange="handleRecipeFileUpload(event)">
+        </label>
+      </div>
+      <div id="ocr-status" style="font-size:0.8rem; color:var(--primary-dark); font-weight:600; text-align:center;" class="hidden">מעבד ומנקה טקסט... ⏳</div>
 
-      <textarea id="raw-recipe-text" rows="5" placeholder="או הדבק כאן את תוכן המתכון המלא..."></textarea>
+      <input type="text" id="recipe-title-input" placeholder="שם המתכון (מתמלא אוטומטית מהשורה הראשונה)">
+      <textarea id="raw-recipe-text" rows="6" placeholder="הדבק כאן את תוכן המתכון או ייבא מתמונה/קובץ..."></textarea>
       
       <div class="row">
         <select id="recipe-category-select" class="grow">
+          <option value="טאבון">🔥 טאבון</option>
+          <option value="אסייתי">🥢 אסייתי</option>
           <option value="בשר ודגים">🥩 בשר ודגים</option>
           <option value="מאפים ולחמים">🥖 מאפים ולחמים</option>
           <option value="עוגות וקינוחים">🍰 עוגות וקינוחים</option>
@@ -491,6 +579,7 @@
           <option value="סלטים ותוספות">🥗 סלטים ותוספות</option>
           <option value="כללי">📦 כללי</option>
         </select>
+        <button class="btn-secondary" type="button" onclick="cleanRecipeDraftField()" title="נקה תווים מיותרים ושורות ריקות">🧹 נקה טקסט</button>
         <button class="btn-primary" onclick="addRecipeWithCategory()">✨ שמור מתכון</button>
       </div>
     </div>
@@ -586,6 +675,7 @@
   let manualCategoryChosen = { shop: false, fav: false };
   let openRecipeCategories = {};
   let currentFontSizeLevel = 1;
+  let activeRecipeId = null;
   let activeRecipeContent = "";
   let editingShoppingItemId = null;
 
@@ -599,14 +689,40 @@
     "יבשים ומזווה": "🍝",
     "אלכוהול": "🍷",
     "חטיפים": "🥨",
-    "ניקיון וטואלטיקה": "🧼",
-    "גינה": "🌱",
-    "ביגוד והנעלה": "👕",
+    "טואלטיקה": "🧼",
+    "גינון": "🌱",
     "ריהוט": "🛋️",
+    "ביגוד והנעלה": "👕",
     "כללי": "📦"
   };
 
+  // נרמול קטגוריות ישנות לחדשות המסונכרנות
+  function canonicalizeCategory(cat) {
+    if (!cat) return "כללי";
+    const trimmed = cat.trim();
+    if (trimmed === "ניקיון וטואלטיקה" || trimmed === "ניקיון") return "טואלטיקה";
+    if (trimmed === "גינה") return "גינון";
+    return categoryIcons[trimmed] ? trimmed : "כללי";
+  }
+
+  // מיפוי קטגוריה ללשונית הרשימה המתאימה
+  function getListTypeForCategory(cat) {
+    const c = canonicalizeCategory(cat);
+    if (c === "טואלטיקה") return "pharm";
+    if (c === "גינון" || c === "ריהוט") return "home";
+    return "super";
+  }
+
+  // קטגוריית ברירת מחדל לפי הלשונית העליונה שנבחרה
+  function getDefaultCategoryForList(listType) {
+    if (listType === "pharm") return "טואלטיקה";
+    if (listType === "home") return "גינון";
+    return "ירקות ופירות";
+  }
+
   const recipeCategoryIcons = {
+    "טאבון": "🔥",
+    "אסייתי": "🥢",
     "בשר ודגים": "🥩",
     "מאפים ולחמים": "🥖",
     "עוגות וקינוחים": "🍰",
@@ -623,10 +739,10 @@
     "יבשים ומזווה": ["פסטה", "ספגטי", "פתיתים", "אורז", "קוסקוס", "קמח", "סוכר", "מלח", "שמן", "טחינה", "רסק", "שימורים", "טונה", "תבלין", "קפה", "תה", "שוקולד", "דבש", "סילאן", "קורנפלקס", "קינמון", "שמרים", "חומוס", "עדשים", "שעועית", "רוטב", "סולת", "שיבולת שועל", "גרנולה"],
     "אלכוהול": ["בירה", "יין", "וויסקי", "וודקה", "ג'ין", "רום", "טקילה", "ערק", "ליקר", "אפרול", "פרוסקו", "שמפניה", "קוניאק", "ברנדי", "קמפרי", "ורמוט"],
     "חטיפים": ["חטיף", "צ'יפס", "במבה", "ביסלי", "אפרופו", "דוריטוס", "פופקורן", "פיצוחים", "בוטנים", "שקדים", "אגוזים", "גרעינים", "וופלים", "חטיף אנרגיה", "קרקר", "טורטיה צ'יפס"],
-    "ניקיון וטואלטיקה": ["סבון", "שמפו", "מרכך", "משחת שיניים", "מברשת שיניים", "דאודורנט", "נייר טואלט", "מגבונים", "נוזל כלים", "טבליות למדיח", "אבקת כביסה", "מרכך כביסה", "ג'ל כביסה", "שקיות אשפה", "אקונומיקה", "ספוג", "מסיר שומנים", "מטליות", "נייר סופג", "קרם גוף", "קרם ידיים", "תחליב רחצה"],
-    "גינה": ["עציץ", "אדנית", "אדמה", "תערובת שתילה", "דשן", "קומפוסט", "זרעים", "שתיל", "טפטפת", "טפטפות", "צינור השקיה", "ממטרה", "מזמרה", "מגרפה", "את חפירה", "דשא", "הדברה", "רשת הצללה", "ברז השקיה"],
-    "ביגוד והנעלה": ["חולצה", "חולצות", "מכנסיים", "מכנס", "ג'ינס", "נעליים", "נעל", "סנדלים", "כפכפים", "גרביים", "תחתונים", "גופייה", "סוודר", "מעיל", "כובע", "בגד ים", "פיג'מה", "שמלה", "חצאית"],
-    "ריהוט": ["שולחן", "כיסא", "כיסאות", "ספה", "כורסה", "ארון", "שידה", "מדף", "מדפים", "מיטה", "מזרן", "מנורה", "אהיל", "שטיח", "וילון", "מראה", "ספסל", "הדום", "כוננית"]
+    "טואלטיקה": ["סבון", "שמפו", "מרכך", "משחת שיניים", "מברשת שיניים", "דאודורנט", "נייר טואלט", "מגבונים", "נוזל כלים", "טבליות למדיח", "אבקת כביסה", "מרכך כביסה", "ג'ל כביסה", "שקיות אשפה", "אקונומיקה", "ספוג", "מסיר שומנים", "מטליות", "נייר סופג", "קרם גוף", "קרם ידיים", "תחליב רחצה"],
+    "גינון": ["עציץ", "אדנית", "אדמה", "תערובת שתילה", "דשן", "קומפוסט", "זרעים", "שתיל", "טפטפת", "טפטפות", "צינור השקיה", "ממטרה", "מזמרה", "מגרפה", "את חפירה", "דשא", "הדברה", "רשת הצללה", "ברז השקיה"],
+    "ריהוט": ["שולחן", "כיסא", "כיסאות", "ספה", "כורסה", "ארון", "שידה", "מדף", "מדפים", "מיטה", "מזרן", "מנורה", "אהיל", "שטיח", "וילון", "מראה", "ספסל", "הדום", "כוננית"],
+    "ביגוד והנעלה": ["חולצה", "חולצות", "מכנסיים", "מכנס", "ג'ינס", "נעליים", "נעל", "סנדלים", "כפכפים", "גרביים", "תחתונים", "גופייה", "סוודר", "מעיל", "כובע", "בגד ים", "פיג'מה", "שמלה", "חצאית"]
   };
 
   function normalizeItemKey(text) {
@@ -638,21 +754,23 @@
   }
 
   function learnItemCategory(itemName, category) {
+    const canonCat = canonicalizeCategory(category);
     const key = normalizeItemKey(itemName);
-    if (!key || key.length < 2 || !category || !categoryIcons[category]) return;
-    learnedCategoryMemory[key] = category;
+    if (!key || key.length < 2 || !canonCat || !categoryIcons[canonCat]) return;
+    learnedCategoryMemory[key] = canonCat;
     const docId = encodeURIComponent(key).slice(0, 120);
     db.collection("families").doc(familyId).collection("category_memory").doc(docId).set({
       key: key,
       name: itemName.trim(),
-      category: category,
+      category: canonCat,
       updated_at: firebase.firestore.FieldValue.serverTimestamp()
     }, { merge: true }).catch(err => console.error("category_memory write error:", err));
   }
 
   function buildCategoryOptionsHtml(selectedCategory) {
+    const canonSelected = canonicalizeCategory(selectedCategory);
     return Object.keys(categoryIcons).map(cat => {
-      const selectedAttr = cat === selectedCategory ? ' selected' : '';
+      const selectedAttr = cat === canonSelected ? ' selected' : '';
       return `<option value="${escapeAttr(cat)}"${selectedAttr}>${categoryIcons[cat] || '📦'} ${escapeHtml(cat)}</option>`;
     }).join('');
   }
@@ -674,13 +792,14 @@
   function saveItemCategory() {
     if (!editingShoppingItemId) return;
     const item = allShoppingItems.find(i => i.id === editingShoppingItemId);
-    const newCat = document.getElementById('edit-cat-select').value;
+    const newCat = canonicalizeCategory(document.getElementById('edit-cat-select').value);
+    const newListType = getListTypeForCategory(newCat);
     if (item && item.name) {
       learnItemCategory(item.name, newCat);
     }
     db.collection("families").doc(familyId).collection("shopping_list")
       .doc(editingShoppingItemId)
-      .update({ category: newCat })
+      .update({ category: newCat, list_type: newListType })
       .then(() => {
         closeEditCategoryModal();
       });
@@ -691,19 +810,19 @@
     if (!clean || clean.length < 2) return null;
 
     if (learnedCategoryMemory[clean]) {
-      return learnedCategoryMemory[clean];
+      return canonicalizeCategory(learnedCategoryMemory[clean]);
     }
 
     const learnedKeys = Object.keys(learnedCategoryMemory).sort((a, b) => b.length - a.length);
     for (const savedKey of learnedKeys) {
       if (savedKey.length >= 3 && (clean.includes(savedKey) || savedKey.includes(clean))) {
-        return learnedCategoryMemory[savedKey];
+        return canonicalizeCategory(learnedCategoryMemory[savedKey]);
       }
     }
 
     for (const [category, words] of Object.entries(categoryKeywords)) {
       for (const kw of words) {
-        if (clean.includes(kw)) return category;
+        if (clean.includes(kw)) return canonicalizeCategory(category);
       }
     }
     return null;
@@ -724,10 +843,14 @@
   }
 
   function resolveCategoryForSave(name, selectEl, formKey) {
-    if (manualCategoryChosen[formKey]) {
-      return selectEl.value || "כללי";
+    // בלשונית פארם המוצרים מרוכזים תמיד תחת טואלטיקה אלא אם נבחרה קטגוריה ידנית אחרת
+    if (formKey === 'shop' && currentShopList === 'pharm' && !manualCategoryChosen[formKey]) {
+      return "טואלטיקה";
     }
-    return detectCategoryFromText(name) || selectEl.value || "כללי";
+    if (manualCategoryChosen[formKey]) {
+      return canonicalizeCategory(selectEl.value || getDefaultCategoryForList(currentShopList));
+    }
+    return canonicalizeCategory(detectCategoryFromText(name) || selectEl.value || getDefaultCategoryForList(currentShopList));
   }
 
   let dataListenersStarted = false;
@@ -754,8 +877,9 @@
         const updatedMemory = {};
         snapshot.forEach(docSnap => {
           const d = docSnap.data();
-          if (d.key && d.category && categoryIcons[d.category]) {
-            updatedMemory[d.key] = d.category;
+          const canon = canonicalizeCategory(d.category);
+          if (d.key && canon && categoryIcons[canon]) {
+            updatedMemory[d.key] = canon;
           }
         });
         learnedCategoryMemory = updatedMemory;
@@ -765,7 +889,16 @@
 
     db.collection("families").doc(familyId).collection("shopping_list")
       .onSnapshot((snapshot) => {
-        allShoppingItems = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        allShoppingItems = snapshot.docs.map(d => {
+          const raw = d.data();
+          const canonCat = canonicalizeCategory(raw.category);
+          return {
+            id: d.id,
+            ...raw,
+            category: canonCat,
+            list_type: raw.list_type || getListTypeForCategory(canonCat)
+          };
+        });
         renderShopping();
       }, (err) => {
         console.error("shopping_list listener error:", err);
@@ -783,17 +916,18 @@
         }
         snapshot.forEach(docSnap => {
           const d = docSnap.data();
+          const canonCat = canonicalizeCategory(d.category || 'כללי');
           const card = document.createElement('div');
           card.className = "fav-card";
           card.innerHTML = `
             <div class="fav-top">
               <div>
                 <div class="fav-name">${escapeHtml(d.name)} ${d.qty ? '(' + escapeHtml(d.qty) + ')' : ''}</div>
-                <div class="fav-cat">${categoryIcons[d.category] || '📦'} ${escapeHtml(d.category || 'כללי')}</div>
+                <div class="fav-cat">${categoryIcons[canonCat] || '📦'} ${escapeHtml(canonCat)}</div>
               </div>
               <button class="icon-btn del-btn" onclick="deleteItem('favorites', '${docSnap.id}')">✕</button>
             </div>
-            <button class="fav-add" onclick="quickAddFromFav('${escapeAttr(d.name)}', '${escapeAttr(d.qty || '')}', '${escapeAttr(d.category || 'כללי')}')">+ הוסף לרשימה</button>
+            <button class="fav-add" onclick="quickAddFromFav('${escapeAttr(d.name)}', '${escapeAttr(d.qty || '')}', '${escapeAttr(canonCat)}')">+ הוסף לרשימה</button>
           `;
           favEl.appendChild(card);
         });
@@ -812,13 +946,83 @@
       }, (err) => console.error("tasks listener error:", err));
   }
 
+  function cleanRecipeText(text) {
+    if (!text) return "";
+
+    const noisePatterns = [
+      /^פרסומת$/i,
+      /^תגובות$/i,
+      /^שתף/i,
+      /^הדפס/i,
+      /^שמור מתכון/i,
+      /^דלג לתוכן/i,
+      /^תפריט$/i,
+      /^חיפוש$/i,
+      /^עקבו אחרינו/i,
+      /^כל הזכויות שמורות/i,
+      /^צילום:/i,
+      /^מאת:/i,
+      /^עודכן ב/i,
+      /^[^\u0590-\u05FFa-zA-Z0-9]+$/
+    ];
+
+    const cleanedLines = text
+      .replace(/\r\n/g, '\n')
+      .replace(/\u200B|\u200C|\u200D|\uFEFF|\uFFFD/g, '')
+      .replace(/[|¦~^`´¨¸°¤§¶©®™•●▪■□◆◇★☆♦♣♠♥✓✔✕✖✗✘←→↑↓↔]/g, ' ')
+      .split('\n')
+      .map(line => {
+        return line
+          .replace(/^[\s\-–—*_•·▪►▸»«<>\\/|]+/, '')
+          .replace(/[\s\\/|]+$/, '')
+          .replace(/\s{2,}/g, ' ')
+          .trim();
+      })
+      .filter(line => {
+        if (!line) return false;
+        if (line.length === 1 && !/^\d$/.test(line)) return false;
+        const validChars = (line.match(/[\u0590-\u05FFa-zA-Z0-9]/g) || []).length;
+        if (validChars === 0) return false;
+        if (line.length >= 4 && (validChars / line.length) < 0.45) return false;
+        if (noisePatterns.some(rx => rx.test(line))) return false;
+        return true;
+      });
+
+    const deduped = [];
+    for (const line of cleanedLines) {
+      if (deduped.length === 0 || deduped[deduped.length - 1] !== line) {
+        deduped.push(line);
+      }
+    }
+
+    return deduped.join('\n');
+  }
+
+  function applyImportedRecipeText(rawText) {
+    const cleaned = cleanRecipeText(rawText);
+    const textArea = document.getElementById('raw-recipe-text');
+    const titleInput = document.getElementById('recipe-title-input');
+
+    textArea.value = cleaned;
+    const lines = cleaned.split('\n');
+    if (lines.length > 0 && !titleInput.value.trim()) {
+      titleInput.value = lines[0].length > 55 ? lines[0].substring(0, 55) + "..." : lines[0];
+    }
+  }
+
+  function cleanRecipeDraftField() {
+    const textArea = document.getElementById('raw-recipe-text');
+    if (!textArea.value.trim()) return;
+    applyImportedRecipeText(textArea.value);
+  }
+
   function handleImageUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
 
     const statusEl = document.getElementById('ocr-status');
     statusEl.classList.remove('hidden');
-    statusEl.innerText = "קורא טקסט מהתמונה... ⏳";
+    statusEl.innerText = "קורא טקסט מהתמונה ומנקה רעשים... ⏳";
 
     Tesseract.recognize(
       file,
@@ -826,37 +1030,60 @@
       { logger: m => console.log(m) }
     ).then(({ data: { text } }) => {
       statusEl.classList.add('hidden');
+      event.target.value = "";
       if (text && text.trim().length > 0) {
-        document.getElementById('raw-recipe-text').value = text.trim();
+        applyImportedRecipeText(text);
       } else {
         alert("לא זוהה טקסט ברור בתמונה. נסה צילום מסך ממוקד יותר.");
       }
     }).catch(err => {
       statusEl.classList.add('hidden');
+      event.target.value = "";
       alert("שגיאה בטעינת ספריית הפענוח. נסה שוב או הדבק את הטקסט ידנית.");
       console.error(err);
     });
   }
 
-  function cleanRecipeText(text) {
-    if (!text) return "";
-    return text
-      .split('\n')
-      .map(line => line.trim())
-      .filter(line => line.length > 0 && !line.includes('פרסומת') && !line.includes('תגובות'))
-      .join('\n');
+  function handleRecipeFileUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const statusEl = document.getElementById('ocr-status');
+    statusEl.classList.remove('hidden');
+    statusEl.innerText = "טוען ומנקה קובץ... ⏳";
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      statusEl.classList.add('hidden');
+      event.target.value = "";
+      const raw = e.target.result || "";
+      if (raw.trim().length > 0) {
+        applyImportedRecipeText(raw);
+      } else {
+        alert("הקובץ ריק או לא ניתן לקריאה.");
+      }
+    };
+    reader.onerror = function() {
+      statusEl.classList.add('hidden');
+      event.target.value = "";
+      alert("שגיאה בקריאת הקובץ.");
+    };
+    reader.readAsText(file, 'UTF-8');
   }
 
   function addRecipeWithCategory() {
+    const titleInput = document.getElementById('recipe-title-input');
     const textInput = document.getElementById('raw-recipe-text');
     const catSelect = document.getElementById('recipe-category-select');
     const cleanedContent = cleanRecipeText(textInput.value);
     if (!cleanedContent) return;
 
     const lines = cleanedContent.split('\n');
-    let title = "מתכון חדש";
-    if (lines.length > 0) {
-      title = lines[0].length > 45 ? lines[0].substring(0, 45) + "..." : lines[0];
+    let title = titleInput.value.trim();
+    if (!title) {
+      title = lines.length > 0
+        ? (lines[0].length > 55 ? lines[0].substring(0, 55) + "..." : lines[0])
+        : "מתכון חדש";
     }
 
     const category = catSelect.value;
@@ -868,6 +1095,7 @@
       created_at: firebase.firestore.FieldValue.serverTimestamp()
     });
 
+    titleInput.value = "";
     textInput.value = "";
     openRecipeCategories[category] = true;
   }
@@ -888,8 +1116,11 @@
     const recipe = allRecipes.find(r => r.id === id);
     if (!recipe) return;
 
+    activeRecipeId = recipe.id;
     activeRecipeContent = recipe.content || "";
 
+    const cat = recipe.category || "כללי";
+    document.getElementById('fs-recipe-cat').innerText = `${recipeCategoryIcons[cat] || '📦'} ${cat}`;
     document.getElementById('fs-recipe-title').innerText = recipe.title;
     document.getElementById('fs-recipe-content').innerHTML = formatRecipeContentForDisplay(recipe.content);
     document.getElementById('fs-delete-btn').setAttribute('onclick', `deleteItem('recipes', '${recipe.id}'); closeFullscreenRecipe();`);
@@ -897,13 +1128,81 @@
     document.getElementById('fs-add-shopping-btn').onclick = function() {
       addRecipeToShopping(activeRecipeContent);
     };
+
+    document.getElementById('fs-view-mode').classList.remove('hidden');
+    document.getElementById('fs-edit-mode').classList.add('hidden');
+    document.getElementById('fs-edit-toggle-btn').innerText = "✏️ ערוך";
+    document.getElementById('fs-font-btn').classList.remove('hidden');
     
     currentFontSizeLevel = 1;
     applyFontSize();
     document.getElementById('recipe-fullscreen-modal').classList.remove('hidden');
   }
 
+  function toggleRecipeEditMode() {
+    const isEditing = !document.getElementById('fs-edit-mode').classList.contains('hidden');
+    if (isEditing) {
+      cancelRecipeEdit();
+      return;
+    }
+
+    const recipe = allRecipes.find(r => r.id === activeRecipeId);
+    if (!recipe) return;
+
+    document.getElementById('edit-recipe-title').value = recipe.title || "";
+    document.getElementById('edit-recipe-category').value = recipe.category || "כללי";
+    document.getElementById('edit-recipe-content').value = recipe.content || "";
+
+    document.getElementById('fs-view-mode').classList.add('hidden');
+    document.getElementById('fs-edit-mode').classList.remove('hidden');
+    document.getElementById('fs-edit-toggle-btn').innerText = "👁️ צפייה";
+    document.getElementById('fs-font-btn').classList.add('hidden');
+  }
+
+  function cancelRecipeEdit() {
+    document.getElementById('fs-edit-mode').classList.add('hidden');
+    document.getElementById('fs-view-mode').classList.remove('hidden');
+    document.getElementById('fs-edit-toggle-btn').innerText = "✏️ ערוך";
+    document.getElementById('fs-font-btn').classList.remove('hidden');
+  }
+
+  function cleanEditedRecipeField() {
+    const el = document.getElementById('edit-recipe-content');
+    el.value = cleanRecipeText(el.value);
+  }
+
+  function saveEditedRecipe() {
+    if (!activeRecipeId) return;
+
+    const newTitle = document.getElementById('edit-recipe-title').value.trim() || "מתכון ללא שם";
+    const newCategory = document.getElementById('edit-recipe-category').value || "כללי";
+    const newContent = cleanRecipeText(document.getElementById('edit-recipe-content').value);
+
+    if (!newContent) {
+      alert("תוכן המתכון לא יכול להיות ריק.");
+      return;
+    }
+
+    db.collection("families").doc(familyId).collection("recipes").doc(activeRecipeId).update({
+      title: newTitle,
+      category: newCategory,
+      content: newContent,
+      updated_at: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(() => {
+      activeRecipeContent = newContent;
+      openRecipeCategories[newCategory] = true;
+      document.getElementById('fs-recipe-cat').innerText = `${recipeCategoryIcons[newCategory] || '📦'} ${newCategory}`;
+      document.getElementById('fs-recipe-title').innerText = newTitle;
+      document.getElementById('fs-recipe-content').innerHTML = formatRecipeContentForDisplay(newContent);
+      cancelRecipeEdit();
+    }).catch(err => {
+      console.error("Error updating recipe:", err);
+      alert("שגיאה בשמירת העריכה.");
+    });
+  }
+
   function closeFullscreenRecipe() {
+    activeRecipeId = null;
     document.getElementById('recipe-fullscreen-modal').classList.add('hidden');
   }
 
@@ -927,7 +1226,7 @@
     const container = document.getElementById('recipes-accordion-container');
     container.innerHTML = "";
     if (allRecipes.length === 0) {
-      container.innerHTML = '<div class="empty-state">אין עדיין מתכונים שמורים. הדבק או העלה צילום מסך למעלה!</div>';
+      container.innerHTML = '<div class="empty-state">אין עדיין מתכונים שמורים. הדבק, טען קובץ או העלה צילום מסך למעלה!</div>';
       return;
     }
 
@@ -938,7 +1237,12 @@
       grouped[cat].push(rec);
     });
 
-    Object.keys(grouped).forEach(cat => {
+    const orderedCategories = [
+      ...Object.keys(recipeCategoryIcons).filter(c => grouped[c]),
+      ...Object.keys(grouped).filter(c => !recipeCategoryIcons[c])
+    ];
+
+    orderedCategories.forEach(cat => {
       const isOpen = openRecipeCategories[cat] || false;
       const catDiv = document.createElement('div');
       catDiv.className = "recipe-accordion-cat";
@@ -975,7 +1279,19 @@
   function renderShopping() {
     const container = document.getElementById('shopping-container');
     container.innerHTML = "";
-    const filtered = allShoppingItems.filter(item => (item.list_type || "super") === currentShopList);
+
+    const filtered = allShoppingItems.filter(item => {
+      const cat = canonicalizeCategory(item.category);
+      if (currentShopList === "pharm") {
+        return item.list_type === "pharm" || cat === "טואלטיקה";
+      }
+      if (currentShopList === "home") {
+        return item.list_type === "home" || cat === "גינון" || cat === "ריהוט";
+      }
+      // בלשונית סופר: כל מה שלא שייך בלעדית לפארם/גינון/ריהוט (אלא אם סומן מפורשות כ-super)
+      return item.list_type === "super" || (!item.list_type && cat !== "טואלטיקה" && cat !== "גינון" && cat !== "ריהוט");
+    });
+
     const activeItems = filtered.filter(i => !i.completed);
     const doneItems = filtered.filter(i => i.completed);
 
@@ -989,12 +1305,28 @@
 
     const grouped = {};
     activeItems.forEach(item => {
-      const cat = item.category || "כללי";
+      let cat = canonicalizeCategory(item.category || "כללי");
+      if (currentShopList === "pharm") {
+        cat = "טואלטיקה";
+      } else if (currentShopList === "home" && cat === "כללי") {
+        cat = "גינון";
+      }
       if (!grouped[cat]) grouped[cat] = [];
       grouped[cat].push(item);
     });
 
-    Object.keys(grouped).forEach(cat => {
+    const priorityOrder = currentShopList === "pharm"
+      ? ["טואלטיקה"]
+      : currentShopList === "home"
+        ? ["גינון", "ריהוט"]
+        : [];
+
+    const sortedCats = [
+      ...priorityOrder.filter(c => grouped[c]),
+      ...Object.keys(grouped).filter(c => !priorityOrder.includes(c))
+    ];
+
+    sortedCats.forEach(cat => {
       const header = document.createElement('div');
       header.className = "cat-title";
       header.innerHTML = (categoryIcons[cat] || '📦') + " " + escapeHtml(cat) + " (" + grouped[cat].length + ")";
@@ -1103,6 +1435,20 @@
     currentShopList = type;
     document.querySelectorAll('#list-selector .chip').forEach(c => c.classList.remove('active'));
     el.classList.add('active');
+
+    // סנכרון אוטומטי של תיבת הקטגוריה ללשונית שנבחרה (כל עוד המשתמש לא בחר ידנית)
+    manualCategoryChosen['shop'] = false;
+    const catSelect = document.getElementById('shop-cat');
+    const currentInputVal = document.getElementById('shop-input').value.trim();
+    if (currentInputVal) {
+      const detected = detectCategoryFromText(currentInputVal);
+      catSelect.value = detected || getDefaultCategoryForList(type);
+      catSelect.classList.toggle('auto-matched', Boolean(detected));
+    } else {
+      catSelect.value = getDefaultCategoryForList(type);
+      catSelect.classList.remove('auto-matched');
+    }
+
     renderShopping();
   }
 
@@ -1114,19 +1460,21 @@
     if (!name) return;
 
     const cat = resolveCategoryForSave(name, catSelect, 'shop');
+    const targetList = getListTypeForCategory(cat);
     learnItemCategory(name, cat);
 
     db.collection("families").doc(familyId).collection("shopping_list").add({
       name: name,
       qty: qtyInput.value.trim(),
       category: cat,
-      list_type: currentShopList,
+      list_type: targetList,
       completed: false,
       created_at: firebase.firestore.FieldValue.serverTimestamp()
     });
     input.value = "";
     qtyInput.value = "";
     manualCategoryChosen['shop'] = false;
+    catSelect.value = getDefaultCategoryForList(currentShopList);
     catSelect.classList.remove('auto-matched');
   }
 
@@ -1159,21 +1507,29 @@
   }
 
   function saveAsFavorite(name, qty, category) {
-    learnItemCategory(name, category);
+    const canonCat = canonicalizeCategory(category);
+    learnItemCategory(name, canonCat);
     db.collection("families").doc(familyId).collection("favorites").add({
       name: name,
       qty: qty,
-      category: category,
+      category: canonCat,
       created_at: firebase.firestore.FieldValue.serverTimestamp()
     });
   }
 
   function quickAddFromFav(name, qty, category) {
+    const canonCat = canonicalizeCategory(category);
+    const targetList = getListTypeForCategory(canonCat);
+    currentShopList = targetList;
+    document.querySelectorAll('#list-selector .chip').forEach((c, idx) => {
+      const listKeys = ['super', 'pharm', 'home'];
+      c.classList.toggle('active', listKeys[idx] === targetList);
+    });
     db.collection("families").doc(familyId).collection("shopping_list").add({
       name: name,
       qty: qty,
-      category: category,
-      list_type: currentShopList,
+      category: canonCat,
+      list_type: targetList,
       completed: false,
       created_at: firebase.firestore.FieldValue.serverTimestamp()
     });
@@ -1192,12 +1548,12 @@
       const cleanLine = line.trim();
       if (!cleanLine || cleanLine.endsWith(':') || cleanLine.includes('מצרכים') || cleanLine.includes('הוראות') || cleanLine.includes('רכיבים') || cleanLine.includes('אופן הכנה') || /^\d+[\.\)]/.test(cleanLine)) return;
       
-      const cat = detectCategoryFromText(cleanLine) || "כללי";
+      const cat = canonicalizeCategory(detectCategoryFromText(cleanLine) || "כללי");
       db.collection("families").doc(familyId).collection("shopping_list").add({
         name: cleanLine,
         qty: "",
         category: cat,
-        list_type: "super",
+        list_type: getListTypeForCategory(cat),
         completed: false,
         created_at: firebase.firestore.FieldValue.serverTimestamp()
       });
